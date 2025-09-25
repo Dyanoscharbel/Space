@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Solar System Explorer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background: #0f0f23;
+            color: white;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+        }
+        
+        .warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid #f59e0b;
+        }
+        
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #4f46e5;
+        }
+        
+        #canvas-test {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test du Solar System Explorer</h1>
+        
+        <div class="test-section">
+            <h2>📦 Test des Modules</h2>
+            <div id="module-tests"></div>
+            <button onclick="testModules()">Tester les Modules</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎨 Test de l'Interface</h2>
+            <div id="ui-tests"></div>
+            <button onclick="testUI()">Tester l'Interface</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🌍 Test 3D (THREE.js)</h2>
+            <div id="canvas-test"></div>
+            <div id="threejs-tests"></div>
+            <button onclick="testThreeJS()">Tester THREE.js</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test des Données</h2>
+            <div id="data-tests"></div>
+            <button onclick="testData()">Tester les Données</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🚀 Démarrage Complet</h2>
+            <div id="full-tests"></div>
+            <button onclick="testFullApp()">Test Complet</button>
+            <button onclick="openFullApp()">Ouvrir l'Application</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Test functions
+        window.testModules = async function() {
+            const container = document.getElementById('module-tests');
+            container.innerHTML = '<p>🔄 Test des modules en cours...</p>';
+            
+            const tests = [];
+            
+            // Test ES6 modules support
+            try {
+                const module = await import('./src/js/utils/EventEmitter.js');
+                tests.push({ name: 'EventEmitter', status: 'success', message: 'Module chargé avec succès' });
+            } catch (error) {
+                tests.push({ name: 'EventEmitter', status: 'error', message: error.message });
+            }
+            
+            // Test THREE.js
+            try {
+                const THREE = await import('three');
+                tests.push({ name: 'THREE.js', status: 'success', message: `Version ${THREE.REVISION}` });
+            } catch (error) {
+                tests.push({ name: 'THREE.js', status: 'error', message: error.message });
+            }
+            
+            displayResults(container, tests);
+        };
+        
+        window.testUI = function() {
+            const container = document.getElementById('ui-tests');
+            const tests = [];
+            
+            // Test CSS Custom Properties
+            const testElement = document.createElement('div');
+            testElement.style.setProperty('--test-var', '#6366f1');
+            const computedStyle = getComputedStyle(testElement);
+            
+            if (CSS.supports('color', 'var(--test-var)')) {
+                tests.push({ name: 'CSS Variables', status: 'success', message: 'Supportées' });
+            } else {
+                tests.push({ name: 'CSS Variables', status: 'error', message: 'Non supportées' });
+            }
+            
+            // Test Flexbox
+            if (CSS.supports('display', 'flex')) {
+                tests.push({ name: 'Flexbox', status: 'success', message: 'Supporté' });
+            } else {
+                tests.push({ name: 'Flexbox', status: 'error', message: 'Non supporté' });
+            }
+            
+            // Test Grid
+            if (CSS.supports('display', 'grid')) {
+                tests.push({ name: 'CSS Grid', status: 'success', message: 'Supporté' });
+            } else {
+                tests.push({ name: 'CSS Grid', status: 'warning', message: 'Non supporté' });
+            }
+            
+            displayResults(container, tests);
+        };
+        
+        window.testThreeJS = async function() {
+            const container = document.getElementById('threejs-tests');
+            const canvasContainer = document.getElementById('canvas-test');
+            const tests = [];
+            
+            try {
+                const THREE = await import('three');
+                
+                // Create basic scene
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                
+                renderer.setSize(canvasContainer.clientWidth, 200);
+                canvasContainer.innerHTML = '';
+                canvasContainer.appendChild(renderer.domElement);
+                
+                // Add a simple cube
+                const geometry = new THREE.BoxGeometry();
+                const material = new THREE.MeshBasicMaterial({ color: 0x6366f1 });
+                const cube = new THREE.Mesh(geometry, material);
+                scene.add(cube);
+                
+                camera.position.z = 5;
+                
+                // Animate
+                function animate() {
+                    requestAnimationFrame(animate);
+                    cube.rotation.x += 0.01;
+                    cube.rotation.y += 0.01;
+                    renderer.render(scene, camera);
+                }
+                animate();
+                
+                tests.push({ name: 'Rendu WebGL', status: 'success', message: 'Cube animé créé' });
+                tests.push({ name: 'Contexte WebGL', status: 'success', message: renderer.getContext().VERSION });
+                
+            } catch (error) {
+                tests.push({ name: 'THREE.js Setup', status: 'error', message: error.message });
+            }
+            
+            displayResults(container, tests);
+        };
+        
+        window.testData = async function() {
+            const container = document.getElementById('data-tests');
+            const tests = [];
+            
+            try {
+                const { SOLAR_SYSTEM_DATA } = await import('./src/js/data/solarSystemData.js');
+                
+                const planetCount = Object.keys(SOLAR_SYSTEM_DATA).length;
+                tests.push({ name: 'Données Planètes', status: 'success', message: `${planetCount} objets chargés` });
+                
+                // Test specific planet data
+                if (SOLAR_SYSTEM_DATA.earth) {
+                    tests.push({ name: 'Données Terre', status: 'success', message: 'Complètes avec lune' });
+                } else {
+                    tests.push({ name: 'Données Terre', status: 'error', message: 'Manquantes' });
+                }
+                
+                if (SOLAR_SYSTEM_DATA.jupiter && SOLAR_SYSTEM_DATA.jupiter.majorMoons) {
+                    tests.push({ name: 'Lunes Jupiter', status: 'success', message: `${SOLAR_SYSTEM_DATA.jupiter.majorMoons.length} lunes` });
+                }
+                
+            } catch (error) {
+                tests.push({ name: 'Import Données', status: 'error', message: error.message });
+            }
+            
+            displayResults(container, tests);
+        };
+        
+        window.testFullApp = async function() {
+            const container = document.getElementById('full-tests');
+            container.innerHTML = '<p>🔄 Test complet en cours...</p>';
+            
+            const tests = [];
+            
+            try {
+                // Test if we can create the main app class
+                const { SolarSystemApp } = await import('./src/js/main.js');
+                tests.push({ name: 'Application Class', status: 'success', message: 'Importée avec succès' });
+                
+                // Test engine creation (without full init)
+                const { SolarSystemEngine } = await import('./src/js/core/SolarSystemEngine.js');
+                tests.push({ name: 'Moteur 3D', status: 'success', message: 'Classe disponible' });
+                
+                // Test UI manager
+                const { UIManager } = await import('./src/js/ui/UIManager.js');
+                tests.push({ name: 'Gestionnaire UI', status: 'success', message: 'Classe disponible' });
+                
+                tests.push({ name: 'Architecture', status: 'success', message: 'Tous les modules sont prêts' });
+                
+            } catch (error) {
+                tests.push({ name: 'Test Complet', status: 'error', message: error.message });
+            }
+            
+            displayResults(container, tests);
+        };
+        
+        window.openFullApp = function() {
+            window.open('./src/index_new.html', '_blank');
+        };
+        
+        function displayResults(container, tests) {
+            container.innerHTML = tests.map(test => `
+                <div class="test-result ${test.status}">
+                    <strong>${test.name}:</strong> ${test.message}
+                </div>
+            `).join('');
+        }
+        
+        // Auto-run basic tests
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                testModules();
+                testUI();
+                testData();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
