@@ -410,6 +410,63 @@ body {
 .hud-left-panel {
   grid-area: left-panel;
   border-right: none;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateX(0);
+}
+
+.hud-left-panel.hidden {
+  transform: translateX(-100%);
+}
+
+/* ===== SIDEBAR TOGGLE BUTTON ===== */
+.sidebar-toggle-btn {
+  position: fixed;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  z-index: 1000;
+  
+  width: 50px;
+  height: 50px;
+  border: 2px solid var(--hud-border);
+  border-radius: 8px;
+  background: var(--hud-bg-primary);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  cursor: pointer;
+  transition: var(--hud-transition);
+  
+  backdrop-filter: blur(10px);
+  box-shadow: var(--hud-glow);
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--hud-bg-glass-hover);
+  border-color: var(--hud-border-bright);
+  box-shadow: var(--hud-glow-bright);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.sidebar-toggle-btn .toggle-icon {
+  font-size: 20px;
+  color: var(--hud-primary);
+  font-weight: bold;
+  transition: var(--hud-transition);
+}
+
+.sidebar-toggle-btn:hover .toggle-icon {
+  color: var(--hud-border-bright);
+  text-shadow: 0 0 10px var(--hud-primary);
+}
+
+/* Quand la sidebar est visible, masquer le bouton */
+.sidebar-toggle-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(-20px);
 }
 
 .hud-right-panel {
@@ -1479,6 +1536,29 @@ body {
   animation: slideInFromLeft 0.3s ease-out;
 }
 
+/* Animation pour l'entrée de la sidebar */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
 .detailed-object-info > * {
   animation: fadeInUp 0.4s ease-out;
 }
@@ -1527,14 +1607,28 @@ body {
     bottom: 60px;
     width: 90%;
     max-width: 350px;
-    z-index: 100;
-    transform: translateX(-100%);
+    z-index: 999;
     transition: transform 0.3s ease;
   }
   
-  .hud-left-panel.open {
-    transform: translateX(0);
+  .hud-left-panel {
+    transform: translateX(-100%);
     left: 5%;
+  }
+  
+  .hud-left-panel.visible {
+    transform: translateX(0);
+  }
+  
+  /* Bouton toggle responsive */
+  .sidebar-toggle-btn {
+    left: 10px;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .sidebar-toggle-btn .toggle-icon {
+    font-size: 18px;
   }
   
   .hud-right-panel.open {
