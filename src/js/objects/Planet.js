@@ -95,18 +95,22 @@ export class Planet {
     const loader = new THREE.TextureLoader();
     
     const materialProps = {
-      map: await loader.loadAsync(this.data.texture)
+      map: await loader.loadAsync(this.data.texture),
+      // Améliorer les propriétés d'éclairage
+      shininess: 1, // Réduire la brillance pour un aspect plus réaliste
+      specular: 0x111111 // Réflexion spéculaire très faible
     };
     
     // Add bump map if available
     if (this.data.bumpMap) {
       materialProps.bumpMap = await loader.loadAsync(this.data.bumpMap);
-      materialProps.bumpScale = 0.1;
+      materialProps.bumpScale = 0.3; // Augmenter l'effet du bump mapping
     }
     
     // Add normal map if available
     if (this.data.normalMap) {
       materialProps.normalMap = await loader.loadAsync(this.data.normalMap);
+      materialProps.normalScale = new THREE.Vector2(1, 1);
     }
     
     return new THREE.MeshPhongMaterial(materialProps);
@@ -149,12 +153,20 @@ export class Planet {
         
         void main() {
           vec3 dayColor = texture2D(dayTexture, vUv).rgb;
-          vec3 nightColor = texture2D(nightTexture, vUv).rgb;
+          vec3 nightColor = texture2D(nightTexture, vUv).rgb * 0.3; // Réduire l'intensité des lumières nocturnes
           
+          // Calculer l'intensité de l'éclairage solaire
           float intensity = dot(vNormal, normalize(sunDirection));
-          intensity = smoothstep(-0.1, 0.1, intensity);
           
+          // Transition plus douce entre jour et nuit
+          intensity = smoothstep(-0.2, 0.2, intensity);
+          
+          // Mélanger les textures jour/nuit selon l'éclairage
           vec3 color = mix(nightColor, dayColor, intensity);
+          
+          // Ajouter un léger éclairage ambiant pour éviter les zones complètement noires
+          color += dayColor * 0.05;
+          
           gl_FragColor = vec4(color, 1.0);
         }
       `
@@ -205,12 +217,23 @@ export class Planet {
   }
 
   async createMoons() {
-    const moons = this.data.moons || this.data.majorMoons || [];
+    // Gérer le cas où moons est un nombre (Jupiter: 95 moons) ou un tableau
+    let moonsData = this.data.majorMoons || this.data.moons;
     
-    for (const moonData of moons) {
-      const moon = await this.createMoon(moonData);
-      this.moons.push(moon);
-      this.group.add(moon.group);
+    // Si c'est un nombre ou undefined, ne rien faire
+    if (!moonsData || typeof moonsData === 'number') {
+      console.log(`   ℹ️ ${this.data.name}: ${moonsData || 0} lunes (non modélisées individuellement)`);
+      return;
+    }
+    
+    // Si c'est un tableau, créer les lunes
+    if (Array.isArray(moonsData)) {
+      for (const moonData of moonsData) {
+        const moon = await this.createMoon(moonData);
+        this.moons.push(moon);
+        this.group.add(moon.group);
+      }
+      console.log(`   ✅ ${this.data.name}: ${moonsData.length} lunes créées`);
     }
   }
 
@@ -227,15 +250,23 @@ export class Planet {
     if (moonData.texture) {
       const loader = new THREE.TextureLoader();
       const texture = await loader.loadAsync(moonData.texture);
-      moonMaterial = new THREE.MeshPhongMaterial({ map: texture });
+      moonMaterial = new THREE.MeshPhongMaterial({ 
+        map: texture,
+        shininess: 1, // Réduire la brillance pour un aspect plus réaliste
+        specular: 0x111111 // Réflexion spéculaire très faible
+      });
       
       if (moonData.bumpMap) {
         const bumpTexture = await loader.loadAsync(moonData.bumpMap);
         moonMaterial.bumpMap = bumpTexture;
-        moonMaterial.bumpScale = 0.1;
+        moonMaterial.bumpScale = 0.3; // Augmenter l'effet du bump mapping
       }
     } else {
-      moonMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
+      moonMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x888888,
+        shininess: 1,
+        specular: 0x111111
+      });
     }
     
     const moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
@@ -278,10 +309,26 @@ export class Planet {
     }
     
     const orbitGeometry = new THREE.BufferGeometry().setFromPoints(points);
+    // Couleurs spécifiques par planète
+    const planetColors = {
+      'Mercury': 0x8C7853,    // Brun-gris
+      'Venus': 0xFFC649,      // Jaune-orange
+      'Terre': 0x6B93D6,      // Bleu
+      'Earth': 0x6B93D6,      // Bleu (alias)
+      'Mars': 0xCD5C5C,       // Rouge
+      'Jupiter': 0xD8CA9D,    // Beige-doré
+      'Saturn': 0xFAD5A5,     // Jaune pâle
+      'Uranus': 0x4FD0E7,     // Cyan
+      'Neptune': 0x4B70DD,    // Bleu foncé
+      'Pluto': 0x8B7355       // Brun
+    };
+    
+    const orbitColor = planetColors[this.data.name] || 0xffffff;
+    
     const orbitMaterial = new THREE.LineBasicMaterial({
-      color: 0xffffff,
+      color: orbitColor,
       transparent: true,
-      opacity: 0.2
+      opacity: 0.6
     });
     
     this.orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
@@ -324,7 +371,9 @@ export class Planet {
       // Update Earth shader uniforms if it's Earth
       if (this.data.name === 'Terre' && this.mesh.material.uniforms) {
         // Update sun direction based on planet position
-        const sunDirection = new THREE.Vector3(-this.mesh.position.x, 0, -this.mesh.position.z).normalize();
+        // Le soleil est à l'origine (0,0,0), donc la direction du soleil depuis la planète
+        // est le vecteur qui va de la planète vers le soleil
+        const sunDirection = new THREE.Vector3(0, 0, 0).sub(this.mesh.position).normalize();
         this.mesh.material.uniforms.sunDirection.value = sunDirection;
       }
     }

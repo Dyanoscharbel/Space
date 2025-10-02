@@ -178,6 +178,8 @@ export class UIManager {
       content = this.generateSunInfo(data);
     } else if (type === 'planet') {
       content = this.generatePlanetInfo(data);
+    } else if (type === 'moon') {
+      content = this.generateMoonInfo(data, objectData.parentName);
     }
     
     this.elements.panelContent.innerHTML = content;
@@ -316,6 +318,41 @@ export class UIManager {
             ${data.atmosphere.pressure ? `
               <p><strong>Pression:</strong> ${data.atmosphere.pressure}</p>
             ` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  generateMoonInfo(data, parentName) {
+    const diameter = typeof data.diameter === 'number' ? `${data.diameter.toLocaleString()} km` : data.diameter;
+    const distance = typeof data.distanceFromPlanet === 'number' ? `${data.distanceFromPlanet.toLocaleString()} km` : (data.distanceFromPlanet || '—');
+    const orbital = typeof data.orbitalPeriod === 'number' ? `${data.orbitalPeriod} jours` : (data.orbitalPeriod || '—');
+    const description = data.description || '';
+
+    return `
+      <div class="object-info">
+        <div class="object-header">
+          <h2>${data.name}</h2>
+          <span class="object-type">Satellite naturel ${parentName ? `de ${parentName}` : ''}</span>
+        </div>
+        <div class="object-stats">
+          <div class="stat">
+            <label>Diamètre</label>
+            <value>${diameter}</value>
+          </div>
+          <div class="stat">
+            <label>Distance à la planète</label>
+            <value>${distance}</value>
+          </div>
+          <div class="stat">
+            <label>Période orbitale</label>
+            <value>${orbital}</value>
+          </div>
+        </div>
+        ${description ? `
+          <div class="object-description">
+            <p>${description}</p>
           </div>
         ` : ''}
       </div>

@@ -1,4 +1,4 @@
-²import * as THREE from 'three';
+import * as THREE from 'three';
 
 export class Sun {
   constructor(data, scaleFactors) {
@@ -37,12 +37,13 @@ export class Sun {
     const loader = new THREE.TextureLoader();
     const sunTexture = await loader.loadAsync(this.data.texture);
     
-    // Create emissive material for the sun
-    const material = new THREE.MeshBasicMaterial({
+    // Create emissive material for the sun (MeshStandardMaterial supports emissive)
+    const material = new THREE.MeshStandardMaterial({
       map: sunTexture,
       emissive: 0xffaa00,
       emissiveIntensity: 0.8,
-      emissiveMap: sunTexture
+      emissiveMap: sunTexture,
+      toneMapped: false // Permet au Soleil de briller plus fort
     });
     
     this.mesh = new THREE.Mesh(geometry, material);
@@ -57,7 +58,7 @@ export class Sun {
 
   createLight() {
     // Create point light at sun's center
-    this.pointLight = new THREE.PointLight(0xffffff, 2, 0, 2);
+    this.pointLight = new THREE.PointLight(0xffffff, 3, 0, 1.5); // Augmenter l'intensité et réduire l'atténuation
     this.pointLight.position.set(0, 0, 0);
     this.pointLight.castShadow = true;
     
@@ -65,8 +66,9 @@ export class Sun {
     this.pointLight.shadow.mapSize.width = 2048;
     this.pointLight.shadow.mapSize.height = 2048;
     this.pointLight.shadow.camera.near = 0.1;
-    this.pointLight.shadow.camera.far = 1000;
+    this.pointLight.shadow.camera.far = 2000; // Augmenter la portée des ombres
     this.pointLight.shadow.bias = -0.0001;
+    this.pointLight.shadow.radius = 3; // Adoucir les ombres
     
     this.group.add(this.pointLight);
   }
@@ -153,6 +155,35 @@ export class Sun {
     if (this.corona && this.corona.material.uniforms) {
       this.corona.material.uniforms.intensity.value = intensity * 0.5;
     }
+  }
+
+  /**
+   * Modifier le rayon du Soleil dynamiquement
+   * @param {number} newRadius - Nouveau rayon (échelle 3D)
+   */
+  setRadius(newRadius) {
+    if (!this.mesh || !this.corona) {
+      console.warn('⚠️ Impossible de modifier le rayon: objets non initialisés');
+      return;
+    }
+
+    // Sauvegarder l'ancien rayon
+    const oldRadius = this.scaledSize;
+    
+    // Mettre à jour le rayon
+    this.scaledSize = newRadius;
+    
+    // Recréer la géométrie du mesh principal
+    const oldGeometry = this.mesh.geometry;
+    this.mesh.geometry = new THREE.SphereGeometry(newRadius, 64, 32);
+    oldGeometry.dispose();
+    
+    // Recréer la géométrie de la corona (1.2x le rayon)
+    const oldCoronaGeometry = this.corona.geometry;
+    this.corona.geometry = new THREE.SphereGeometry(newRadius * 1.2, 32, 16);
+    oldCoronaGeometry.dispose();
+    
+    console.log(`   ☀️ Soleil redimensionné: ${oldRadius.toFixed(2)} → ${newRadius.toFixed(2)}`);
   }
 
   dispose() {

@@ -1,161 +1,135 @@
-# 🌌 Solar System Explorer 2.0
+# 🌌 Solar System Explorer
 
-Un explorateur 3D moderne du système solaire avec interface élégante, conçu comme base pour un projet d'identification d'exoplanètes par IA utilisant les données NASA.
+Explorateur 3D interactif du système solaire construit avec THREE.js et Vite. Le projet met l’accent sur la pédagogie (données réalistes), l’expérience (UI moderne) et l’extensibilité (modules clairs, événements, données externes comme Kepler).
 
-## ✨ Nouveautés de la Version 2.0
+## ✨ Points clés
 
-### 🎨 Interface Utilisateur Moderne
-- **Design System cohérent** avec variables CSS et thème sombre élégant
-- **Interface glassmorphism** avec effets de flou et transparence
-- **Animations fluides** et transitions polies
-- **Responsive design** optimisé pour tous les écrans
-- **Typographie moderne** avec Inter et JetBrains Mono
+- **THREE.js + Postprocessing**: rendu 3D, bloom sur le Soleil, outline à la sélection
+- **Données réalistes**: dimensions, orbites, atmosphères, lunes (sources NASA/IAU)
+- **UI moderne**: panneau d’informations, sliders de vitesses, recherche, raccourcis
+- **Echelles**: mode réaliste et mode visuel optimisé via `SCALE_FACTORS`
+- **Kepler**: bouton “Voir les données recueillies” affiché uniquement pour Kepler et ouvrant `koi-data-explorer`
 
-### 🏗️ Architecture Refactorisée
-- **Code modulaire** organisé en classes et modules ES6
-- **Séparation des responsabilités** (3D Engine, UI Manager, Data)
-- **Gestion d'événements** centralisée avec EventEmitter
-- **Système de chargement** avec indicateurs de progression
-- **Gestion d'erreurs** robuste
+## 📦 Pré-requis
 
-### 🌍 Données Scientifiques Réelles
-- **Échelles réelles** du système solaire avec mode visuel optimisé
-- **Données NASA authentiques** pour toutes les planètes
-- **Informations détaillées** : composition, atmosphère, lunes
-- **Faits scientifiques** et descriptions éducatives
+- Node.js 16+ recommandé
+- Navigateur moderne compatible WebGL
 
-### 🚀 Fonctionnalités Avancées
-- **Recherche intelligente** de planètes et objets célestes
-- **Panneau d'informations** détaillé avec données scientifiques
-- **Contrôles de vitesse** pour orbites et rotations
-- **Modes de visualisation** (vue d'ensemble, système interne/externe)
-- **Raccourcis clavier** pour navigation rapide
+## 🚀 Installation & exécution
 
-## 🛠️ Technologies Utilisées
+```bash
+npm install
+npm run dev
+# Build de production
+npm run build
+```
 
-- **THREE.js** - Rendu 3D WebGL
-- **Vite** - Build tool moderne et rapide
-- **ES6 Modules** - Architecture modulaire native
-- **CSS Custom Properties** - Design system maintenable
-- **Web APIs** - Fullscreen, Resize Observer, etc.
+Vite est configuré avec `root: src/`, sorties dans `dist/` et assets publics dans `static/` (voir `vite.config.js`).
 
-## 📁 Structure du Projet
+## 🧭 Démarrage applicatif
+
+- `src/index.html` crée le conteneur UI et charge `src/script.js` (ou `js/main.js` selon l’entry choisie)
+- `script.js` instancie `SolarSystemEngine` (moteur 3D) et `UIManager` (interface), attend les événements `loading:*`, puis affiche l’UI
+
+## 🏗️ Architecture
 
 ```
 src/
+├── index.html                     # UI et panneaux
+├── script.js                      # Bootstrap appli (ou js/main.js)
 ├── js/
 │   ├── core/
-│   │   └── SolarSystemEngine.js    # Moteur 3D principal
-│   ├── objects/
-│   │   ├── Planet.js               # Classe planète
-│   │   ├── Sun.js                  # Classe soleil
-│   │   └── AsteroidBelt.js         # Ceintures d'astéroïdes
+│   │   └── SolarSystemEngine.js   # Scène, caméra, renderer, passes, objets, events
 │   ├── data/
-│   │   └── solarSystemData.js      # Données scientifiques
+│   │   ├── solarSystemData.js     # Données réalistes + facteurs d’échelle
+│   │   └── realisticSolarSystemData.js # Variante 100% réaliste détaillée
+│   ├── objects/
+│   │   ├── Sun.js                 # Soleil + point light + corona shader
+│   │   ├── Planet.js              # Planètes, anneaux, atmosphères, lunes
+│   │   └── AsteroidBelt.js        # Ceintures (instanced mesh / fallback)
 │   ├── ui/
-│   │   └── UIManager.js            # Gestionnaire d'interface
-│   ├── utils/
-│   │   ├── EventEmitter.js         # Système d'événements
-│   │   └── LoadingManager.js       # Gestion du chargement
-│   └── main.js                     # Point d'entrée
-├── styles/
-│   ├── main.css                    # Styles principaux
-│   └── components.css              # Composants UI
-├── images/                         # Textures des planètes
-└── index_new.html                  # Interface moderne
+│   │   └── UIManager.js           # Panneaux, sliders, recherche, plein écran
+│   └── utils/
+│       ├── EventEmitter.js        # Bus d’événements interne
+│       └── LoadingManager.js      # Suivi du chargement
+├── images/                        # Textures planètes/skybox
+└── asteroids/                     # Modèle GLB des astéroïdes
 ```
 
-## 🚀 Installation et Démarrage
+### Flux moteur (`SolarSystemEngine`)
+- Initialise scène, caméra (OrbitControls), renderer, postprocessing
+- Crée Soleil, planètes, ceintures via `data/*` et `objects/*`
+- Raycast pour survol/sélection, émet `object:selected`
+- Boucle `renderLoop`: `animate()` (orbites/rotations), `composer.render()`
 
-```bash
-# Installation des dépendances
-npm install
+### UI (`UIManager`)
+- Récupère éléments HTML (chargement, panneau latéral, sliders, recherche)
+- Relie les événements moteur (`loading:*`, `object:*`, `animation:toggled`)
+- Met à jour les infos et gère les interactions (vitesse, échelles, vues)
 
-# Démarrage du serveur de développement
-npm run dev
+## 🎮 Contrôles
 
-# Build de production
-npm run build
+- Souris: rotation (drag), zoom (molette)
+- Clic sur un objet: focus + panneau d’infos
+- Clavier: Espace (pause/lecture), R (reset), Ctrl+F (recherche), Échap (fermer)
 
-# Aperçu de la build
-npm run preview
+## 🔬 Données & échelles
+
+- `js/data/solarSystemData.js`: valeurs réalistes, textures, lunes majeures, `SCALE_FACTORS` (`realistic`, `visual`)
+- `js/data/realisticSolarSystemData.js`: dataset enrichi (vitesses, gravité, etc.) et `REALISTIC_SCALE_FACTORS`
+- Les textures sont servies depuis `src/images/*`
+
+## 📊 Kepler: données recueillies
+
+- Quand l’objet affiché est Kepler, le panneau ajoute un bouton “Voir les données recueillies” qui ouvre le site d’exploration des données KOI dans un nouvel onglet: [`koi-data-explorer.vercel.app`](https://koi-data-explorer.vercel.app/)
+- Ce bouton n’apparaît pour aucun autre objet (logique dans `updateBottomRightInfo` de `src/script.js`)
+
+## ⚙️ Scripts NPM
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}
 ```
 
-## 🎮 Utilisation
+Serveur: hôte local + réseau (voir `vite.config.js`), base `./`, sortie `dist/`.
 
-### Navigation
-- **Clic gauche + glisser** : Rotation de la caméra
-- **Molette** : Zoom avant/arrière
-- **Clic sur planète** : Sélection et informations détaillées
+## 🌐 Déploiement
 
-### Raccourcis Clavier
-- **Espace** : Pause/lecture de l'animation
-- **R** : Retour à la vue d'ensemble
-- **Ctrl+F** : Focus sur la recherche
-- **Échap** : Fermer les panneaux
+- Build: `npm run build` → `dist/`
+- Hébergement statique: Vercel/Netlify/GitHub Pages
+  - Assurez `base: './'` (déjà configuré) pour chemins relatifs
+  - Uploadez le dossier `dist/`
 
-### Contrôles Interface
-- **Vitesse d'orbite** : Contrôle la vitesse des révolutions
-- **Vitesse de rotation** : Contrôle la rotation des planètes
-- **Échelle** : Basculer entre réaliste et visuelle
-- **Vues** : Vue d'ensemble, système interne, système externe
+## 🧪 Dépannage
 
-## 🔬 Données Scientifiques
+- Écran noir: vérifiez WebGL et la console du navigateur
+- Textures manquantes: chemins `/images/*` cohérents avec `vite.config.js`
+- Modèle astéroïdes: si GLB indisponible, fallback sphères est utilisé automatiquement
+- Bouton Kepler absent: assurez-vous que Kepler est l’objet sélectionné et que les pop-ups ne sont pas bloqués
 
-Toutes les données proviennent de sources officielles :
-- **NASA JPL** - Données orbitales et physiques
-- **IAU** - Standards astronomiques
-- **Solar System Scope** - Textures haute qualité
-- **Planet Pixel Emporium** - Cartes de surface
+## ⚡ Performance
 
-### Planètes Incluses
-- ☀️ **Soleil** - Étoile centrale avec effets de corona
-- ☿️ **Mercure** - Planète la plus proche, criblée de cratères
-- ♀️ **Vénus** - Planète la plus chaude avec atmosphère dense
-- 🌍 **Terre** - Notre planète bleue avec cycle jour/nuit
-- ♂️ **Mars** - Planète rouge avec ses deux lunes
-- ♃ **Jupiter** - Géante gazeuse avec ses lunes majeures
-- ♄ **Saturne** - Planète aux anneaux spectaculaires
-- ♅ **Uranus** - Géante de glace inclinée sur le côté
-- ♆ **Neptune** - Planète la plus éloignée aux vents violents
+- Limitez `devicePixelRatio` (déjà plafonné à 2)
+- Réduisez `SCALE_FACTORS.size` si trop denses
+- Désactivez orbits/anneaux via UI si nécessaire
+- Utilisez l’instancing (déjà fait pour les astéroïdes)
 
-## 🎯 Objectifs Futurs
+## 📚 Crédits & licences
 
-Cette version sert de base pour un projet plus ambitieux :
+- Données: NASA/JPL, IAU (voir commentaires dans `data/*`)
+- Textures: Solar System Scope, Planet Pixel Emporium
+- Licence: MIT (`LICENSE`)
 
-### 🤖 Module IA d'Identification d'Exoplanètes
-- **Intégration TensorFlow.js** pour l'analyse en temps réel
-- **API NASA Exoplanet Archive** pour données réelles
-- **Algorithmes de détection** basés sur les courbes de lumière
-- **Visualisation 3D** des systèmes exoplanétaires découverts
+## 🔮 Roadmap
 
-### 📊 Tableau de Bord Scientifique
-- **Métriques en temps réel** des découvertes
-- **Graphiques interactifs** des données d'observation
-- **Comparaisons** avec notre système solaire
-- **Export des résultats** pour analyse approfondie
+- Intégration API NASA Exoplanet Archive
+- Courbes de lumière et détection (TensorFlow.js)
+- Tableaux de bord avancés et comparaisons
 
-## 🤝 Contribution
+—
 
-Ce projet est conçu pour être extensible. Les contributions sont les bienvenues :
-
-1. **Fork** le projet
-2. **Créer** une branche feature (`git checkout -b feature/amazing-feature`)
-3. **Commit** les changements (`git commit -m 'Add amazing feature'`)
-4. **Push** vers la branche (`git push origin feature/amazing-feature`)
-5. **Ouvrir** une Pull Request
-
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 🙏 Remerciements
-
-- **NASA** pour les données et textures
-- **THREE.js Community** pour l'excellent framework 3D
-- **Solar System Scope** pour les textures planétaires
-- **Communauté open source** pour l'inspiration
-
----
-
-**Développé avec ❤️ pour l'exploration spatiale et l'éducation scientifique**
+Fait pour l’exploration scientifique et l’éducation, avec THREE.js et passion.

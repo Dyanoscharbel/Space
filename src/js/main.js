@@ -1,10 +1,12 @@
 import { SolarSystemEngine } from './core/SolarSystemEngine.js';
 import { UIManager } from './ui/UIManager.js';
+import { RouteHandler } from './utils/RouteHandler.js';
 
 class SolarSystemApp {
   constructor() {
     this.engine = null;
     this.ui = null;
+    this.routeHandler = null;
     this.isInitialized = false;
   }
 
@@ -18,7 +20,7 @@ class SolarSystemApp {
         throw new Error('Canvas container not found');
       }
 
-      // Initialize 3D engine
+      // Initialize 3D engine FIRST
       console.log('🚀 Starting 3D engine...');
       this.engine = new SolarSystemEngine(container);
       
@@ -28,6 +30,20 @@ class SolarSystemApp {
       
       // Wait for engine initialization
       await this.waitForEngineReady();
+      
+      // NOW Initialize route handler to detect URL
+      console.log('🛣️ Setting up route handler...');
+      this.routeHandler = new RouteHandler();
+      this.routeHandler.init();
+      
+      // Check if we're loading a Kepler system
+      const currentRoute = this.routeHandler.getCurrentRoute();
+      
+      if (currentRoute.type === 'kepler-system') {
+        console.log(`🪐 Mode Exoplanète: ${currentRoute.keplerName}`);
+        console.log(`   Le Soleil sera automatiquement mis à jour avec les données de l'étoile`);
+        // Le RouteHandler va appeler updateSolarSystemStar() automatiquement
+      }
       
       console.log('✅ Solar System Explorer ready!');
       this.isInitialized = true;
@@ -95,6 +111,10 @@ class SolarSystemApp {
 
   getUI() {
     return this.ui;
+  }
+
+  getRouteHandler() {
+    return this.routeHandler;
   }
 
   isReady() {

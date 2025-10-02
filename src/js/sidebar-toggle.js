@@ -1,153 +1,129 @@
 /**
- * Sidebar Toggle Functionality
- * Gère l'affichage/masquage de la sidebar avec bouton toggle
+ * Sidebar Toggle Functionality - Version Space_v1
+ * Gère l'affichage/masquage de la sidebar avec bouton hamburger flottant
  */
 
-class SidebarToggle {
-  constructor() {
-    this.sidebar = null;
-    this.toggleBtn = null;
-    this.canvas = null;
-    this.isVisible = true; // Par défaut visible
-    
-    this.init();
+// Sidebar click-toggle with hamburger button and CSS overrides injected at runtime
+function setupSidebarToggle() {
+  console.log('🔧 setupSidebarToggle() appelée');
+  const panel = document.getElementById('settings-panel');
+  let toggle = document.getElementById('settings-toggle');
+  console.log('📋 Panel trouvé:', !!panel, 'Toggle trouvé:', !!toggle);
+  if (!panel) {
+    console.error('❌ Élément settings-panel non trouvé !');
+    return;
   }
-  
-  init() {
-    // Attendre que le DOM soit chargé
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setup());
-    } else {
-      this.setup();
+
+  // Inject CSS overrides to disable hover-open behavior and enforce open class
+  if (!document.getElementById('runtime-overrides')) {
+    const style = document.createElement('style');
+    style.id = 'runtime-overrides';
+    style.textContent = `
+      .settings-panel:not(.open) { left: -300px !important; }
+      .settings-panel.open { left: 0 !important; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Always create an additional floating hamburger to guarantee visibility
+  const createFloating = () => {
+    let btn = document.getElementById('settings-toggle-float');
+    if (btn) return btn;
+    btn = document.createElement('button');
+    btn.id = 'settings-toggle-float';
+    btn.type = 'button';
+    btn.title = 'Ouvrir/fermer le panneau (H)';
+    btn.innerHTML = '<span style="font-size:20px; line-height:1">☰</span>';
+    Object.assign(btn.style, {
+      position: 'fixed',
+      left: '12px',
+      top: '16px',
+      width: '46px',
+      height: '46px',
+      background: 'linear-gradient(145deg, rgba(0, 20, 40, 0.98) 0%, rgba(0, 40, 80, 0.95) 100%)',
+      border: '1px solid #00ffff',
+      borderRadius: '12px',
+      color: '#00ffff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      boxShadow: '0 0 18px rgba(0,255,255,0.35)',
+      zIndex: '9999'
+    });
+    document.body.appendChild(btn);
+    return btn;
+  };
+
+  // Reposition original as fixed hamburger (if present)
+  if (toggle) {
+    // Hide the original toggle inside the sidebar to avoid duplicate hamburgers
+    toggle.style.display = 'none';
+  }
+
+  // Create floating guaranteed-visible button
+  const floatBtn = createFloating();
+  console.log('🍔 Bouton hamburger créé:', !!floatBtn);
+
+  // Start closed
+  panel.classList.remove('open');
+  // Ensure initial visibility: hamburger visible when panel is closed
+  floatBtn.style.display = 'flex';
+  console.log('🎯 État initial: sidebar fermée, bouton visible');
+
+  const setUIByPanelState = () => {
+    const isOpen = panel.classList.contains('open');
+    floatBtn.style.display = isOpen ? 'none' : 'flex';
+  };
+
+  const togglePanel = () => {
+    console.log('🔄 Toggle panel appelé');
+    panel.classList.toggle('open');
+    const isOpen = panel.classList.contains('open');
+    console.log('📱 Nouvel état:', isOpen ? 'ouvert' : 'fermé');
+    setUIByPanelState();
+  };
+
+  // Click handlers for both buttons
+  if (toggle) toggle.addEventListener('click', togglePanel);
+  floatBtn.addEventListener('click', togglePanel);
+
+  // Keyboard fallback: press "H" to toggle the panel
+  window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'h') {
+      panel.classList.toggle('open');
+      setUIByPanelState();
     }
-  }
-  
-  setup() {
-    // Récupérer les éléments
-    this.sidebar = document.getElementById('hud-left-panel');
-    this.toggleBtn = document.getElementById('sidebar-toggle');
-    this.canvas = document.getElementById('canvas-container');
-    
-    if (!this.sidebar || !this.toggleBtn || !this.canvas) {
-      console.warn('SidebarToggle: Éléments requis non trouvés');
-      return;
+  });
+
+  // Close on outside click: clicking outside the panel closes it and shows hamburger
+  document.addEventListener('click', (e) => {
+    const isOpen = panel.classList.contains('open');
+    if (!isOpen) return;
+    const clickInsidePanel = panel.contains(e.target);
+    if (!clickInsidePanel) {
+      panel.classList.remove('open');
+      setUIByPanelState();
     }
-    
-    // Configuration initiale
-    this.setupInitialState();
-    
-    // Événements
-    this.setupEventListeners();
-    
-    console.log('✅ SidebarToggle initialisé');
-  }
-  
-  setupInitialState() {
-    // Commencer avec la sidebar visible
-    this.sidebar.classList.remove('hidden');
-    this.toggleBtn.classList.add('hidden');
-    this.isVisible = true;
-  }
-  
-  setupEventListeners() {
-    // Clic sur le bouton toggle
-    this.toggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.showSidebar();
-    });
-    
-    // Clic sur le canvas pour masquer la sidebar
-    this.canvas.addEventListener('click', (e) => {
-      if (this.isVisible) {
-        this.hideSidebar();
-      }
-    });
-    
-    // Empêcher la propagation des clics dans la sidebar
-    this.sidebar.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-    
-    // Raccourci clavier (Échap pour masquer)
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.isVisible) {
-        this.hideSidebar();
-      }
-    });
-    
-    // Raccourci clavier (Tab pour afficher)
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Tab' && !this.isVisible) {
-        e.preventDefault();
-        this.showSidebar();
-      }
-    });
-  }
-  
-  showSidebar() {
-    if (this.isVisible) return;
-    
-    // Afficher la sidebar
-    this.sidebar.classList.remove('hidden');
-    this.sidebar.classList.add('visible');
-    
-    // Masquer le bouton toggle
-    this.toggleBtn.classList.add('hidden');
-    
-    this.isVisible = true;
-    
-    // Animation d'entrée
-    this.sidebar.style.animation = 'slideInFromLeft 0.3s ease-out';
-    
-    console.log('🔓 Sidebar affichée');
-  }
-  
-  hideSidebar() {
-    if (!this.isVisible) return;
-    
-    // Masquer la sidebar
-    this.sidebar.classList.add('hidden');
-    this.sidebar.classList.remove('visible');
-    
-    // Afficher le bouton toggle après un délai
-    setTimeout(() => {
-      this.toggleBtn.classList.remove('hidden');
-    }, 200);
-    
-    this.isVisible = false;
-    
-    console.log('🔒 Sidebar masquée');
-  }
-  
-  toggle() {
-    if (this.isVisible) {
-      this.hideSidebar();
-    } else {
-      this.showSidebar();
-    }
-  }
-  
-  // Méthodes publiques pour contrôle externe
-  show() {
-    this.showSidebar();
-  }
-  
-  hide() {
-    this.hideSidebar();
-  }
-  
-  isOpen() {
-    return this.isVisible;
-  }
+  });
+  // Prevent inside clicks from bubbling to document and closing the panel
+  panel.addEventListener('click', (e) => e.stopPropagation());
+  floatBtn.addEventListener('click', (e) => e.stopPropagation());
 }
 
 // Auto-initialisation
-const sidebarToggle = new SidebarToggle();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupSidebarToggle);
+} else {
+  setupSidebarToggle();
+}
 
 // Export pour utilisation externe
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = SidebarToggle;
+  module.exports = { setupSidebarToggle };
 }
 
 // Global pour accès depuis la console
-window.sidebarToggle = sidebarToggle;
+window.setupSidebarToggle = setupSidebarToggle;
+
+console.log("✅ Sidebar Toggle (Space_v1 style) initialisé");

@@ -5,8 +5,12 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import PlanetMarkerSystem from './js/planet-markers.js';
+import { RouteHandler } from './js/utils/RouteHandler.js';
+import { ExoplanetGenerator } from './js/generators/ExoplanetGenerator.js';
+import { ExoplanetSceneManager } from './js/generators/ExoplanetSceneManager.js';
 
 import bgTexture1 from '/images/1.jpg';
 import bgTexture2 from '/images/2.jpg';
@@ -78,6 +82,537 @@ function initializeHUD() {
     if (resetBtn) {
         resetBtn.addEventListener('click', resetView);
     }
+
+// Fonction pour mettre à jour l'intensité du soleil
+function updateSunIntensity(intensity) {
+  if (typeof sunMat !== 'undefined' && sunMat) {
+    sunMat.emissiveIntensity = intensity;
+    console.log('☀️ Intensité du soleil mise à jour:', intensity);
+    return true;
+  }
+  return false;
+}
+
+// Ensure Sun intensity buttons are present in the sidebar and wired
+function ensureSunIntensityControl() {
+  console.log('☀️ ensureSunIntensityControl() démarrée');
+  const panel = document.querySelector('#settings-panel .settings-body');
+  console.log('📋 Panel .settings-body trouvé:', !!panel);
+  if (!panel) {
+    console.error('❌ Panel .settings-body non trouvé !');
+    return;
+  }
+  
+  // Supprimer l'ancien contrôle s'il existe
+  const existingControl = document.getElementById('sun-intensity-control');
+  if (existingControl) {
+    existingControl.remove();
+    console.log('🗑️ Ancien contrôle d\'intensité du soleil supprimé');
+  }
+
+  const group = document.createElement('div');
+  group.className = 'setting-group';
+  group.id = 'sun-intensity-control';
+  group.innerHTML = `
+    <label class="setting-label">INTENSITÉ DU SOLEIL</label>
+    <div class="setting-buttons" style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;">
+      <button class="intensity-btn" data-value="0.1" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">10%</button>
+      <button class="intensity-btn" data-value="0.25" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">25%</button>
+      <button class="intensity-btn" data-value="0.5" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">50%</button>
+      <button class="intensity-btn" data-value="0.75" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">75%</button>
+      <button class="intensity-btn" data-value="1.0" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">100%</button>
+    </div>
+    <div class="current-intensity" style="margin-top: 8px; font-size: 12px; color: #888; text-align: center;">
+      Intensité actuelle: <span id="current-intensity-value">50%</span>
+    </div>
+  `;
+  panel.appendChild(group);
+  console.log('✅ Contrôle intensité soleil (boutons) ajouté au DOM');
+
+  // Load persisted value or use current settings
+  let currentIntensity = settings.sunIntensity ?? 0.5;
+  try {
+    const saved = localStorage.getItem('sunIntensity');
+    if (saved) currentIntensity = parseFloat(saved);
+  } catch {}
+  
+  // Mettre à jour l'affichage de l'intensité actuelle
+  const currentValueEl = document.getElementById('current-intensity-value');
+  if (currentValueEl) {
+    currentValueEl.textContent = Math.round(currentIntensity * 100) + '%';
+  }
+  
+  // Mettre à jour le matériau du soleil
+    if (typeof sunMat !== 'undefined' && sunMat) {
+    sunMat.emissiveIntensity = currentIntensity;
+  }
+
+  // Ajouter les événements aux boutons
+  const buttons = group.querySelectorAll('.intensity-btn');
+  buttons.forEach(button => {
+    const value = parseFloat(button.dataset.value);
+    
+    // Marquer le bouton actuel comme actif
+    if (Math.abs(value - currentIntensity) < 0.01) {
+      button.style.background = '#4CAF50';
+      button.style.borderColor = '#4CAF50';
+    }
+    
+    button.addEventListener('click', (e) => {
+      const intensity = parseFloat(e.target.dataset.value);
+      console.log('☀️ Intensité soleil changée:', intensity, '(' + Math.round(intensity * 100) + '%)');
+      
+      // Mettre à jour le matériau du soleil
+      const updated = updateSunIntensity(intensity);
+      if (!updated) {
+      console.warn('⚠️ sunMat non disponible, valeur stockée dans settings');
+    }
+      
+      // Sauvegarder dans settings
+      settings.sunIntensity = intensity;
+      try { localStorage.setItem('sunIntensity', String(intensity)); } catch {}
+      
+      // Mettre à jour l'affichage
+      if (currentValueEl) {
+        currentValueEl.textContent = Math.round(intensity * 100) + '%';
+      }
+      
+      // Mettre à jour l'apparence des boutons
+      buttons.forEach(btn => {
+        btn.style.background = '#222';
+        btn.style.borderColor = '#444';
+      });
+      e.target.style.background = '#4CAF50';
+      e.target.style.borderColor = '#4CAF50';
+    });
+    
+    // Effet hover
+    button.addEventListener('mouseenter', (e) => {
+      if (e.target.style.background !== 'rgb(76, 175, 80)') {
+        e.target.style.background = '#333';
+        e.target.style.borderColor = '#666';
+      }
+    });
+    
+    button.addEventListener('mouseleave', (e) => {
+      if (e.target.style.background !== 'rgb(76, 175, 80)') {
+        e.target.style.background = '#222';
+        e.target.style.borderColor = '#444';
+      }
+    });
+  });
+  
+  console.log('✅ Boutons d\'intensité du soleil configurés');
+}
+
+// Ajouter le bouton de navigation (Kepler ou retour système solaire) dans la sidebar
+function addKeplerFollowButton() {
+  const panel = document.querySelector('#settings-panel .settings-body');
+  if (!panel) {
+    console.error('❌ Panel .settings-body non trouvé pour le bouton de navigation');
+    return;
+  }
+  
+  // Détecter si on est dans un système Kepler
+  const isInKeplerSystem = window.currentExoplanets && window.currentExoplanets.length > 0;
+  
+  // Supprimer le bouton existant s'il y en a un
+  const existingGroup = document.getElementById('kepler-follow-control');
+  if (existingGroup) {
+    existingGroup.remove();
+  }
+
+  const group = document.createElement('div');
+  group.className = 'setting-group';
+  group.id = 'kepler-follow-control';
+  
+  if (isInKeplerSystem) {
+    // Mode Kepler : bouton pour revenir au système solaire
+    group.innerHTML = `
+      <label class="setting-label">NAVIGATION</label>
+      <div class="kepler-controls" style="margin-top: 10px;">
+        <button id="kepler-follow-button" class="kepler-follow-btn" style="
+          width: 100%;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, #FF9800, #F57C00);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-family: 'Rajdhani', sans-serif;
+          font-weight: 600;
+          font-size: 14px;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        ">
+          <span style="font-size: 16px;">🌍</span>
+          <span>Revenir au système solaire</span>
+        </button>
+      </div>
+    `;
+    console.log('✅ Bouton "Revenir au système solaire" ajouté au DOM');
+  } else {
+    // Mode système solaire : bouton pour suivre Kepler
+    group.innerHTML = `
+      <label class="setting-label">SATELLITE KEPLER</label>
+      <div class="kepler-controls" style="margin-top: 10px;">
+        <button id="kepler-follow-button" class="kepler-follow-btn" style="
+          width: 100%;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, #2196F3, #1976D2);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-family: 'Rajdhani', sans-serif;
+          font-weight: 600;
+          font-size: 14px;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        ">
+          <span style="font-size: 16px;">🛰️</span>
+          <span>Suivre le satellite Kepler</span>
+        </button>
+      </div>
+    `;
+    console.log('✅ Bouton "Suivre le satellite Kepler" ajouté au DOM');
+  }
+  
+  panel.appendChild(group);
+
+  const followButton = document.getElementById('kepler-follow-button');
+  if (followButton) {
+    // Effet hover adaptatif
+    const hoverColor = isInKeplerSystem ? 'rgba(255, 152, 0, 0.4)' : 'rgba(33, 150, 243, 0.4)';
+    const normalColor = isInKeplerSystem ? 'rgba(255, 152, 0, 0.3)' : 'rgba(33, 150, 243, 0.3)';
+    
+    followButton.addEventListener('mouseenter', () => {
+      followButton.style.transform = 'translateY(-2px)';
+      followButton.style.boxShadow = `0 4px 12px ${hoverColor}`;
+    });
+    
+    followButton.addEventListener('mouseleave', () => {
+      followButton.style.transform = 'translateY(0)';
+      followButton.style.boxShadow = `0 2px 8px ${normalColor}`;
+    });
+    
+    // Action selon le mode
+    followButton.addEventListener('click', () => {
+      if (isInKeplerSystem) {
+        // Retour au système solaire
+        console.log('🌍 Retour au système solaire demandé');
+        
+        // Feedback visuel
+        followButton.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        followButton.innerHTML = `
+          <span style="font-size: 16px;">✅</span>
+          <span>Retour en cours...</span>
+        `;
+        
+        // Appeler la fonction de retour
+        setTimeout(() => {
+          if (window.solarSystemScript && window.solarSystemScript.routeHandler) {
+            window.solarSystemScript.routeHandler.navigateToSolarSystem();
+          } else {
+            console.warn('⚠️ RouteHandler non disponible, rechargement de la page');
+            window.location.href = '/';
+          }
+        }, 500);
+        
+      } else {
+        // Suivi de Kepler (mode original)
+        console.log('🛰️ Suivi de Kepler activé');
+        
+        // Centrer sur Kepler
+        centerOnPlanet('kepler', 'satellite');
+        
+        // Afficher les informations de Kepler
+        showPlanetInfo('Kepler', 'satellite');
+        
+        // Feedback visuel
+        followButton.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        followButton.innerHTML = `
+          <span style="font-size: 16px;">✅</span>
+          <span>Kepler suivi</span>
+        `;
+        
+        // Remettre le bouton normal après 2 secondes
+        setTimeout(() => {
+          followButton.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+          followButton.innerHTML = `
+            <span style="font-size: 16px;">🛰️</span>
+            <span>Suivre le satellite Kepler</span>
+          `;
+        }, 2000);
+      }
+    });
+    
+    console.log(`✅ Événements du bouton ${isInKeplerSystem ? 'retour système solaire' : 'suivi Kepler'} configurés`);
+  }
+}
+
+// Ajouter le bouton KOI Data Explorer dans la sidebar
+function addKOIDataExplorerButton() {
+  console.log('🔬 Ajout du bouton KOI Data Explorer');
+  const panel = document.querySelector('#settings-panel .settings-body');
+  if (!panel) {
+    console.error('❌ Panel .settings-body non trouvé pour le bouton KOI Data Explorer');
+    return;
+  }
+  
+  // Vérifier si le bouton existe déjà
+  if (document.getElementById('koi-data-explorer-button')) {
+    console.log('🔬 Bouton KOI Data Explorer déjà présent');
+    return;
+  }
+
+  const group = document.createElement('div');
+  group.className = 'setting-group';
+  group.id = 'koi-data-explorer-control';
+  group.innerHTML = `
+    <label class="setting-label">EXPLORATION DES DONNÉES</label>
+    <div class="koi-controls" style="margin-top: 10px;">
+      <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      ">
+        <span style="font-size: 16px;">🔬</span>
+        <span>KOI Data Explorer</span>
+      </button>
+    </div>
+  `;
+  panel.appendChild(group);
+  console.log('✅ Bouton KOI Data Explorer ajouté au DOM');
+
+  const explorerButton = document.getElementById('koi-data-explorer-button');
+  if (explorerButton) {
+    // Effet hover
+    explorerButton.addEventListener('mouseenter', () => {
+      explorerButton.style.transform = 'translateY(-2px)';
+      explorerButton.style.boxShadow = '0 4px 12px rgba(156, 39, 176, 0.4)';
+    });
+    
+    explorerButton.addEventListener('mouseleave', () => {
+      explorerButton.style.transform = 'translateY(0)';
+      explorerButton.style.boxShadow = '0 2px 8px rgba(156, 39, 176, 0.3)';
+    });
+    
+    // Action d'ouverture
+    explorerButton.addEventListener('click', () => {
+      console.log('🔬 Ouverture de KOI Data Explorer');
+      
+      // Ouvrir le lien dans un nouvel onglet
+      window.open('https://koi-data-explorer.vercel.app', '_blank');
+      
+      // Feedback visuel
+      explorerButton.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+      explorerButton.innerHTML = `
+        <span style="font-size: 16px;">✅</span>
+        <span>Ouvert dans un nouvel onglet</span>
+      `;
+      
+      // Remettre le bouton normal après 2 secondes
+      setTimeout(() => {
+        explorerButton.style.background = 'linear-gradient(135deg, #9C27B0, #7B1FA2)';
+        explorerButton.innerHTML = `
+          <span style="font-size: 16px;">🔬</span>
+          <span>KOI Data Explorer</span>
+        `;
+      }, 2000);
+    });
+    
+    console.log('✅ Événements du bouton KOI Data Explorer configurés');
+  }
+}
+
+// Hide the AFFICHAGE toggle group (Orbits/Labels/Lunes)
+function hideDisplayToggles() {
+  const orbitsBtn = document.getElementById('show-orbits-btn');
+  const labelsBtn = document.getElementById('show-labels');
+  const moonsBtn = document.getElementById('show-moons');
+  const any = orbitsBtn || labelsBtn || moonsBtn;
+  if (any) {
+    const group = any.closest('.setting-group');
+    if (group) group.style.display = 'none';
+    if (orbitsBtn) orbitsBtn.style.display = 'none';
+    if (labelsBtn) labelsBtn.style.display = 'none';
+    if (moonsBtn) moonsBtn.style.display = 'none';
+  }
+}
+
+// Add an "ASTRE" section in the sidebar that opens a popup to search and center on an object
+function ensureAstreSearchControl() {
+  const panel = document.querySelector('#settings-panel .settings-body');
+  if (!panel) return;
+  
+  // Vérifier si on est dans un système Kepler - si oui, cacher/retirer le contrôle
+  const isInKeplerSystem = window.currentExoplanets && window.currentExoplanets.length > 0;
+  
+  const existingControl = document.getElementById('astre-search-btn')?.closest('.setting-group');
+  
+  if (isInKeplerSystem) {
+    // Dans un système Kepler : cacher le contrôle s'il existe
+    if (existingControl) {
+      existingControl.style.display = 'none';
+      console.log('🙈 Contrôle ASTRE caché (système Kepler actif)');
+    }
+    return;
+  } else {
+    // Dans le système solaire : afficher le contrôle
+    if (existingControl) {
+      existingControl.style.display = 'block';
+      console.log('👁️ Contrôle ASTRE affiché (système solaire actif)');
+      return;
+    }
+  }
+  
+  if (document.getElementById('astre-search-btn')) return; // already added
+
+  const group = document.createElement('div');
+  group.className = 'setting-group';
+  group.innerHTML = `
+    <label class="setting-label">ASTRE</label>
+    <div class="setting-toggles">
+      <button class="setting-toggle-btn" id="astre-search-btn">RECHERCHER UN ASTRE</button>
+    </div>
+  `;
+  panel.appendChild(group);
+
+  // Create modal only once
+  if (!document.getElementById('astre-modal')) {
+    const modal = document.createElement('div');
+    modal.id = 'astre-modal';
+    Object.assign(modal.style, {
+      position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh',
+      background: 'rgba(0,0,0,0.5)', display: 'none', alignItems: 'center', justifyContent: 'center', zIndex: '100002'
+    });
+    modal.innerHTML = `
+      <div id="astre-modal-card" style="min-width: 340px; max-width: 520px; background: linear-gradient(145deg, rgba(0, 20, 40, 0.98) 0%, rgba(0, 40, 80, 0.95) 100%); border:1px solid #00ffff; border-radius:12px; padding:16px; box-shadow: 0 0 25px rgba(0,255,255,0.35);">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div style="font-family:'Rajdhani',sans-serif; font-weight:700; color:#00ffff;">Rechercher un astre</div>
+          <button id="astre-modal-close" title="Fermer" style="margin-left:auto; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,255,255,0.3); background:rgba(0,128,255,0.08); color:#00ffff; border-radius:6px; cursor:pointer;">×</button>
+        </div>
+        <input id="astre-search-input" type="text" placeholder="Nom d'astre (ex: Mars, Phobos, Venus, Soleil)" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(0,255,255,0.3); background:rgba(0,20,40,0.6); color:#00ffff; outline:none;" />
+        <div id="astre-search-results" style="margin-top:10px; max-height:260px; overflow:auto;"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const closeModal = () => { modal.style.display = 'none'; };
+    modal.addEventListener('click', (e) => { if (e.target.id === 'astre-modal') closeModal(); });
+    modal.querySelector('#astre-modal-close').addEventListener('click', closeModal);
+
+    const buildCandidates = () => {
+      const items = [];
+      items.push({name:'Soleil', key:'sun', type:'sun'});
+      const planets = [
+        {name:'Mercury', key:'mercury'}, {name:'Venus', key:'venus'}, {name:'Earth', key:'earth'},
+        {name:'Mars', key:'mars'}, {name:'Jupiter', key:'jupiter'}, {name:'Saturn', key:'saturn'},
+        {name:'Uranus', key:'uranus'}, {name:'Neptune', key:'neptune'}, {name:'Pluto', key:'pluto'}
+      ];
+      planets.forEach(p=>items.push({name:p.name, key:p.key, type:'planet'}));
+      if (earth?.moons?.[0]?.mesh) items.push({name:'Lune', key:'moon', type:'moon'});
+      // Earth satellites (now handled as moons)
+      if (earth?.moons) {
+        earth.moons.forEach((moon, i) => {
+          if (moon.name && moon.name !== 'moon') {
+            items.push({name:moon.name, key:moon.name.toLowerCase(), type:'satellite'});
+          }
+        });
+      }
+      
+      // Earth artificial satellites
+      if (Array.isArray(earthSatellites)) {
+        earthSatellites.forEach(satellite => {
+          if (satellite?.name) {
+            items.push({name:satellite.name, key:satellite.name.toLowerCase(), type:'satellite'});
+          }
+        });
+      }
+      if (jupiter?.moons?.length) {
+        const jNames = ['Io','Europa','Ganymède','Callisto'];
+        jNames.forEach((n,i)=>{ if (jupiter.moons[i]?.mesh) items.push({name:n, key:n.toLowerCase(), type:'moon'}); });
+      }
+      if (Array.isArray(marsMoons)) {
+        marsMoons.forEach(m=>{ if (m?.name) items.push({name:m.name, key:(m.name||'').toLowerCase(), type:'moon'}); });
+      }
+      return items;
+    };
+
+    const resultsEl = modal.querySelector('#astre-search-results');
+    const inputEl = modal.querySelector('#astre-search-input');
+
+    const renderResults = (q) => {
+      const query = (q||'').toLowerCase().trim();
+      const list = buildCandidates().filter(it => it.name.toLowerCase().includes(query));
+      if (!list.length) {
+        resultsEl.innerHTML = `<div style="padding:10px; color:#80c0ff; font-family:'Rajdhani',sans-serif;">Aucun résultat</div>`;
+        return;
+      }
+      resultsEl.innerHTML = list.map(it => `
+        <div class="astre-result" data-key="${it.key}" data-type="${it.type}" data-name="${it.name}"
+             style="padding:10px 12px; margin-bottom:6px; background:rgba(0,255,255,0.05); border-left:2px solid rgba(0,255,255,0.3); border-radius:6px; cursor:pointer;">
+          <div style="font-weight:700; color:#00ffff; font-family:'Rajdhani',sans-serif;">${it.name}</div>
+          <div style="font-size:0.8rem; color:#0080ff; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">${it.type}</div>
+        </div>
+      `).join('');
+      resultsEl.querySelectorAll('.astre-result').forEach(el => {
+        el.addEventListener('click', () => {
+          const name = el.getAttribute('data-name');
+          const type = el.getAttribute('data-type');
+          const objType = type === 'sun' ? 'sun' : (type || 'planet');
+          centerOnPlanet(objType === 'sun' ? 'sun' : name, objType);
+          // Update info card content
+          try { showPlanetInfo(name, objType); } catch (e) { console.warn('showPlanetInfo failed', e); }
+          setScaleCardTitle(name);
+          modal.style.display = 'none';
+        });
+      });
+    };
+
+    inputEl.addEventListener('input', (e)=> renderResults(e.target.value));
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const first = resultsEl.querySelector('.astre-result');
+        if (first) first.click();
+      }
+    });
+
+    renderResults('');
+
+    ensureAstreSearchControl.openModal = () => {
+      modal.style.display = 'flex';
+      setTimeout(() => inputEl?.focus(), 0);
+      renderResults(inputEl.value);
+    };
+  }
+
+  const openBtn = group.querySelector('#astre-search-btn');
+  openBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); ensureAstreSearchControl.openModal && ensureAstreSearchControl.openModal(); });
+}
+
 
     // Close info panel
     const closeInfoBtn = document.getElementById('close-info');
@@ -159,42 +694,110 @@ function initializeHUD() {
     // Settings panel is now hover-based, no click needed
     console.log("✅ Settings panel configured for hover interaction");
 
+    // Sidebar: force click-toggle with hamburger (auto-initialized by sidebar-toggle.js)
+
     // Settings sliders
     const orbitSpeedSetting = document.getElementById('orbit-speed-setting');
     const rotationSpeedSetting = document.getElementById('rotation-speed-setting');
     const animationSpeedSetting = document.getElementById('animation-speed-setting');
 
     if (orbitSpeedSetting) {
-        orbitSpeedSetting.addEventListener('input', (e) => {
-            settings.accelerationOrbit = parseFloat(e.target.value);
-            document.getElementById('orbit-speed-value').textContent = e.target.value + 'x';
+        console.log('🎚️ Slider VITESSE ORBITALE trouvé:', orbitSpeedSetting);
+        console.log('🎚️ Style du slider:', window.getComputedStyle(orbitSpeedSetting).display);
+        console.log('🎚️ Pointer events:', window.getComputedStyle(orbitSpeedSetting).pointerEvents);
+        
+        // Range: 0.1x to 5x with 0.1 step
+        orbitSpeedSetting.min = '0.1';
+        orbitSpeedSetting.max = '5';
+        orbitSpeedSetting.step = '0.1';
+        // Load persisted value
+        let initial = '1.0';
+        try {
+            const saved = localStorage.getItem('orbitSpeed');
+            if (saved) initial = saved;
+        } catch {}
+        if (!orbitSpeedSetting.dataset.init) {
+            orbitSpeedSetting.value = initial;
+            const orbitVal = document.getElementById('orbit-speed-value');
+            if (orbitVal) orbitVal.textContent = Number(initial).toFixed(1) + 'x';
+            settings.accelerationOrbit = parseFloat(initial);
+            orbitSpeedSetting.dataset.init = '1';
+        }
+        // Test de tous les événements possibles
+        ['input', 'change', 'mousedown', 'click'].forEach(eventType => {
+            orbitSpeedSetting.addEventListener(eventType, (e) => {
+                console.log(`🎚️ Événement ${eventType} détecté sur slider vitesse orbitale`);
+                if (eventType === 'input' || eventType === 'change') {
+                    const v = parseFloat(e.target.value);
+                    settings.accelerationOrbit = v;
+                    const orbitVal = document.getElementById('orbit-speed-value');
+                    if (orbitVal) orbitVal.textContent = Number(v).toFixed(1) + 'x';
+                    console.log('🚀 Vitesse orbitale changée:', v, 'settings.accelerationOrbit:', settings.accelerationOrbit);
+                    try { localStorage.setItem('orbitSpeed', String(v)); } catch {}
+                }
+            });
         });
     }
 
+    // Hide orbit speed control from sidebar
+    if (orbitSpeedSetting) {
+        const grp = orbitSpeedSetting.closest('.setting-group');
+        if (grp) grp.style.display = 'none';
+    }
+
+    // Hide rotation speed control from sidebar
     if (rotationSpeedSetting) {
-        rotationSpeedSetting.addEventListener('input', (e) => {
-            settings.acceleration = parseFloat(e.target.value);
-            document.getElementById('rotation-speed-value').textContent = e.target.value + 'x';
-        });
+        const grp = rotationSpeedSetting.closest('.setting-group');
+        if (grp) grp.style.display = 'none';
     }
 
+    // Hide animation speed control from sidebar
     if (animationSpeedSetting) {
-        animationSpeedSetting.addEventListener('input', (e) => {
-            // Cette valeur pourra être utilisée pour d'autres animations
-            document.getElementById('animation-speed-value').textContent = e.target.value + 'x';
-        });
+        const grp = animationSpeedSetting.closest('.setting-group');
+        if (grp) grp.style.display = 'none';
     }
 
     // Scale factor setting (en UA directes)
+    // Hide NASA scale control from sidebar
     const scaleFactorSetting = document.getElementById('scale-factor-setting');
     if (scaleFactorSetting) {
-        scaleFactorSetting.addEventListener('input', (e) => {
-            const uaPerUnit = parseFloat(e.target.value);
-            SCALE_FACTOR = AU_IN_KM * uaPerUnit;
-            document.getElementById('scale-factor-value').textContent = `${uaPerUnit} UA/unité`;
-            console.log('📏 ÉCHELLE NASA: 1 unité =', uaPerUnit, 'UA exactes');
-        });
+        const grp = scaleFactorSetting.closest('.setting-group');
+        if (grp) grp.style.display = 'none';
     }
+
+    // Inject Sun intensity control in sidebar (petit délai pour s'assurer que sidebar est prête)
+    setTimeout(() => {
+        console.log('🔧 Appel de ensureSunIntensityControl()');
+        ensureSunIntensityControl();
+        console.log('🔧 ensureSunIntensityControl() terminé');
+        
+        // Vérification supplémentaire après un délai
+        setTimeout(() => {
+          const slider = document.getElementById('sun-intensity-setting');
+          if (!slider) {
+            console.error('❌ Jauge d\'intensité du soleil non créée, tentative de recréation...');
+            ensureSunIntensityControl();
+          } else {
+            console.log('✅ Jauge d\'intensité du soleil confirmée dans le DOM');
+          }
+        }, 500);
+        
+        // Ajouter le bouton de suivi de Kepler
+        addKeplerFollowButton();
+        
+        // Ajouter le bouton KOI Data Explorer
+        addKOIDataExplorerButton();
+        // Hide AFFICHAGE toggles group (Orbits / Labels / Lunes)
+        hideDisplayToggles();
+        // Add ASTRE search section with popup
+        ensureAstreSearchControl();
+        // Ensure bottom-right info panel exists
+        ensureBottomRightInfoPanel();
+        // Ensure top-right distance HUD exists
+        ensureDistanceHUD();
+        // Setup header with ASTRE title and toggle
+        setupScaleCardHeader();
+    }, 100); // Délai très court de 100ms
 
     // Settings toggle buttons
     const showLabelsBtn = document.getElementById('show-labels');
@@ -235,6 +838,415 @@ function initializeHUD() {
 
     console.log("✅ HUD Interface initialized");
 }
+
+// Ensure a bottom-right info panel exists as a standalone element
+function ensureBottomRightInfoPanel() {
+  console.log("📋 ensureBottomRightInfoPanel() appelée");
+  
+  // Create a standalone container since scale-display is hidden
+  let scaleBox = document.getElementById('br-panel-container');
+  if (!scaleBox) {
+    scaleBox = document.createElement('div');
+    scaleBox.id = 'br-panel-container';
+    Object.assign(scaleBox.style, {
+      position: 'fixed',
+      bottom: '20px',
+      right: '20px',
+      width: '280px',
+      background: 'linear-gradient(145deg, rgba(0, 20, 40, 0.95) 0%, rgba(0, 40, 80, 0.9) 100%)',
+      border: '1px solid #00ffff',
+      borderRadius: '12px',
+      backdropFilter: 'blur(20px)',
+      boxShadow: '0 0 25px rgba(0, 255, 255, 0.3)',
+      zIndex: '1000',
+      fontFamily: 'Rajdhani, sans-serif'
+    });
+    document.body.appendChild(scaleBox);
+  }
+
+  let container = document.getElementById('br-info');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'br-info';
+    container.style.marginTop = '0';
+    container.style.borderTop = 'none';
+    container.style.padding = '12px 15px';
+    container.style.position = 'relative';
+    container.style.zIndex = '100000';
+    container.style.pointerEvents = 'auto';
+
+    container.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+        <div>
+          <div id="br-name" style="font-weight:700; color:#00ffff; font-family:'Rajdhani', sans-serif;">—</div>
+          <div id="br-type" style="font-size:0.8rem; color:#0080ff; font-family:'Rajdhani', sans-serif;">—</div>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button id="br-toggle-btn" type="button" title="Réduire / Afficher" style="width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,255,255,0.3); background:rgba(0,128,255,0.08); color:#00ffff; border-radius:6px; cursor:pointer; user-select:none;">▾</button>
+          <button id="br-uncenter-btn" class="uncenter-btn" style="padding:6px 10px; display:none; border:1px solid rgba(255,165,0,0.5); background:rgba(255,165,0,0.1); color:#ffa500; border-radius:4px; cursor:pointer; font-size:0.8rem;">Décentrer</button>
+          <button id="br-stop-follow-btn" class="stop-follow-btn" style="padding:6px 10px; display:none;">Libérer</button>
+        </div>
+      </div>
+      <div id="br-content" class="tooltip-content"></div>
+      <div id="br-description" class="tooltip-description" style="margin-top:8px;"></div>
+    `;
+
+    scaleBox.appendChild(container);
+  }
+
+  // Wire toggle button idempotently (even if container already existed)
+  if (!container.dataset.wired) {
+    const toggleBtn = container.querySelector('#br-toggle-btn');
+    const contentEl = container.querySelector('#br-content');
+    const descEl = container.querySelector('#br-description');
+    const stopBtn = container.querySelector('#br-stop-follow-btn');
+    const uncenterBtn = container.querySelector('#br-uncenter-btn');
+    // Hide the internal arrow toggle in the bottom info panel
+    if (toggleBtn) toggleBtn.style.display = 'none';
+    const setCollapsed = (collapsed) => {
+      contentEl.style.display = collapsed ? 'none' : '';
+      descEl.style.display = collapsed ? 'none' : '';
+      if (stopBtn && stopBtn.style.display !== 'none') {
+        stopBtn.style.display = collapsed ? 'none' : 'inline-flex';
+      }
+      if (uncenterBtn && uncenterBtn.style.display !== 'none') {
+        uncenterBtn.style.display = collapsed ? 'none' : 'inline-flex';
+      }
+      if (toggleBtn) toggleBtn.textContent = collapsed ? '▸' : '▾';
+      container.dataset.collapsed = collapsed ? '1' : '0';
+      try { localStorage.setItem('brCollapsed', container.dataset.collapsed); } catch {}
+    };
+    // Restore last state
+    let saved = '0';
+    try { saved = localStorage.getItem('brCollapsed') || '0'; } catch {}
+    setCollapsed(saved === '1');
+    const toggleHandler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const next = !(container.dataset.collapsed === '0');
+      setCollapsed(next);
+      console.log('🔀 BR toggle clicked. Collapsed =', next);
+    };
+    // Attach in both capture and bubble to guarantee handling before canvas
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', toggleHandler, { capture: true });
+      toggleBtn.addEventListener('click', toggleHandler);
+      // Extra safety: pointerdown support
+      toggleBtn.addEventListener('pointerdown', (e) => { e.stopPropagation(); }, { capture: true });
+      // Inline fallback
+      toggleBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); toggleHandler(e); };
+    }
+    
+    // Gérer le bouton "Décentrer"
+    if (uncenterBtn) {
+      const uncenterHandler = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Remettre la caméra au centre du système solaire (0, 0, 0)
+        controls.target.set(0, 0, 0);
+        controls.update();
+        
+        // Arrêter le suivi si actif
+        followedPlanet = null;
+        
+        // Cacher le bouton "Décentrer" et "Libérer"
+        uncenterBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'none';
+        
+        console.log('🎯 Caméra décentrée - retour au centre du système');
+      };
+      
+      uncenterBtn.addEventListener('click', uncenterHandler, { capture: true });
+      uncenterBtn.addEventListener('click', uncenterHandler);
+      uncenterBtn.addEventListener('pointerdown', (e) => { e.stopPropagation(); }, { capture: true });
+      uncenterBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); uncenterHandler(e); };
+    }
+    
+    container.dataset.wired = '1';
+  }
+}
+
+function updateBottomRightInfo(name, type, info, objectType) {
+  console.log("🔄 updateBottomRightInfo appelée avec:", name, type, objectType);
+  
+  const nameEl = document.getElementById('br-name');
+  const typeEl = document.getElementById('br-type');
+  const contentEl = document.getElementById('br-content');
+  const descEl = document.getElementById('br-description');
+  const container = document.getElementById('br-info');
+  const toggleBtn = document.getElementById('br-toggle-btn');
+  
+  if (!nameEl || !typeEl || !contentEl || !descEl) {
+    console.log("❌ Éléments UI manquants:", {nameEl: !!nameEl, typeEl: !!typeEl, contentEl: !!contentEl, descEl: !!descEl});
+    return;
+  }
+
+  nameEl.textContent = name || '—';
+  typeEl.textContent = type || '—';
+
+  contentEl.innerHTML = `
+    <div class="tooltip-info">
+      <span class="info-label">Rayon</span>
+      <span class="info-value">${info.radius || '—'}</span>
+    </div>
+    <div class="tooltip-info">
+      <span class="info-label">Distance</span>
+      <span class="info-value">${info.distance || '—'}</span>
+    </div>
+    <div class="tooltip-info">
+      <span class="info-label">Orbite</span>
+      <span class="info-value">${info.orbit || '—'}</span>
+    </div>
+    ${objectType !== 'sun' ? `
+      <div class="tooltip-info">
+        <span class="info-label">Lunes</span>
+        <span class="info-value">${info.moons || '—'}</span>
+      </div>
+    ` : ''}
+  `;
+
+  descEl.textContent = info.info || '';
+
+  // Gérer le bouton "Voir les données recueillies" uniquement pour Kepler
+  // 1) Toujours supprimer un éventuel bouton existant
+  if (descEl && descEl.parentNode) {
+    const existingButton = descEl.parentNode.querySelector('.data-button');
+    if (existingButton) {
+      existingButton.remove();
+      console.log('🗑️ Bouton de données existant supprimé');
+    }
+  }
+
+  // 2) Le recréer uniquement quand les infos affichées concernent Kepler
+  if (info.dataButton && (name || '').toLowerCase() === 'kepler') {
+    const dataButton = document.createElement('button');
+    dataButton.className = 'data-button';
+    dataButton.innerHTML = `
+      <span class="data-button-icon">📊</span>
+      <span class="data-button-text">${info.dataButton.text}</span>
+    `;
+    dataButton.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    `;
+
+    dataButton.addEventListener('mouseenter', () => {
+      dataButton.style.transform = 'translateY(-2px)';
+      dataButton.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.4)';
+    });
+
+    dataButton.addEventListener('mouseleave', () => {
+      dataButton.style.transform = 'translateY(0)';
+      dataButton.style.boxShadow = '0 2px 8px rgba(76, 175, 80, 0.3)';
+    });
+
+    dataButton.addEventListener('click', () => {
+      window.open(info.dataButton.url, '_blank');
+    });
+
+    if (descEl && descEl.parentNode) {
+      descEl.parentNode.insertBefore(dataButton, descEl.nextSibling);
+      console.log('✅ Bouton de données Kepler créé');
+    }
+  }
+
+  // Always expand on new content to ensure visibility
+  if (container) {
+    contentEl.style.display = '';
+    descEl.style.display = '';
+    const stopBtn = document.getElementById('br-stop-follow-btn');
+    const uncenterBtn = document.getElementById('br-uncenter-btn');
+    
+    // Afficher le bouton "Décentrer" quand un objet est sélectionné
+    if (uncenterBtn) {
+      uncenterBtn.style.display = 'inline-flex';
+    }
+    
+    if (stopBtn && stopBtn.style.display !== 'none') stopBtn.style.display = 'inline-flex';
+    container.dataset.collapsed = '0';
+    if (toggleBtn) toggleBtn.textContent = '▾';
+  }
+}
+
+// Minimalist top-right distance HUD
+function ensureDistanceHUD() {
+  if (document.getElementById('distance-hud')) return;
+  const el = document.createElement('div');
+  el.id = 'distance-hud';
+  Object.assign(el.style, {
+    position: 'fixed',
+    top: '12px',
+    right: '16px',
+    zIndex: '100000',
+    color: '#00ffff',
+    fontFamily: "Rajdhani, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
+    fontWeight: '700',
+    letterSpacing: '0.5px',
+    textShadow: '0 0 8px rgba(0,255,255,0.6)',
+    background: 'transparent',
+    pointerEvents: 'none',
+    padding: '6px 10px',
+  });
+  el.textContent = '';
+  document.body.appendChild(el);
+}
+
+function updateDistanceHUD(text) {
+  const el = document.getElementById('distance-hud');
+  if (!el) return;
+  if (!text) {
+    el.style.display = 'none';
+  } else {
+    el.style.display = 'block';
+    el.textContent = `Distance à l'objet: ${text}`;
+  }
+}
+
+// Setup header for the bottom-right card with ASTRE title and toggle
+function setupScaleCardHeader() {
+  const scaleDisplay = document.getElementById('br-panel-container');
+  if (!scaleDisplay) return;
+  
+  // Create header if it doesn't exist
+  let header = scaleDisplay.querySelector('.scale-header');
+  if (!header) {
+    header = document.createElement('div');
+    header.className = 'scale-header';
+    Object.assign(header.style, {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '12px 15px',
+      borderBottom: '1px solid rgba(0, 255, 255, 0.2)',
+      background: 'rgba(0, 255, 255, 0.05)'
+    });
+    
+    const icon = document.createElement('span');
+    icon.className = 'scale-icon';
+    icon.textContent = '🪐';
+    icon.style.fontSize = '1.1rem';
+    
+    const title = document.createElement('span');
+    title.className = 'scale-title';
+    title.textContent = 'ASTRE';
+    Object.assign(title.style, {
+      fontSize: '0.9rem',
+      fontWeight: '700',
+      color: '#00ffff',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      fontFamily: 'Rajdhani, sans-serif'
+    });
+    
+    header.appendChild(icon);
+    header.appendChild(title);
+    scaleDisplay.insertBefore(header, scaleDisplay.firstChild);
+  }
+  
+  const brInfo = document.getElementById('br-info');
+  
+  // Inject collapsed styles once
+  if (!document.getElementById('scale-card-style')) {
+    const style = document.createElement('style');
+    style.id = 'scale-card-style';
+    style.textContent = `
+      #br-panel-container.collapsed { padding-bottom: 0 !important; }
+      #br-panel-container.collapsed #br-info { display: none !important; }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  // Create toggle button if missing
+  let toggleBtn = document.getElementById('scale-card-toggle');
+  if (!toggleBtn) {
+    toggleBtn = document.createElement('button');
+    toggleBtn.id = 'scale-card-toggle';
+    toggleBtn.title = 'Réduire / Agrandir';
+    Object.assign(toggleBtn.style, {
+      marginLeft: 'auto',
+      width: '28px',
+      height: '28px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '1px solid rgba(0,255,255,0.3)',
+      background: 'rgba(0,128,255,0.08)',
+      color: '#00ffff',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      userSelect: 'none'
+    });
+    header.appendChild(toggleBtn);
+  }
+  
+  // Force default collapsed on startup
+  let collapsed = true;
+  try { localStorage.setItem('scaleCardCollapsed', '1'); } catch {}
+  
+  const applyCollapsed = (isCollapsed) => {
+    if (isCollapsed) {
+      scaleDisplay.classList.add('collapsed');
+    } else {
+      scaleDisplay.classList.remove('collapsed');
+    }
+    if (brInfo) brInfo.style.display = isCollapsed ? 'none' : '';
+    scaleDisplay.style.paddingBottom = isCollapsed ? '0' : '';
+    toggleBtn.textContent = isCollapsed ? '▸' : '▾';
+  };
+  
+  applyCollapsed(collapsed);
+  
+  // Toggle handler
+  const onToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    collapsed = !collapsed;
+    applyCollapsed(collapsed);
+    try { localStorage.setItem('scaleCardCollapsed', collapsed ? '1' : '0'); } catch {}
+  };
+  
+  // Ensure single binding
+  toggleBtn.onclick = onToggle;
+}
+
+function setScaleCardTitle(name) {
+  const scaleDisplay = document.getElementById('br-panel-container');
+  if (!scaleDisplay) return;
+  const header = scaleDisplay.querySelector('.scale-header');
+  if (!header) return;
+  const titleEl = header.querySelector('.scale-title');
+  if (titleEl) titleEl.textContent = name || 'ASTRE';
+}
+
+function resetScaleCard() {
+  setScaleCardTitle('ASTRE');
+  const brInfo = document.getElementById('br-info');
+  if (brInfo) brInfo.style.display = 'none';
+  
+  // Ensure card is collapsed when nothing is selected
+  const scaleDisplay = document.getElementById('br-panel-container');
+  if (scaleDisplay) {
+    scaleDisplay.classList.add('collapsed');
+    const toggleBtn = document.getElementById('scale-card-toggle');
+    if (toggleBtn) toggleBtn.textContent = '▸';
+  }
+}
+
+console.log("✅ Fonctions ensureBottomRightInfoPanel et updateBottomRightInfo définies dans la portée globale");
 
 // Functions for HUD controls
 function toggleLeftPanel() {
@@ -1112,9 +2124,9 @@ scene.background = cubeTextureLoader.load([
 
 // ******  SETTINGS FOR INTERACTIVE CONTROLS  ******
 const settings = {
-  accelerationOrbit: 1,
+  accelerationOrbit: 0.5,
   acceleration: 1,
-  sunIntensity: 1.9
+  sunIntensity: 0.5
 };
 
 // Note: GUI controls are now handled by HUD interface
@@ -1158,26 +2170,17 @@ function formatDistance(distanceKm) {
 }
 
 function updateScaleDisplay() {
-    // Distance de la caméra au centre (0,0,0) en UA
-    const cameraDistanceUnits = camera.position.length();
-    const cameraDistanceUA = cameraDistanceUnits; // Maintenant 1 unité = 1 UA
-    const cameraDistanceKm = cameraDistanceUA * AU_IN_KM;
-    
-    // Mise à jour de l'affichage - PRÉCISION NASA
-    document.getElementById('camera-distance').textContent = formatDistance(cameraDistanceKm);
-    document.getElementById('scale-ratio').textContent = `1 unité = 1.000 UA`;
-    
-    // Si on suit un objet, afficher la distance à cet objet
+    // Si on suit un objet, afficher la distance à cet objet dans le HUD en haut à droite
     if (followedPlanet) {
         const targetPosition = new THREE.Vector3();
         followedPlanet.getWorldPosition(targetPosition);
         const distanceToTargetUA = camera.position.distanceTo(targetPosition);
         const distanceToTargetKm = distanceToTargetUA * AU_IN_KM;
         
-        document.getElementById('target-distance').textContent = formatDistance(distanceToTargetKm);
-        document.getElementById('target-distance-item').style.display = 'flex';
+        // Update minimalist HUD in top-right
+        updateDistanceHUD(formatDistance(distanceToTargetKm));
     } else {
-        document.getElementById('target-distance-item').style.display = 'none';
+        updateDistanceHUD(null);
     }
 }
 
@@ -1215,9 +2218,43 @@ function onDocumentMouseDown(event) {
   console.log("🖱️ Clic détecté:", mouse, "Intersections:", intersects.length);
   console.log("🎯 Objets raycastables:", raycastTargets.length);
   
+  // Debug: afficher les objets intersectés
+  if (intersects.length > 0) {
+    intersects.forEach((intersect, index) => {
+      console.log(`🔍 Intersection ${index}:`, {
+        object: intersect.object,
+        userData: intersect.object.userData,
+        material: intersect.object.material?.name || 'no name',
+        parent: intersect.object.parent?.name || 'no parent'
+      });
+    });
+  }
+  
+  // Debug spécial: vérifier si les lunes de Mars sont dans raycastTargets
+  const marsInTargets = raycastTargets.filter(target => 
+    target.userData?.planetName === 'phobos' || 
+    target.userData?.planetName === 'deimos' ||
+    (Array.isArray(marsMoons) && marsMoons.some(moon => moon.mesh === target))
+  );
+  console.log("🔴 Lunes de Mars dans raycastTargets:", marsInTargets.length, marsInTargets);
+  
+  // Debug spécial: vérifier les exoplanètes dans raycastTargets
+  const exoplanetsInTargets = raycastTargets.filter(target => 
+    target.userData?.type === 'exoplanet' || 
+    (target.userData?.name && window.currentExoplanets && window.currentExoplanets.some(p => p.name === target.userData.name))
+  );
+  console.log("🪐 Exoplanètes dans raycastTargets:", exoplanetsInTargets.length, exoplanetsInTargets.map(t => t.userData?.name));
+  
+  // Debug: état du système Kepler
+  console.log("🌟 État système Kepler:", {
+    currentExoplanets: window.currentExoplanets ? window.currentExoplanets.length : 0,
+    exoplanetManager: !!exoplanetSceneManager,
+    exoplanetsCreated: exoplanetSceneManager ? exoplanetSceneManager.exoplanets.length : 0
+  });
+  
   // Debug: afficher les premiers objets raycastables
   if (raycastTargets.length > 0) {
-    console.log("🔍 Premiers objets raycast:", raycastTargets.slice(0, 5).map(obj => obj.userData?.planetName || 'unknown'));
+    console.log("🔍 Premiers objets raycast:", raycastTargets.slice(0, 5).map(obj => obj.userData?.planetName || obj.userData?.name || 'unknown'));
   }
 
   if (intersects.length > 0) {
@@ -1231,13 +2268,38 @@ function onDocumentMouseDown(event) {
       
       console.log(`🔘 Marqueur/Sphère cliqué: ${emoji} ${objectName} (${objectType})`);
       
+      // Gérer les cas où les lunes ne sont pas encore chargées
+      if (objectType === 'moon' && (objectName === 'phobos' || objectName === 'deimos')) {
+        console.log(`🔴 Marqueur lune de Mars cliqué: ${objectName}`);
+        // Vérifier si la lune est chargée
+        const marsMoon = marsMoons.find(moon => moon.name.toLowerCase() === objectName);
+        if (!marsMoon || !marsMoon.mesh) {
+          console.log(`⚠️ Lune ${objectName} pas encore chargée, affichage des infos de base`);
+          // Afficher les informations même si le mesh n'est pas chargé
+          showPlanetInfo(objectName, objectType);
+          return;
+        }
+      }
+      
+      // Debug spécial pour les marqueurs des lunes de Mars
+      if (objectType === 'moon' && (objectName === 'phobos' || objectName === 'deimos')) {
+        console.log(`🔴 Marqueur lune de Mars détecté: ${objectName}`);
+        console.log(`🔴 selectedPlanet avant:`, selectedPlanet);
+      }
+      
       // Centrer sur l'objet (planète ou lune)
       centerOnPlanet(objectName, objectType);
       
       // Afficher les infos
       selectedPlanet = { name: objectName, type: objectType };
-      closeInfoNoZoomOut();
+      // closeInfoNoZoomOut(); // Temporairement commenté pour test
       showPlanetInfo(objectName, objectType);
+      
+      // Debug après traitement
+      if (objectType === 'moon' && (objectName === 'phobos' || objectName === 'deimos')) {
+        console.log(`🔴 selectedPlanet après:`, selectedPlanet);
+        console.log(`🔴 Appel showPlanetInfo terminé pour:`, objectName);
+      }
       
       console.log(`${emoji} ${objectType} sélectionné(e) via marqueur:`, objectName);
       return;
@@ -1246,12 +2308,25 @@ function onDocumentMouseDown(event) {
     if (selectedPlanet) {
       closeInfoNoZoomOut();
       
-      // Juste afficher les infos de l'objet (planète ou lune)
-      // AUCUN mouvement de caméra automatique
+      // Centrer sur l'objet - ACTIVÉ pour les lunes de Mars et TOUS les objets des systèmes Kepler
+      if ((selectedPlanet.type === 'moon' && (selectedPlanet.name === 'Phobos' || selectedPlanet.name === 'Deimos')) ||
+          (selectedPlanet.type === 'exoplanet') || 
+          (selectedPlanet.type === 'kepler_star') ||
+          (selectedPlanet.type === 'sun' && window.currentExoplanets)) {
+        
+        const emoji = selectedPlanet.type === 'moon' ? '🌙' : 
+                     selectedPlanet.type === 'exoplanet' ? '🪐' : '⭐';
+        console.log(`${emoji} Centrage automatique sur ${selectedPlanet.type}:`, selectedPlanet.name);
+        
+        // Utiliser le nom approprié pour centerOnPlanet
+        const objectName = (selectedPlanet.type === 'sun' || selectedPlanet.type === 'kepler_star') ? 'sun' : selectedPlanet.name.toLowerCase();
+        centerOnPlanet(objectName, selectedPlanet.type === 'kepler_star' ? 'sun' : selectedPlanet.type);
+      }
+      
       console.log("🔍 Tentative d'affichage tooltip pour:", selectedPlanet.name, selectedPlanet.type);
       showPlanetInfo(selectedPlanet.name, selectedPlanet.type);
       
-      console.log(`${selectedPlanet.type === 'moon' ? '🌙' : '🪐'} ${selectedPlanet.type} sélectionnée:`, selectedPlanet.name, "- Caméra libre");
+      console.log(`${selectedPlanet.type === 'moon' ? '🌙' : '🪐'} ${selectedPlanet.type} sélectionnée:`, selectedPlanet.name, selectedPlanet.type === 'moon' && (selectedPlanet.name === 'Phobos' || selectedPlanet.name === 'Deimos') ? "- Centrage automatique" : "- Caméra libre");
     }
   }
 }
@@ -1259,7 +2334,37 @@ function onDocumentMouseDown(event) {
 function identifyPlanet(clickedObject) {
   // Logic to identify which planet/moon was clicked based on the clicked object
   
-  // Check planets first
+  // Check exoplanets first (if any are loaded) - includes Kepler star detection
+  if (exoplanetSceneManager && exoplanetSceneManager.exoplanets.length > 0) {
+    const exoplanetData = exoplanetSceneManager.findExoplanetByMesh(clickedObject);
+    if (exoplanetData) {
+      if (exoplanetData.type === 'kepler_star') {
+        offset = 100;
+        return { 
+          type: 'kepler_star', 
+          name: exoplanetData.userData.name, 
+          object: exoplanetData.mesh,
+          userData: exoplanetData.userData 
+        };
+      } else {
+        offset = Math.max(10, exoplanetData.userData.radius * 2); // Distance proportionnelle à la taille
+        return { 
+          type: 'exoplanet', 
+          name: exoplanetData.userData.name, 
+          object: exoplanetData.mesh,
+          userData: exoplanetData.userData 
+        };
+      }
+    }
+  }
+  
+  // Check the Sun (only for solar system, not Kepler systems)
+  if (clickedObject.material === sun.material && !window.currentExoplanets) {
+    offset = 100;
+    return { type: 'sun', name: 'sun', object: sun };
+  }
+  
+  // Check planets
   if (clickedObject.material === mercury.planet.material) {
     offset = 10;
     return { type: 'planet', name: 'mercury', object: mercury };
@@ -1286,7 +2391,7 @@ function identifyPlanet(clickedObject) {
     return { type: 'planet', name: 'neptune', object: neptune };
   } else if (clickedObject.material === pluto.planet.material) {
     offset = 10;
-    return { type: 'planet', name: 'pluto', object: pluto };
+    return { type: 'dwarf_planet', name: 'pluto', object: pluto };
   }
   
   // Check moons
@@ -1297,7 +2402,7 @@ function identifyPlanet(clickedObject) {
   
   // Check Jupiter's moons
   if (jupiter && jupiter.moons) {
-    const moonNames = ['Io', 'Europa', 'Ganymède', 'Callisto'];
+    const moonNames = ['Io', 'Europa', 'Ganymede', 'Callisto']; // Supprimer l'accent pour éviter les problèmes
     for (let i = 0; i < jupiter.moons.length; i++) {
       if (jupiter.moons[i].mesh && clickedObject === jupiter.moons[i].mesh) {
         return { type: 'moon', name: moonNames[i], object: jupiter.moons[i].mesh, parent: 'Jupiter' };
@@ -1305,14 +2410,98 @@ function identifyPlanet(clickedObject) {
     }
   }
 
-  // TODO: Add other moons when they exist (Mars moons, etc.)
+  // Check Earth satellites
+  if (Array.isArray(earthSatellites)) {
+    console.log("🔍 Vérification satellites de la Terre:", earthSatellites.length, "satellites");
+    for (let i = 0; i < earthSatellites.length; i++) {
+      console.log(`🛰️ Satellite Terre ${i}:`, earthSatellites[i].name, "mesh:", !!earthSatellites[i].mesh);
+      
+      if (earthSatellites[i].mesh) {
+        // Vérification directe
+        if (clickedObject === earthSatellites[i].mesh) {
+          console.log("✅ Satellite de la Terre identifié (direct):", earthSatellites[i].name);
+          return { type: 'satellite', name: earthSatellites[i].name, object: earthSatellites[i].mesh, parent: 'Earth' };
+        }
+        
+        // Vérification des enfants (pour les modèles .glb)
+        let found = false;
+        earthSatellites[i].mesh.traverse((child) => {
+          if (child === clickedObject) {
+            console.log("✅ Satellite de la Terre identifié (enfant):", earthSatellites[i].name);
+            found = true;
+          }
+        });
+        
+        if (found) {
+          return { type: 'satellite', name: earthSatellites[i].name, object: earthSatellites[i].mesh, parent: 'Earth' };
+        }
+      } else {
+        // Si le mesh n'est pas encore chargé, vérifier si c'est un marqueur
+        console.log("⚠️ Satellite de la Terre pas encore chargé:", earthSatellites[i].name);
+      }
+    }
+  }
+
+  // Check Mars moons
+  if (Array.isArray(marsMoons)) {
+    console.log("🔍 Vérification lunes de Mars:", marsMoons.length, "lunes");
+    for (let i = 0; i < marsMoons.length; i++) {
+      console.log(`🌙 Lune Mars ${i}:`, marsMoons[i].name, "mesh:", !!marsMoons[i].mesh);
+      
+      if (marsMoons[i].mesh) {
+        // Vérification directe
+        if (clickedObject === marsMoons[i].mesh) {
+          console.log("✅ Lune de Mars identifiée (direct):", marsMoons[i].name);
+          return { type: 'moon', name: marsMoons[i].name, object: marsMoons[i].mesh, parent: 'Mars' };
+        }
+        
+        // Vérification des enfants (pour les modèles .glb)
+        let found = false;
+        marsMoons[i].mesh.traverse((child) => {
+          if (child === clickedObject) {
+            console.log("✅ Lune de Mars identifiée (enfant):", marsMoons[i].name);
+            found = true;
+          }
+        });
+        
+        if (found) {
+          return { type: 'moon', name: marsMoons[i].name, object: marsMoons[i].mesh, parent: 'Mars' };
+        }
+      } else {
+        // Si le mesh n'est pas encore chargé, vérifier si c'est un marqueur
+        console.log("⚠️ Lune de Mars pas encore chargée:", marsMoons[i].name);
+      }
+    }
+  }
 
   return null;
+}
+
+// Fonction utilitaire pour normaliser les noms des lunes
+function normalizeMoonName(name) {
+  const normalized = name.toLowerCase();
+  const nameMap = {
+    'ganymede': 'Ganymede',
+    'ganymède': 'Ganymede',
+    'phobos': 'Phobos',
+    'deimos': 'Deimos',
+    'io': 'Io',
+    'europa': 'Europa',
+    'callisto': 'Callisto',
+    'moon': 'moon'
+  };
+  return nameMap[normalized] || name;
 }
 
 // ******  SHOW PLANET INFO AFTER SELECTION  ******
 function showPlanetInfo(objectName, objectType = 'planet') {
   console.log("🎯 showPlanetInfo appelée avec:", objectName, objectType);
+  console.log("🔍 ensureBottomRightInfoPanel définie:", typeof ensureBottomRightInfoPanel);
+  
+  // Debug spécial pour les lunes de Mars
+  if (objectType === 'moon' && (objectName === 'Phobos' || objectName === 'phobos' || objectName === 'Deimos' || objectName === 'deimos')) {
+    console.log("🔴 Traitement lune de Mars:", objectName, objectType);
+  }
   
   const tooltip = document.getElementById('planet-tooltip');
   const tooltipName = document.getElementById('tooltip-name');
@@ -1337,9 +2526,99 @@ function showPlanetInfo(objectName, objectType = 'planet') {
   let displayName;
   let displayType;
   
-  if (objectType === 'moon') {
+  if (objectType === 'sun') {
+    // Data for the Sun
+    objectInfo = {
+      radius: '696,340 km',
+      distance: '0 km (centre du système)',
+      orbit: 'N/A (étoile centrale)',
+      moons: '0',
+      info: 'Le Soleil est l\'étoile au centre de notre système solaire. Il  génère son énergie par fusion nucléaire.'
+    };
+    displayName = 'Soleil';
+    displayType = 'Étoile';
+  } else if (objectType === 'exoplanet') {
+    // Data for exoplanets
+    console.log("🪐 Traitement exoplanète:", objectName);
+    
+    // Récupérer les userData depuis selectedPlanet si disponible
+    let userData = null;
+    if (selectedPlanet && selectedPlanet.userData) {
+      userData = selectedPlanet.userData;
+    } else if (exoplanetSceneManager) {
+      // Fallback: chercher dans les exoplanètes
+      const exoplanet = exoplanetSceneManager.exoplanets.find(p => p.userData.name === objectName);
+      if (exoplanet) userData = exoplanet.userData;
+    }
+    
+    if (userData) {
+      objectInfo = formatExoplanetInfo(userData);
+      displayName = userData.name;
+      displayType = `Exoplanète (${userData.classification})`;
+      console.log("✅ Données exoplanète formatées:", objectInfo);
+    } else {
+      console.warn("⚠️ Données exoplanète non trouvées pour:", objectName);
+      objectInfo = {
+        radius: 'Données non disponibles',
+        distance: 'Données non disponibles',
+        orbit: 'Données non disponibles',
+        moons: '0',
+        info: `Informations sur l'exoplanète ${objectName} en cours de chargement...`
+      };
+      displayName = objectName;
+      displayType = 'Exoplanète';
+    }
+  } else if (objectType === 'kepler_star') {
+    // Data for Kepler system stars
+    console.log("⭐ Traitement étoile Kepler:", objectName);
+    
+    // Récupérer les userData depuis selectedPlanet si disponible
+    let userData = null;
+    if (selectedPlanet && selectedPlanet.userData) {
+      userData = selectedPlanet.userData;
+    }
+    
+    if (userData) {
+      objectInfo = {
+        radius: '696,340 km (similaire au Soleil)',
+        distance: '0 km (centre du système)',
+        orbit: 'N/A (étoile centrale)',
+        moons: '0',
+        temperature: userData.temperature || '5778 K',
+        classification: userData.classification || 'Étoile de type G',
+        system: userData.system || 'Système Kepler',
+        info: `${userData.name} est l'étoile centrale du système ${userData.system || 'Kepler'}. Cette étoile de type solaire héberge plusieurs exoplanètes détectées par le télescope spatial Kepler.`
+      };
+      displayName = userData.name;
+      displayType = 'Étoile Kepler';
+      console.log("✅ Données étoile Kepler formatées:", objectInfo);
+    } else {
+      console.warn("⚠️ Données étoile Kepler non trouvées pour:", objectName);
+      objectInfo = {
+        radius: '696,340 km (estimation)',
+        distance: '0 km (centre du système)',
+        orbit: 'N/A (étoile centrale)',
+        moons: '0',
+        info: `${objectName} est l'étoile centrale de ce système Kepler.`
+      };
+      displayName = objectName;
+      displayType = 'Étoile Kepler';
+    }
+  } else if (objectType === 'dwarf_planet') {
+    // Data for dwarf planets (specifically Pluto)
+    const planetKey = objectName.charAt(0).toUpperCase() + objectName.slice(1);
+    objectInfo = planetData[planetKey];
+    displayName = planetKey;
+    displayType = 'Planète naine';
+    
+    console.log("🔍 Recherche données planète naine:", planetKey, "Trouvé:", !!objectInfo);
+  } else if (objectType === 'moon') {
+    // Normaliser le nom de la lune
+    const normalizedName = normalizeMoonName(objectName);
+    console.log(`🌙 Nom normalisé: ${objectName} -> ${normalizedName}`);
+    
     // Data for moons
-    if (objectName === 'moon') {
+    if (normalizedName === 'moon') {
       objectInfo = {
         radius: '1,737 km',
         distance: '384,400 km de la Terre',
@@ -1349,6 +2628,114 @@ function showPlanetInfo(objectName, objectType = 'planet') {
       };
       displayName = 'Lune';
       displayType = 'Satellite naturel';
+    } else if (normalizedName === 'Io') {
+      objectInfo = {
+        radius: '1,821 km',
+        distance: '421,700 km de Jupiter',
+        orbit: '1.77 jours',
+        moons: '0',
+        info: 'Io est la lune la plus volcanique du système solaire avec plus de 400 volcans actifs. Elle est constamment déformée par les forces de marée de Jupiter.'
+      };
+      displayName = 'Io';
+      displayType = 'Satellite de Jupiter';
+    } else if (normalizedName === 'Europa') {
+      objectInfo = {
+        radius: '1,560 km',
+        distance: '671,034 km de Jupiter',
+        orbit: '3.55 jours',
+        moons: '0',
+        info: 'Europa possède un océan souterrain sous sa croûte de glace, ce qui en fait l\'un des endroits les plus prometteurs pour rechercher la vie dans le système solaire.'
+      };
+      displayName = 'Europa';
+      displayType = 'Satellite de Jupiter';
+    } else if (normalizedName === 'Ganymede') {
+      objectInfo = {
+        radius: '2,634 km',
+        distance: '1,070,412 km de Jupiter',
+        orbit: '7.15 jours',
+        moons: '0',
+        info: 'Ganymède est la plus grande lune du système solaire, plus grande que Mercure. Elle possède son propre champ magnétique et probablement un océan souterrain.'
+      };
+      displayName = 'Ganymède';
+      displayType = 'Satellite de Jupiter';
+    } else if (normalizedName === 'Callisto') {
+      objectInfo = {
+        radius: '2,410 km',
+        distance: '1,882,709 km de Jupiter',
+        orbit: '16.69 jours',
+        moons: '0',
+        info: 'Callisto est la lune la plus cratérisée du système solaire. Sa surface ancienne n\'a pas été modifiée par l\'activité géologique depuis des milliards d\'années.'
+      };
+      displayName = 'Callisto';
+      displayType = 'Satellite de Jupiter';
+    } else if (normalizedName === 'Phobos') {
+      console.log("🔴 MATCH Phobos trouvé pour:", objectName);
+      objectInfo = {
+        radius: '11.3 km',
+        distance: '9,376 km de Mars',
+        orbit: '7.6 heures',
+        moons: '0',
+        info: 'Phobos est la plus grande et la plus proche des deux lunes de Mars. Elle orbite si près de Mars qu\'elle se rapproche de 1.8 mètre par siècle et s\'écrasera sur Mars dans 50 millions d\'années.'
+      };
+      displayName = 'Phobos';
+      displayType = 'Satellite de Mars';
+    } else if (normalizedName === 'Deimos') {
+      console.log("🔴 MATCH Deimos trouvé pour:", objectName);
+      objectInfo = {
+        radius: '6.2 km',
+        distance: '23,463 km de Mars',
+        orbit: '30.3 heures',
+        moons: '0',
+        info: 'Deimos est la plus petite et la plus éloignée des deux lunes de Mars. Son nom signifie "terreur" en grec. Elle s\'éloigne lentement de Mars à raison de quelques centimètres par siècle.'
+      };
+      displayName = 'Deimos';
+      displayType = 'Satellite de Mars';
+    } else if (normalizedName === 'kepler') {
+      objectInfo = {
+        radius: '2.7 m (longueur)',
+        distance: 'Orbite héliocentrique (suivait la Terre)',
+        orbit: '372.5 jours',
+        moons: '0',
+        info: 'Kepler était un télescope spatial de la NASA conçu pour découvrir des planètes de taille terrestre en orbite autour d\'autres étoiles. Il a découvert plus de 2,600 exoplanètes confirmées.',
+        dataButton: {
+          text: 'Voir les données recueillies',
+          url: 'https://koi-data-explorer.vercel.app',
+          description: 'Explorer les données d\'exoplanètes découvertes par Kepler'
+        }
+      };
+      displayName = 'Kepler';
+      displayType = 'Télescope spatial';
+    }
+  } else if (objectType === 'satellite') {
+    // Data for artificial satellites
+    console.log("🛰️ Traitement satellite artificiel:", objectName);
+    
+    if (objectName.toLowerCase() === 'kepler') {
+      objectInfo = {
+        radius: '2.7 m (longueur)',
+        distance: 'Orbite héliocentrique (suivait la Terre)',
+        orbit: '372.5 jours',
+        moons: '0',
+        info: 'Kepler était un télescope spatial de la NASA conçu pour découvrir des planètes de taille terrestre en orbite autour d\'autres étoiles',
+        dataButton: {
+          text: 'Voir les données recueillies',
+          url: 'https://koi-data-explorer.vercel.app',
+          description: 'Explorer les données d\'exoplanètes découvertes par Kepler'
+        }
+      };
+      displayName = 'Kepler';
+      displayType = 'Satellite artificiel';
+    } else {
+      // Fallback pour d'autres satellites
+      objectInfo = {
+        radius: 'N/A',
+        distance: 'N/A',
+        orbit: 'N/A',
+        moons: '0',
+        info: 'Satellite artificiel en orbite autour de la Terre.'
+      };
+      displayName = objectName;
+      displayType = 'Satellite artificiel';
     }
   } else {
     // Data for planets - CORRECTION: utiliser la bonne clé
@@ -1360,48 +2747,46 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     console.log("🔍 Recherche données planète:", planetKey, "Trouvé:", !!objectInfo);
   }
   
-  if (!objectInfo) return;
+  if (!objectInfo) {
+    console.log("❌ Aucune information trouvée pour:", objectName, objectType);
+    
+    // Créer des informations par défaut pour les lunes non reconnues
+    if (objectType === 'moon') {
+      objectInfo = {
+        radius: 'Données non disponibles',
+        distance: 'Données non disponibles',
+        orbit: 'Données non disponibles',
+        moons: '0',
+        info: `Informations sur ${objectName} en cours de chargement...`
+      };
+      displayName = objectName;
+      displayType = 'Satellite';
+    } else {
+    return;
+    }
+  }
   
-  // Update tooltip content
-  tooltipName.textContent = displayName;
-  tooltipType.textContent = displayType;
+  console.log("✅ Informations trouvées pour:", objectName, objectType, objectInfo);
   
-  // Generate quick info
-  tooltipContent.innerHTML = `
-    <div class="tooltip-info">
-      <span class="info-label">Rayon</span>
-      <span class="info-value">${objectInfo.radius}</span>
-    </div>
-    <div class="tooltip-info">
-      <span class="info-label">Distance</span>
-      <span class="info-value">${objectInfo.distance}</span>
-    </div>
-    <div class="tooltip-info">
-      <span class="info-label">Orbite</span>
-      <span class="info-value">${objectInfo.orbit}</span>
-    </div>
-    <div class="tooltip-info">
-      <span class="info-label">Lunes</span>
-      <span class="info-value">${objectInfo.moons}</span>
-    </div>
-  `;
+  // Also update the bottom-right info panel (preferred display)
+  ensureBottomRightInfoPanel();
+  updateBottomRightInfo(displayName, displayType, objectInfo, objectType);
   
-  // Set description
-  tooltipDescription.textContent = objectInfo.info;
+  // Update card title with object name and expand the card
+  setScaleCardTitle(displayName);
   
-  // Position tooltip near mouse
-  tooltip.style.left = (mouse.x * window.innerWidth * 0.5 + window.innerWidth * 0.5 + 20) + 'px';
-  tooltip.style.top = (-mouse.y * window.innerHeight * 0.5 + window.innerHeight * 0.5 - 100) + 'px';
+  // Expand the card when an object is selected
+  const scaleDisplay = document.getElementById('br-panel-container');
+  if (scaleDisplay) {
+    scaleDisplay.classList.remove('collapsed');
+    const toggleBtn = document.getElementById('scale-card-toggle');
+    if (toggleBtn) toggleBtn.textContent = '▾';
+  }
+
+  // Hide legacy floating tooltip to avoid duplicate displays
+  if (tooltip) tooltip.classList.remove('show');
   
-  // Show tooltip
-  console.log("✅ Ajout de la classe 'show' au tooltip");
-  tooltip.classList.add('show');
-  
-  // Vérifier que la classe a été ajoutée
-  console.log("🔍 Classes du tooltip après ajout:", tooltip.className);
-  
-  // NE PAS bouger la caméra automatiquement
-  // L'utilisateur décide s'il veut centrer ou pas
+  // NE PAS bouger la caméra automatiquement; l'utilisateur décide s'il veut centrer
 }
 
 // Fonction pour centrer sur un objet (planète ou lune) SANS forcer le zoom
@@ -1436,6 +2821,53 @@ function centerOnPlanet(objectName, objectType = 'planet') {
           targetObject = jupiter.moons[3].mesh;
         }
         break;
+      case 'phobos':
+        if (Array.isArray(marsMoons) && marsMoons[0] && marsMoons[0].mesh) {
+          targetObject = marsMoons[0].mesh;
+          console.log("🌙 Centrage sur Phobos (lune de Mars)");
+        }
+        break;
+      case 'deimos':
+        if (Array.isArray(marsMoons) && marsMoons[1] && marsMoons[1].mesh) {
+          targetObject = marsMoons[1].mesh;
+          console.log("🌙 Centrage sur Deimos (lune de Mars)");
+        }
+        break;
+      case 'kepler':
+        if (Array.isArray(earthSatellites) && earthSatellites[0] && earthSatellites[0].mesh) {
+          targetObject = earthSatellites[0].mesh;
+          console.log("🛰️ Centrage sur Kepler (satellite de la Terre)");
+        }
+        break;
+    }
+  } else if (objectType === 'satellite') {
+    // Gérer les satellites artificiels
+    switch(objectName.toLowerCase()) {
+      case 'kepler':
+        if (Array.isArray(earthSatellites) && earthSatellites[0] && earthSatellites[0].mesh) {
+          targetObject = earthSatellites[0].mesh;
+          console.log("🛰️ Centrage sur Kepler (satellite de la Terre)");
+        }
+        break;
+    }
+  } else if (objectType === 'exoplanet') {
+    // Gérer les exoplanètes
+    if (exoplanetSceneManager && exoplanetSceneManager.exoplanets.length > 0) {
+      const exoplanet = exoplanetSceneManager.exoplanets.find(p => p.userData.name === objectName);
+      if (exoplanet) {
+        targetObject = exoplanet;
+        console.log("🪐 Centrage sur exoplanète:", objectName);
+      }
+    }
+  } else if (objectType === 'sun') {
+    // Gérer le Soleil
+    if (objectName.toLowerCase() === 'soleil' || objectName.toLowerCase() === 'sun') {
+      targetObject = sun; // Le soleil est défini comme une variable globale
+    }
+  } else if (objectType === 'dwarf_planet') {
+    // Gérer les planètes naines
+    switch(objectName.toLowerCase()) {
+      case 'pluto': targetObject = pluto.planet; break;
     }
   } else {
     // Trouver la planète correspondante
@@ -1642,7 +3074,7 @@ function animateTargetTo(targetPosition) {
   
   animate();
 }
-// Variables supprimées - plus de zoom out forcé
+
 // close 'x' button function
 function closeInfo() {
   const tooltip = document.getElementById('planet-tooltip');
@@ -1651,13 +3083,14 @@ function closeInfo() {
     tooltip.classList.remove('show');
   }
   
+  // Reset the scale card to show "ASTRE" and collapse it
+  resetScaleCard();
+  
   // NE PAS changer la cible de la caméra ni forcer le zoom out
-  // L'utilisateur garde le contrôle total
-  console.log("ℹ️ Tooltip fermé - caméra reste sur la planète");
+  // L'utilisateur garde le contrôle total de la caméra
 }
-window.closeInfo = closeInfo;
 
-// close info when clicking another planet
+// close info when clicking another planet (without resetting the card)
 function closeInfoNoZoomOut() {
   const tooltip = document.getElementById('planet-tooltip');
   
@@ -1665,7 +3098,6 @@ function closeInfoNoZoomOut() {
     tooltip.classList.remove('show');
   }
 }
-
 // ******  SUN AVEC TAILLE RÉALISTE ******
 // TAILLE RÉALISTE DU SOLEIL par rapport à la Terre
 // Soleil: 1,392,700 km de diamètre | Terre: 12,756 km de diamètre
@@ -1684,6 +3116,21 @@ let sunMat = new THREE.MeshStandardMaterial({
 });
 const sun = new THREE.Mesh(sunGeom, sunMat);
 scene.add(sun);
+
+// Mettre à jour le contrôle d'intensité du soleil maintenant que sunMat existe
+if (typeof ensureSunIntensityControl === 'function') {
+  console.log('☀️ Mise à jour du contrôle d\'intensité du soleil après création du matériau');
+  // Mettre à jour la valeur du slider si il existe
+  const sunIntensitySlider = document.getElementById('sun-intensity-setting');
+  if (sunIntensitySlider) {
+    sunIntensitySlider.value = settings.sunIntensity;
+    const sunIntensityValue = document.getElementById('sun-intensity-value');
+    if (sunIntensityValue) {
+      sunIntensityValue.textContent = Number(settings.sunIntensity).toFixed(1) + 'x';
+    }
+    console.log('✅ Contrôle d\'intensité du soleil synchronisé avec le matériau');
+  }
+}
 
 //point light in the sun - AJUSTÉE À LA NOUVELLE TAILLE
 // Intensité et portée proportionnelles à la taille du Soleil
@@ -1838,6 +3285,11 @@ function createPlanet(planetName, size, position, tilt, texture, bump, ring, atm
 // ******  LOADING OBJECTS METHOD  ******
 function loadObject(path, position, scale, callback) {
   const loader = new GLTFLoader();
+  
+  // Configurer le DRACOLoader pour la décompression
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+  loader.setDRACOLoader(dracoLoader);
 
   loader.load(path, function (gltf) {
       const obj = gltf.scene;
@@ -1856,6 +3308,12 @@ function loadObject(path, position, scale, callback) {
 const asteroids = [];
 function loadAsteroids(path, numberOfAsteroids, minOrbitRadius, maxOrbitRadius, beltType = 'main') {
   const loader = new GLTFLoader();
+  
+  // Configurer le DRACOLoader pour la décompression
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+  loader.setDRACOLoader(dracoLoader);
+  
   loader.load(path, function (gltf) {
       gltf.scene.traverse(function (child) {
           if (child.isMesh) {
@@ -1995,6 +3453,7 @@ const earthMoon = [{
 // Mars' moons with path to 3D models (phobos & deimos)
 const marsMoons = [
   {
+    name: 'Phobos',
     modelPath: '/images/mars/phobos.glb',
     scale: 0.1,
     orbitRadius: 5,
@@ -2003,12 +3462,27 @@ const marsMoons = [
     mesh: null
   },
   {
+    name: 'Deimos',
     modelPath: '/images/mars/deimos.glb',
     scale: 0.1,
     orbitRadius: 9,
     orbitSpeed: 0.0005 * settings.accelerationOrbit,
     position: 120,
     mesh: null
+  }
+];
+
+// Earth satellites - Kepler Space Telescope
+const earthSatellites = [
+  {
+    name: 'Kepler',
+    modelPath: '/images/satellites/Kepler.glb',
+    scale: 0.05, // Plus petit que les lunes car c'est un satellite artificiel
+    orbitRadius: 8, // Orbite plus éloignée de la Terre pour être visible
+    orbitSpeed: 0.003 * settings.accelerationOrbit, // Orbite plus rapide
+    position: 50, // Position initiale
+    mesh: null,
+    type: 'satellite' // Type pour différencier des lunes naturelles
   }
 ];
 
@@ -2108,6 +3582,26 @@ marsMoons.forEach(moon => {
   loadObject(moon.modelPath, moon.position, moon.scale, function(loadedModel) {
     moon.mesh = loadedModel;
     mars.planetSystem.add(moon.mesh);
+    
+    // Ajouter la lune aux raycastTargets une fois chargée
+    raycastTargets.push(moon.mesh);
+    
+    // Ajouter aussi tous les enfants aux raycastTargets (pour les modèles .glb)
+    moon.mesh.traverse((child) => {
+      if (child.isMesh && child !== moon.mesh) {
+        raycastTargets.push(child);
+        console.log("🌙 Enfant de lune de Mars ajouté aux raycastTargets:", moon.name, child.name || 'unnamed child');
+      }
+    });
+    
+    console.log("🌙 Lune de Mars ajoutée aux raycastTargets après chargement:", moon.name);
+    
+    // Créer le marqueur pour la lune de Mars - DÉSACTIVÉ
+    // const moonKey = moon.name.toLowerCase();
+    // planetMarkerSystem.createMoonMarker(moonKey, moon.mesh, mars.planet, moon.name);
+    // addMarkerToRaycast(moonKey);
+    console.log("🔘 Marqueur DÉSACTIVÉ pour lune de Mars:", moon.name);
+    
     moon.mesh.traverse(function (child) {
       if (child.isMesh) {
         child.castShadow = true;
@@ -2126,6 +3620,55 @@ marsMoons.forEach(moon => {
         }
       }
     });
+  });
+});
+
+// Load Earth satellites - Kepler Space Telescope
+earthSatellites.forEach(satellite => {
+  loadObject(satellite.modelPath, satellite.position, satellite.scale, function(loadedModel) {
+    satellite.mesh = loadedModel;
+    earth.planetSystem.add(satellite.mesh);
+    
+    // Ajouter le satellite aux raycastTargets une fois chargé
+    raycastTargets.push(satellite.mesh);
+    
+    // Ajouter aussi tous les enfants aux raycastTargets (pour les modèles .glb)
+    satellite.mesh.traverse((child) => {
+      if (child.isMesh && child !== satellite.mesh) {
+        raycastTargets.push(child);
+        console.log("🛰️ Enfant de satellite ajouté aux raycastTargets:", satellite.name, child.name || 'unnamed child');
+      }
+    });
+    
+    console.log("🛰️ Satellite de la Terre ajouté aux raycastTargets après chargement:", satellite.name);
+    
+    // Créer le marqueur pour le satellite
+    const satelliteKey = satellite.name.toLowerCase();
+    planetMarkerSystem.createMoonMarker(satelliteKey, satellite.mesh, earth.planet, satellite.name);
+    addMarkerToRaycast(satelliteKey);
+    console.log("🛰️ Marqueur créé pour satellite de la Terre:", satellite.name);
+    
+    satellite.mesh.traverse(function (child) {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.userData = { planetName: satellite.name.toLowerCase(), type: 'satellite' };
+        
+        // S'assurer que le matériau réagit à l'éclairage
+        if (child.material && child.material.isMeshBasicMaterial) {
+          // Convertir MeshBasicMaterial en MeshStandardMaterial pour l'éclairage
+          const oldMaterial = child.material;
+          child.material = new THREE.MeshStandardMaterial({
+            map: oldMaterial.map,
+            color: oldMaterial.color,
+            transparent: oldMaterial.transparent,
+            opacity: oldMaterial.opacity
+          });
+        }
+      }
+    });
+    
+    console.log(`🛰️ Satellite de la Terre chargé: ${satellite.name}`);
   });
 });
 
@@ -2150,6 +3693,9 @@ console.log("🎯 All planets created, setting up raycast targets...");
 
 // Array of planets, atmospheres and moons for raycasting
 const raycastTargets = [];
+
+// Add the Sun first
+if (sun) raycastTargets.push(sun);
 
 // Add planets safely
 if (mercury && mercury.planet) raycastTargets.push(mercury.planet);
@@ -2176,6 +3722,16 @@ if (neptune && neptune.planet) raycastTargets.push(neptune.planet);
 if (pluto && pluto.planet) raycastTargets.push(pluto.planet);
 
 console.log("🎯 Raycast targets:", raycastTargets.length, "objects");
+
+// Debug: lister tous les raycastTargets pour voir si les lunes de Mars y sont
+console.log("📋 Liste complète des raycastTargets:");
+raycastTargets.forEach((target, index) => {
+  if (target.userData) {
+    console.log(`  ${index}: ${target.userData.planetName || 'unnamed'} (${target.userData.type || 'unknown type'})`);
+  } else {
+    console.log(`  ${index}: objet sans userData`);
+  }
+});
 
 // ===== INITIALISATION DU SYSTÈME DE MARQUEURS =====
 console.log("🎯 Initializing Planet Marker System...");
@@ -2263,6 +3819,30 @@ if (jupiter && jupiter.moons) {
 }
 
 console.log("✅ Planet Marker System initialized with moons");
+
+// Supprimer les marqueurs des lunes de Mars si ils existent déjà
+if (planetMarkerSystem) {
+    planetMarkerSystem.removeMarker('phobos');
+    planetMarkerSystem.removeMarker('deimos');
+    console.log("🗑️ Marqueurs des lunes de Mars supprimés");
+}
+
+// Nettoyer les raycastTargets pour retirer les marqueurs des lunes de Mars
+const marsMarkerIndices = [];
+raycastTargets.forEach((target, index) => {
+    if (target.userData && (target.userData.planetName === 'phobos' || target.userData.planetName === 'deimos') && target.userData.isMarker) {
+        marsMarkerIndices.push(index);
+    }
+});
+
+// Supprimer les marqueurs des lunes de Mars des raycastTargets (en ordre inverse pour éviter les décalages d'index)
+marsMarkerIndices.reverse().forEach(index => {
+    raycastTargets.splice(index, 1);
+});
+
+if (marsMarkerIndices.length > 0) {
+    console.log(`🗑️ ${marsMarkerIndices.length} marqueurs de lunes de Mars supprimés des raycastTargets`);
+}
 
   // ******  PLANETS DATA  ******
   const planetData = {
@@ -2469,6 +4049,22 @@ marsMoons.forEach(moon => {
 });
 }
 
+// Animate Earth satellites - Kepler Space Telescope
+if (earthSatellites) {
+  earthSatellites.forEach(satellite => {
+    if (satellite.mesh) {
+      const time = performance.now();
+      
+      const satelliteX = earth.planet.position.x + satellite.orbitRadius * Math.cos(time * satellite.orbitSpeed);
+      const satelliteY = satellite.orbitRadius * Math.sin(time * satellite.orbitSpeed);
+      const satelliteZ = earth.planet.position.z + satellite.orbitRadius * Math.sin(time * satellite.orbitSpeed);
+      
+      satellite.mesh.position.set(satelliteX, satelliteY, satelliteZ);
+      satellite.mesh.rotateY(0.002); // Rotation légèrement plus rapide que les lunes
+  }
+});
+}
+
 // Animate Jupiter's moons
 if (jupiter.moons) {
   jupiter.moons.forEach(moon => {
@@ -2580,7 +4176,7 @@ function animate() {
   // Log pour debug (seulement les 10 premières fois)
   if (animate.callCount === undefined) animate.callCount = 0;
   if (animate.callCount < 10) {
-    console.log("🎬 Animation frame:", animate.callCount);
+    console.log(`🎬 Animation frame ${animate.callCount + 1}, accelerationOrbit: ${settings.accelerationOrbit}, sunIntensity: ${settings.sunIntensity}`);
     animate.callCount++;
   }
   
@@ -2633,6 +4229,22 @@ function animate() {
         const moonZ = mars.planet.position.z + moon.orbitRadius * Math.sin(time * moon.orbitSpeed);
         moon.mesh.position.set(moonX, moonY, moonZ);
         moon.mesh.rotateY(0.001);
+      }
+    });
+  }
+  
+  // Animate Earth satellites - Kepler Space Telescope
+  if (earthSatellites) {
+    earthSatellites.forEach(satellite => {
+      if (satellite.mesh) {
+        const time = performance.now();
+        
+        const satelliteX = earth.planet.position.x + satellite.orbitRadius * Math.cos(time * satellite.orbitSpeed);
+        const satelliteY = satellite.orbitRadius * Math.sin(time * satellite.orbitSpeed);
+        const satelliteZ = earth.planet.position.z + satellite.orbitRadius * Math.sin(time * satellite.orbitSpeed);
+        
+        satellite.mesh.position.set(satelliteX, satelliteY, satelliteZ);
+        satellite.mesh.rotateY(0.002); // Rotation légèrement plus rapide que les lunes
       }
     });
   }
@@ -2697,6 +4309,11 @@ function animate() {
     planetMarkerSystem.update();
   }
   
+  // Mettre à jour les exoplanètes (orbites et rotations)
+  if (exoplanetSceneManager) {
+    exoplanetSceneManager.update();
+  }
+  
   // Fonctions supprimées
   requestAnimationFrame(animate);
   composer.render();
@@ -2704,6 +4321,266 @@ function animate() {
 
 // Initialize HUD after everything is loaded
 initializeHUD();
+
+// ===== ROUTE HANDLER POUR SYSTÈMES KEPLER =====
+let routeHandler = null;
+let defaultSunSize = sunSize; // Sauvegarder la taille originale du Soleil
+
+// Fonction pour modifier le rayon du Soleil
+function updateSunRadius(starData) {
+    if (!starData || !starData.radius) {
+        console.warn('⚠️ Pas de données d\'étoile pour modifier le Soleil');
+        return;
+    }
+
+    console.log('\n🌟 MODIFICATION DU RAYON DU SOLEIL:');
+    console.log(`   Étoile: ${starData.name}`);
+    console.log(`   Rayon original: ${defaultSunSize.toFixed(2)} unités (1.0 R☉)`);
+    console.log(`   Rayon de l'étoile: ${starData.radius.toFixed(2)} R☉`);
+    
+    // Calculer le nouveau rayon
+    const newSunSize = defaultSunSize * starData.radius;
+    console.log(`   Nouveau rayon: ${newSunSize.toFixed(2)} unités`);
+    
+    // Supprimer l'ancien mesh du Soleil
+    scene.remove(sun);
+    
+    // Recréer la géométrie avec le nouveau rayon
+    const newSunGeom = new THREE.SphereGeometry(newSunSize, 64, 32);
+    sun.geometry.dispose(); // Libérer l'ancienne géométrie
+    sun.geometry = newSunGeom;
+    
+    // Remettre le Soleil dans la scène
+    scene.add(sun);
+    
+    console.log('✅ Rayon du Soleil mis à jour!\n');
+}
+
+// Fonction pour réinitialiser le rayon du Soleil
+function resetSunRadius() {
+    console.log('🔄 Réinitialisation du rayon du Soleil');
+    
+    // Supprimer l'ancien mesh
+    scene.remove(sun);
+    
+    // Recréer la géométrie avec le rayon original
+    const originalSunGeom = new THREE.SphereGeometry(defaultSunSize, 64, 32);
+    sun.geometry.dispose();
+    sun.geometry = originalSunGeom;
+    
+    // Remettre le Soleil dans la scène
+    scene.add(sun);
+    
+    console.log('✅ Soleil réinitialisé à sa taille originale');
+}
+
+// Initialiser le RouteHandler
+console.log('🛣️ Initialisation du RouteHandler...');
+routeHandler = new RouteHandler();
+routeHandler.init();
+
+// Initialiser le gestionnaire de scène des exoplanètes
+console.log('🪐 Initialisation du ExoplanetSceneManager...');
+let exoplanetSceneManager = null;
+exoplanetSceneManager = new ExoplanetSceneManager(scene, camera);
+console.log('✅ ExoplanetSceneManager prêt');
+
+/**
+ * Cache ou affiche les planètes du système solaire avec leurs orbites et marqueurs
+ * @param {Boolean} visible - true pour afficher, false pour cacher
+ */
+function setSolarSystemPlanetsVisibility(visible) {
+    console.log(`\n${visible ? '👁️ AFFICHAGE' : '🙈 MASQUAGE'} DES ÉLÉMENTS DU SYSTÈME SOLAIRE`);
+    console.log('='.repeat(60));
+    
+    // 1. Cacher/Afficher les planètes (avec leurs orbites blanches intégrées)
+    const solarPlanets = [mercury, venus, earth, mars, jupiter, saturn, uranus, neptune, pluto];
+    
+    solarPlanets.forEach(planetObj => {
+        if (planetObj && planetObj.planetSystem) {
+            planetObj.planetSystem.visible = visible;
+            console.log(`   ${visible ? '✅' : '❌'} ${planetObj.name || 'Planète'}: ${visible ? 'visible' : 'cachée'}`);
+        }
+    });
+    
+    // 2. Cacher/Afficher les marqueurs (noms/labels des planètes)
+    if (planetMarkerSystem) {
+        const planetNames = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+        
+        planetNames.forEach(planetName => {
+            // Cacher/afficher les marqueurs
+            const markerData = planetMarkerSystem.markers.get(planetName);
+            if (markerData && markerData.group) {
+                markerData.group.visible = visible;
+                console.log(`   ${visible ? '🏷️' : '❌'} Marqueur ${planetName}: ${visible ? 'visible' : 'caché'}`);
+            }
+            
+            // Cacher/afficher les ORBITES COLORÉES
+            const orbitData = planetMarkerSystem.orbits.get(planetName);
+            if (orbitData && orbitData.group) {
+                orbitData.group.visible = visible;
+                console.log(`   ${visible ? '�' : '❌'} Orbite colorée ${planetName}: ${visible ? 'visible' : 'cachée'}`);
+            }
+        });
+        
+        // 3. Cacher/Afficher les marqueurs des LUNES
+        const moonNames = ['moon', 'io', 'europa', 'ganymede', 'callisto']; // Lune de la Terre + lunes de Jupiter
+        
+        moonNames.forEach(moonName => {
+            const moonMarkerData = planetMarkerSystem.markers.get(moonName);
+            if (moonMarkerData && moonMarkerData.group) {
+                moonMarkerData.group.visible = visible;
+                console.log(`   ${visible ? '🌙' : '❌'} Marqueur lune ${moonName}: ${visible ? 'visible' : 'caché'}`);
+            }
+        });
+    }
+    
+    console.log('='.repeat(60));
+    console.log(`${visible ? '✅ Système solaire affiché' : '✅ Système solaire masqué'}\n`);
+}
+
+// Écouter l'événement de chargement d'un système Kepler
+window.addEventListener('kepler-system-loaded', (event) => {
+    const systemData = event.detail;
+    const star = systemData.data?.star || systemData.star;
+    const exoplanets = systemData.data?.exoplanets || systemData.exoplanets;
+    
+    if (star) {
+        console.log('🪐 Système Kepler chargé, mise à jour du Soleil...');
+        updateSunRadius(star);
+    }
+    
+    if (exoplanets && exoplanets.length > 0) {
+        console.log('\n🌍 Traitement des exoplanètes...');
+        processExoplanets(exoplanets);
+    }
+});
+
+// Fonction pour formater les données d'une exoplanète pour le système de card
+function formatExoplanetInfo(userData) {
+    const { name, classification, type, distance, radius, temperature, confidence } = userData;
+    
+    // Convertir les unités Three.js en unités réelles
+    const distanceAU = (distance / 7504).toFixed(3); // Reconvertir en UA
+    const radiusKm = (radius * 6371 / 6.37).toFixed(0); // Approximation du rayon en km
+    const distanceKm = (parseFloat(distanceAU) * 149597870.7).toFixed(0); // Distance en km
+    
+    return {
+        radius: `${radiusKm} km (estimé)`,
+        distance: `${distanceAU} UA (${distanceKm} km)`,
+        orbit: 'Période orbitale inconnue',
+        moons: '0 (données indisponibles)',
+        info: `Exoplanète de type ${classification} (${type}) avec ${confidence}% de confiance. Température estimée: ${temperature}K. Classification basée sur le rayon, la température et la distance à l'étoile.`,
+        // Données supplémentaires pour l'affichage
+        classification: classification,
+        type: type,
+        temperature: temperature,
+        confidence: confidence
+    };
+}
+
+// Fonction pour traiter et classifier les exoplanètes
+function processExoplanets(exoplanets) {
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`🔬 CLASSIFICATION DES EXOPLANÈTES`);
+    console.log(`${'='.repeat(80)}\n`);
+    
+    // Cacher les planètes du système solaire
+    setSolarSystemPlanetsVisibility(false);
+    
+    // Utiliser le générateur pour classifier
+    const processedPlanets = ExoplanetGenerator.processExoplanets(exoplanets);
+    
+    // Sauvegarder les planètes traitées pour usage ultérieur
+    window.currentExoplanets = processedPlanets;
+    
+    console.log(`\n✅ ${processedPlanets.length} exoplanètes classifiées et prêtes à être affichées`);
+    console.log(`💡 Accès via: window.currentExoplanets\n`);
+    
+    // Créer les exoplanètes en 3D dans la scène
+    if (exoplanetSceneManager) {
+        // Récupérer le rayon actuel du Soleil depuis sa géométrie
+        const currentSunRadius = sun.geometry.parameters.radius;
+        console.log(`☀️ Utilisation du rayon actuel du Soleil: ${currentSunRadius.toFixed(2)} unités`);
+        
+        exoplanetSceneManager.createExoplanets(processedPlanets, currentSunRadius);
+        
+        // Ajouter les exoplanètes aux raycastTargets pour les rendre cliquables
+        console.log(`📊 Exoplanètes disponibles dans le manager: ${exoplanetSceneManager.exoplanets.length}`);
+        const clickableObjects = exoplanetSceneManager.getClickableObjects();
+        console.log(`📋 Objets cliquables retournés: ${clickableObjects.length}`);
+        
+        clickableObjects.forEach(obj => {
+            raycastTargets.push(obj.mesh);
+            console.log(`🎯 Objet ${obj.userData.name || 'SANS_NOM'} (${obj.type}) ajouté aux raycastTargets`);
+        });
+        console.log(`✅ ${clickableObjects.length} objets ajoutés au système de clic`);
+        
+        // Mettre à jour les contrôles de la sidebar (cacher la recherche ASTRE)
+        setTimeout(() => {
+            ensureAstreSearchControl();
+            addKeplerFollowButton(); // Mettre à jour le bouton pour le mode Kepler
+        }, 100);
+    }
+    
+    return processedPlanets;
+}
+
+// Écouter le retour au système solaire
+const originalNavigateToSolarSystem = routeHandler.navigateToSolarSystem.bind(routeHandler);
+routeHandler.navigateToSolarSystem = function() {
+    console.log('\n🌍 Retour au système solaire...');
+    
+    // Nettoyer les exoplanètes
+    if (exoplanetSceneManager) {
+        // Retirer les exoplanètes des raycastTargets
+        const exoplanetMeshes = exoplanetSceneManager.exoplanets;
+        exoplanetMeshes.forEach(mesh => {
+            const index = raycastTargets.indexOf(mesh);
+            if (index > -1) {
+                raycastTargets.splice(index, 1);
+                console.log(`🗑️ Exoplanète ${mesh.userData?.name || 'inconnue'} retirée des raycastTargets`);
+            }
+        });
+        
+        exoplanetSceneManager.clearExoplanets();
+        console.log('✅ Exoplanètes nettoyées du système de clic');
+    }
+    
+    // Réafficher les planètes du système solaire
+    setSolarSystemPlanetsVisibility(true);
+    
+    // Réinitialiser le rayon du Soleil
+    resetSunRadius();
+    
+    // Réafficher les contrôles de la sidebar (montrer la recherche ASTRE)
+    setTimeout(() => {
+        ensureAstreSearchControl();
+        addKeplerFollowButton(); // Mettre à jour le bouton pour le mode système solaire
+    }, 100);
+    
+    // Appeler la fonction originale
+    originalNavigateToSolarSystem();
+};
+
+// Exposer les fonctions globalement pour utilisation dans la console
+window.solarSystemScript = {
+    updateSunRadius,
+    resetSunRadius,
+    processExoplanets,
+    setSolarSystemPlanetsVisibility,
+    routeHandler,
+    ExoplanetGenerator,
+    exoplanetSceneManager,
+    sun,
+    scene,
+    camera
+};
+
+console.log('✅ RouteHandler initialisé et connecté au Soleil');
+console.log('✅ ExoplanetGenerator chargé et prêt');
+console.log('💡 Testez dans la console: solarSystemScript.routeHandler.navigateToKeplerSystem("Kepler-186")');
+console.log('💡 Afficher toutes les classifications: solarSystemScript.ExoplanetGenerator.displayAllClassifications()');
 
 animate();
 

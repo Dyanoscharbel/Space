@@ -149,11 +149,16 @@ export class SolarSystemEngine extends EventEmitter {
   }
 
   setupLighting() {
-    // Lumière ambiante très faible
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.1);
+    // Lumière ambiante légèrement plus forte pour éviter les côtés complètement noirs
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.2);
     this.scene.add(ambientLight);
     
     // La lumière principale viendra du soleil
+    // Ajouter une lumière directionnelle faible pour simuler la lumière réfléchie par les autres corps
+    const fillLight = new THREE.DirectionalLight(0x404080, 0.1);
+    fillLight.position.set(-1, 0.5, -0.5);
+    fillLight.castShadow = false; // Pas d'ombres pour la lumière de remplissage
+    this.scene.add(fillLight);
   }
 
   async setupBackground() {
@@ -532,5 +537,66 @@ export class SolarSystemEngine extends EventEmitter {
     });
     
     return results;
+  }
+
+  /**
+   * Modifier le rayon du Soleil en fonction des données d'une étoile
+   * @param {Object} starData - Données de l'étoile (avec radius en R☉)
+   */
+  updateSunRadius(starData) {
+    if (!this.sun || !starData || !starData.radius) {
+      console.warn('⚠️ Impossible de modifier le rayon du Soleil:', { 
+        hasSun: !!this.sun, 
+        hasStarData: !!starData,
+        hasRadius: !!(starData && starData.radius)
+      });
+      return;
+    }
+
+    const scaleFactors = SCALE_FACTORS[this.currentScale];
+    
+    // Rayon du Soleil par défaut (en km)
+    const defaultSunRadius = SOLAR_SYSTEM_DATA.sun.diameter / 2; // 696,350 km
+    
+    // Nouveau rayon basé sur l'étoile (en R☉ = rayons solaires)
+    const newRadiusInKm = defaultSunRadius * starData.radius;
+    
+    // Appliquer les facteurs d'échelle
+    const newScaledRadius = (newRadiusInKm / 1000) * scaleFactors.size;
+    
+    console.log('\n🌟 MODIFICATION DU RAYON DU SOLEIL:');
+    console.log(`   Étoile: ${starData.name}`);
+    console.log(`   Rayon original: ${defaultSunRadius.toFixed(0)} km (1.0 R☉)`);
+    console.log(`   Rayon de l'étoile: ${starData.radius.toFixed(2)} R☉`);
+    console.log(`   Nouveau rayon: ${newRadiusInKm.toFixed(0)} km`);
+    console.log(`   Rayon 3D avant: ${this.sun.scaledSize.toFixed(2)}`);
+    console.log(`   Rayon 3D après: ${newScaledRadius.toFixed(2)}`);
+    
+    // Modifier le rayon du Soleil
+    this.sun.setRadius(newScaledRadius);
+    
+    console.log('✅ Rayon du Soleil mis à jour!\n');
+    
+    // Émettre un événement
+    this.emit('sun:radius-changed', {
+      starData,
+      oldRadius: this.sun.scaledSize,
+      newRadius: newScaledRadius
+    });
+  }
+
+  /**
+   * Réinitialiser le rayon du Soleil à sa valeur par défaut
+   */
+  resetSunRadius() {
+    if (!this.sun) return;
+    
+    const scaleFactors = SCALE_FACTORS[this.currentScale];
+    const defaultRadius = (SOLAR_SYSTEM_DATA.sun.diameter / 2 / 1000) * scaleFactors.size;
+    
+    console.log('🔄 Réinitialisation du rayon du Soleil à la valeur par défaut');
+    this.sun.setRadius(defaultRadius);
+    
+    this.emit('sun:radius-reset');
   }
 }

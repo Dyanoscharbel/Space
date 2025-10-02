@@ -59,8 +59,8 @@ export class AsteroidBelt {
   }
 
   createInstancedAsteroids(geometry) {
-    // Create material for asteroids
-    const material = new THREE.MeshPhongMaterial({
+    // Create material for asteroids (MeshStandardMaterial supporte roughness/metalness)
+    const material = new THREE.MeshStandardMaterial({
       color: 0x8B4513,
       roughness: 0.9,
       metalness: 0.1
@@ -121,7 +121,7 @@ export class AsteroidBelt {
   createSimpleAsteroidBelt() {
     // Fallback: create simple sphere asteroids
     const geometry = new THREE.SphereGeometry(1, 8, 6);
-    const material = new THREE.MeshPhongMaterial({
+    const material = new THREE.MeshStandardMaterial({
       color: 0x8B4513,
       roughness: 0.9,
       metalness: 0.1

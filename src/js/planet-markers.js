@@ -26,7 +26,7 @@ export class PlanetMarkerSystem {
             
             // Orbites
             orbitOpacity: 0.4,           // Opacité des orbites (plus visible)
-            orbitSegments: 512,          // Nombre de segments pour des cercles parfaits
+            orbitSegments: 2048,         // Nombre de segments pour des cercles ultra-précis
             orbitLineWidth: 2,           // Épaisseur des lignes d'orbite (plus épais)
             
             // Logique de disparition basée sur la taille apparente de la planète
@@ -326,26 +326,42 @@ export class PlanetMarkerSystem {
             // Faire face à la caméra (billboard effect)
             markerData.group.lookAt(this.camera.position);
             
-            // LOGIQUE DE VISIBILITÉ SPÉCIALE POUR LES LUNES
+            // LOGIQUE DE VISIBILITÉ SPÉCIALE POUR LES LUNES ET SATELLITES
             if (markerData.type === 'moon' && markerData.parentPlanet) {
                 const parentPos = new THREE.Vector3();
                 markerData.parentPlanet.getWorldPosition(parentPos);
                 const distanceToParent = this.camera.position.distanceTo(parentPos);
                 const distanceToMoon = this.camera.position.distanceTo(objectPos);
                 
-                // Visible seulement si on est assez proche de la planète parent
-                // ET pas trop proche de la lune elle-même
-                const shouldShowMoon = distanceToParent < this.config.moonVisibilityDistance && 
-                                     distanceToMoon > this.config.moonProximityThreshold;
-                
-                markerData.group.visible = shouldShowMoon;
-                
-                // Debug plus fréquent pour les lunes
-                if (Math.random() < 0.01) { // 10x plus fréquent pour debug
-                    console.log(`🌙 ${objectName}: parent=${distanceToParent.toFixed(0)} (seuil ${this.config.moonVisibilityDistance}), moon=${distanceToMoon.toFixed(0)} (seuil ${this.config.moonProximityThreshold}), visible=${shouldShowMoon}`);
+                // Traitement spécial pour Kepler (satellite artificiel)
+                if (objectName.toLowerCase() === 'kepler') {
+                    // Kepler est toujours visible quand on est proche de la Terre
+                    // et disparaît seulement quand on est très proche de lui
+                    const shouldShowKepler = distanceToParent < this.config.moonVisibilityDistance && 
+                                           distanceToMoon > 5; // Seuil très petit pour Kepler
+                    
+                    markerData.group.visible = shouldShowKepler;
+                    
+                    // Debug pour Kepler
+                    if (Math.random() < 0.02) {
+                        console.log(`🛰️ Kepler: parent=${distanceToParent.toFixed(0)} (seuil ${this.config.moonVisibilityDistance}), satellite=${distanceToMoon.toFixed(0)} (seuil 5), visible=${shouldShowKepler}`);
+                    }
+                    
+                    if (!shouldShowKepler) return; // Skip le reste si invisible
+                } else {
+                    // Logique normale pour les autres lunes
+                    const shouldShowMoon = distanceToParent < this.config.moonVisibilityDistance && 
+                                         distanceToMoon > this.config.moonProximityThreshold;
+                    
+                    markerData.group.visible = shouldShowMoon;
+                    
+                    // Debug plus fréquent pour les lunes
+                    if (Math.random() < 0.01) { // 10x plus fréquent pour debug
+                        console.log(`🌙 ${objectName}: parent=${distanceToParent.toFixed(0)} (seuil ${this.config.moonVisibilityDistance}), moon=${distanceToMoon.toFixed(0)} (seuil ${this.config.moonProximityThreshold}), visible=${shouldShowMoon}`);
+                    }
+                    
+                    if (!shouldShowMoon) return; // Skip le reste si invisible
                 }
-                
-                if (!shouldShowMoon) return; // Skip le reste si invisible
             }
             
             // TAILLE ABSOLUMENT FIXE - Même taille que dans votre image de référence
@@ -357,8 +373,15 @@ export class PlanetMarkerSystem {
             const pixelsPerUnit = window.innerHeight / screenHeight;
             
             // Taille fixe absolue - adaptée au type d'objet
-            const targetPixelSize = 20; // Taille plus grande pour voir les labels
-            const baseMarkerSize = markerData.type === 'moon' ? this.config.moonMarkerSize : this.config.markerSize;
+            let targetPixelSize = 20; // Taille plus grande pour voir les labels
+            let baseMarkerSize = markerData.type === 'moon' ? this.config.moonMarkerSize : this.config.markerSize;
+            
+            // Taille spéciale pour Kepler (plus grand et plus visible)
+            if (objectName.toLowerCase() === 'kepler') {
+                targetPixelSize = 30; // Taille plus grande pour Kepler
+                baseMarkerSize = this.config.markerSize; // Utiliser la taille des planètes
+            }
+            
             const scaleForFixedSize = targetPixelSize / (baseMarkerSize * pixelsPerUnit);
             
             markerData.group.scale.setScalar(scaleForFixedSize);
@@ -387,8 +410,16 @@ export class PlanetMarkerSystem {
                 markerData.innerCircle.visible = false;
                 markerData.line.visible = false;
                 markerData.label.visible = false;
-                // GARDER clickArea visible (invisible mais cliquable)
-                markerData.clickArea.visible = true;
+                
+                // Pour les lunes : désactiver aussi la clickArea quand on est très proche
+                if (markerData.type === 'moon') {
+                    const distanceToObject = this.camera.position.distanceTo(objectPos);
+                    const veryCloseThreshold = 10; // Distance très proche pour désactiver clickArea
+                    markerData.clickArea.visible = distanceToObject > veryCloseThreshold;
+                } else {
+                    // GARDER clickArea visible pour les planètes (invisible mais cliquable)
+                    markerData.clickArea.visible = true;
+                }
             } else {
                 // Debug pour planètes éloignées
                 if (Math.random() < 0.001) {
