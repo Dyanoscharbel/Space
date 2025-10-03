@@ -96,9 +96,13 @@ export class Planet {
     
     const materialProps = {
       map: await loader.loadAsync(this.data.texture),
-      // Améliorer les propriétés d'éclairage
-      shininess: 1, // Réduire la brillance pour un aspect plus réaliste
-      specular: 0x111111 // Réflexion spéculaire très faible
+      // Propriétés optimisées pour un éclairage réaliste avec ombres
+      shininess: 5, // Très faible brillance
+      specular: 0x050505, // Réflexion spéculaire minimale
+      flatShading: false, // Éclairage lisse pour meilleur rendu
+      // Pas d'émission pour permettre aux côtés sombres d'être vraiment sombres
+      emissive: 0x000000,
+      emissiveIntensity: 0
     };
     
     // Add bump map if available
@@ -186,10 +190,16 @@ export class Planet {
       map: atmosphereTexture,
       transparent: true,
       opacity: 0.3,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
+      // Propriétés pour interaction réaliste avec la lumière
+      shininess: 0,
+      specular: 0x000000
     });
     
     this.atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    // Les atmosphères ne projettent pas d'ombres mais peuvent en recevoir
+    this.atmosphere.castShadow = false;
+    this.atmosphere.receiveShadow = true;
     this.group.add(this.atmosphere);
   }
 
@@ -203,15 +213,23 @@ export class Planet {
     const outerRadius = this.data.rings.outerRadius * this.scaleFactors.size / 1000;
     
     const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 64);
-    const ringMaterial = new THREE.MeshBasicMaterial({
+    // Utiliser MeshPhongMaterial au lieu de MeshBasicMaterial pour réagir à la lumière
+    const ringMaterial = new THREE.MeshPhongMaterial({
       map: ringTexture,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.8,
+      shininess: 0,
+      specular: 0x000000,
+      emissive: 0x000000 // Pas d'émission, les anneaux doivent être éclairés
     });
     
     this.rings = new THREE.Mesh(ringGeometry, ringMaterial);
     this.rings.rotation.x = Math.PI / 2; // Horizontal rings
+    
+    // Les anneaux projettent et reçoivent des ombres
+    this.rings.castShadow = true;
+    this.rings.receiveShadow = true;
     
     this.group.add(this.rings);
   }
@@ -252,8 +270,9 @@ export class Planet {
       const texture = await loader.loadAsync(moonData.texture);
       moonMaterial = new THREE.MeshPhongMaterial({ 
         map: texture,
-        shininess: 1, // Réduire la brillance pour un aspect plus réaliste
-        specular: 0x111111 // Réflexion spéculaire très faible
+        shininess: 5, // Très faible brillance
+        specular: 0x050505, // Réflexion spéculaire minimale
+        emissive: 0x000000 // Pas d'émission
       });
       
       if (moonData.bumpMap) {
@@ -264,8 +283,9 @@ export class Planet {
     } else {
       moonMaterial = new THREE.MeshPhongMaterial({ 
         color: 0x888888,
-        shininess: 1,
-        specular: 0x111111
+        shininess: 5,
+        specular: 0x050505,
+        emissive: 0x000000
       });
     }
     

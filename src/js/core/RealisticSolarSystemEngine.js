@@ -162,11 +162,12 @@ export class RealisticSolarSystemEngine extends EventEmitter {
   }
 
   setupLighting() {
-    // Lumière ambiante très faible pour le réalisme spatial
+    // Lumière ambiante d'origine pour le système réaliste
     const ambientLight = new THREE.AmbientLight(0x111122, 0.05);
     this.scene.add(ambientLight);
     
-    // La lumière principale viendra du soleil
+    // La lumière principale viendra de la PointLight du soleil avec ombres
+    console.log('💡 Éclairage réaliste d\'origine restauré');
   }
 
   async setupBackground() {

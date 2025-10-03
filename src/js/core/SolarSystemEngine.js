@@ -149,16 +149,12 @@ export class SolarSystemEngine extends EventEmitter {
   }
 
   setupLighting() {
-    // Lumière ambiante légèrement plus forte pour éviter les côtés complètement noirs
+    // Lumière ambiante d'origine pour visibilité optimale
     const ambientLight = new THREE.AmbientLight(0x404040, 0.2);
     this.scene.add(ambientLight);
     
-    // La lumière principale viendra du soleil
-    // Ajouter une lumière directionnelle faible pour simuler la lumière réfléchie par les autres corps
-    const fillLight = new THREE.DirectionalLight(0x404080, 0.1);
-    fillLight.position.set(-1, 0.5, -0.5);
-    fillLight.castShadow = false; // Pas d'ombres pour la lumière de remplissage
-    this.scene.add(fillLight);
+    // La lumière principale viendra de la PointLight du soleil avec ombres
+    console.log('💡 Lumière ambiante d\'origine restaurée');
   }
 
   async setupBackground() {

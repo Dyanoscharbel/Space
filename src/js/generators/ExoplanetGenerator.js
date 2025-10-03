@@ -258,9 +258,12 @@ export class ExoplanetGenerator {
                 ...exoplanet,
                 
                 // Classification
+                classification: classification.classification,  // CLÉ (grassland, jungle, etc.) - utilisé dans script.js
                 classificationKey: classification.classification,
                 classificationName: classification.name,
-                classificationType: classification.type,
+                classificationType: classification.classification,  // ✅ FIX: Utiliser la clé au lieu de type parent
+                type: classification.classification,  // ✅ AJOUT: pour compatibilité avec ExoplanetSceneManager
+                parentType: classification.type,  // Type parent (terrestrial, arid, etc.)
                 classificationEmoji: classification.emoji,
                 description: classification.description,
                 confidence: classification.confidence,

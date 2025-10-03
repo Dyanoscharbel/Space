@@ -16,6 +16,8 @@ export class ExoplanetSceneManager {
         this.scene = scene;
         this.camera = camera;
         this.exoplanets = [];
+        // ⭐ Nous n'utilisons plus cette liste d'orbites car nous utilisons uniquement les orbites du PlanetMarkerSystem
+        // Mais nous l'initialisons quand même comme tableau vide pour éviter les erreurs
         this.orbits = [];
         this.textureLoader = new THREE.TextureLoader();
         
@@ -69,26 +71,24 @@ export class ExoplanetSceneManager {
         this.clearExoplanets();
         
         processedPlanets.forEach((planet, index) => {
-            this.createExoplanet(planet, index);
+            // Utiliser la fonction du système solaire pour garantir le même comportement
+            this.createExoplanetWithSolarSystemFunction(planet, index);
         });
         
-        console.log(`✅ ${this.exoplanets.length} exoplanètes créées avec succès!`);
         console.log('════════════════════════════════════════════════════════════\n');
     }
     
     /**
-     * Crée une seule exoplanète
-     * @param {Object} planet - Données de la planète classifiée
-     * @param {Number} index - Index de la planète
+     * Crée une exoplanète en utilisant la fonction createPlanet du système solaire
      */
     createExoplanet(planet, index) {
         const {
             name,
-            radius,        // Rayon en R⊕ (Rayons terrestres)
-            distance,      // Distance en UA
+            radius,
+            distance,
             temperature,
             classification,
-            type,
+            type,  // ✅ Maintenant type contient la clé (grassland, jungle, etc.)
             texturePath,
             confidence
         } = planet;
@@ -103,27 +103,120 @@ export class ExoplanetSceneManager {
         const visualRadius = this.calculateVisualRadius(radius);
         const visualDistance = this.calculateVisualDistance(distance);
         
-        // Créer l'orbite
+        // Créer un groupe pour la planète (comme le système solaire)
+        const planetSystem = new THREE.Group();
+        
+        // Définir la couleur de l'orbite basée sur le type
         const orbitColor = this.orbitColors[type] || this.orbitColors.default;
-        const orbit = this.createOrbit(visualDistance, orbitColor);
-        this.scene.add(orbit);
-        this.orbits.push(orbit);
+        // ⭐ SUPPRESSION DE L'ORBITE DE BASE - On utilise uniquement celle du PlanetMarkerSystem
+        // pour éviter la double orbite désalignée
+        const orbit = null; // Plus de création d'orbite basique
         
-        console.log(`   💫 Orbite créée (couleur: #${orbitColor.toString(16).padStart(6, '0')})`);
+        // 🎯 AJOUTER L'ORBITE COLORÉE via PlanetMarkerSystem (comme le système solaire)
+        if (window.planetMarkerSystem) {
+            try {
+                window.planetMarkerSystem.createOrbit(name.toLowerCase(), visualDistance, orbitColor);
+                console.log(`   🌈 Orbite colorée créée via PlanetMarkerSystem (opacity: 0.4)`);
+            } catch (e) {
+                console.warn(`   ⚠️ Erreur création orbite colorée:`, e);
+            }
+        }
         
-        // Créer la géométrie de la planète
-        const geometry = new THREE.SphereGeometry(visualRadius, 64, 64);
+        console.log(`   💫 Utilisation exclusive de l'orbite colorée du PlanetMarkerSystem`);
+        
+        // Créer la géométrie de la planète avec les MÊMES paramètres que dans createPlanet pour le système solaire
+        // Utilisez EXACTEMENT les mêmes paramètres : 32 segments horizontaux, 20 segments verticaux
+        const geometry = new THREE.SphereGeometry(visualRadius, 32, 20);
+        
+        // 🔧 CORRECTION : S'assurer que les normales pointent vers l'extérieur
+        geometry.computeVertexNormals();
         
         // Charger la texture et créer le matériau
         this.textureLoader.load(
             texturePath,
             (texture) => {
-                // Texture chargée avec succès
-                const material = new THREE.MeshStandardMaterial({
-                    map: texture,
-                    roughness: 0.7,
-                    metalness: 0.1
-                });
+                // Texture chargée avec succès - utiliser MeshPhongMaterial avec paramètres améliorés
+                
+                // Appliquer des corrections à la texture pour éviter les coutures visibles
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(1, 1);
+                texture.offset.set(0, 0);
+                
+                // Appliquer un filtre bilinéaire pour adoucir les bords
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                
+                // Désactiver les mipmaps pour éviter les artefacts aux coutures
+                texture.generateMipmaps = false;
+                
+                // Option 1: Matériel standard avec paramètres améliorés
+                let material;
+                
+                // Déterminer si nous devons utiliser un shader personnalisé pour mieux gérer les coutures
+                const useCustomShader = true;
+                
+                if (useCustomShader) {
+                    // Shader personnalisé pour atténuer les coutures
+                    material = new THREE.ShaderMaterial({
+                        uniforms: {
+                            baseTexture: { value: texture },
+                            blendFactor: { value: 0.05 }  // Contrôle la force du flou aux coutures
+                        },
+                        vertexShader: `
+                            varying vec2 vUv;
+                            
+                            void main() {
+                                vUv = uv;
+                                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                            }
+                        `,
+                        fragmentShader: `
+                            uniform sampler2D baseTexture;
+                            uniform float blendFactor;
+                            
+                            varying vec2 vUv;
+                            
+                            void main() {
+                                // Coordonnées de texture
+                                vec2 uv = vUv;
+                                
+                                // Échantillonner la texture principale
+                                vec4 texColor = texture2D(baseTexture, uv);
+                                
+                                // Échantillonner à proximité pour atténuer les coutures
+                                vec2 offset1 = vec2(0.001, 0.0);
+                                vec2 offset2 = vec2(0.0, 0.001);
+                                vec4 texSample1 = texture2D(baseTexture, mod(uv + offset1, 1.0));
+                                vec4 texSample2 = texture2D(baseTexture, mod(uv - offset1, 1.0));
+                                vec4 texSample3 = texture2D(baseTexture, mod(uv + offset2, 1.0));
+                                vec4 texSample4 = texture2D(baseTexture, mod(uv - offset2, 1.0));
+                                
+                                // Mélanger les échantillons
+                                vec4 blendedColor = mix(
+                                    texColor,
+                                    (texSample1 + texSample2 + texSample3 + texSample4) / 4.0,
+                                    blendFactor
+                                );
+                                
+                                gl_FragColor = blendedColor;
+                            }
+                        `,
+                        lights: true,
+                        fog: false
+                    });
+                } else {
+                    // Matériel standard avec paramètres améliorés
+                    material = new THREE.MeshPhongMaterial({
+                        map: texture,
+                        transparent: false,
+                        depthWrite: true,
+                        depthTest: true,
+                        fog: false,
+                        shininess: 5,      // Réduire la brillance pour un aspect plus mat
+                        specular: 0x111111  // Réduire la spécularité pour moins accentuer les bords
+                    });
+                }
                 
                 const mesh = new THREE.Mesh(geometry, material);
                 
@@ -141,13 +234,19 @@ export class ExoplanetSceneManager {
                     distance: visualDistance,
                     radius: visualRadius,
                     orbitSpeed: this.calculateOrbitSpeed(distance),
+                    rotationSpeed: this.calculateRotationSpeed(visualRadius, type),
                     currentAngle: angle,
                     temperature: temperature,
                     confidence: confidence
                 };
                 
-                // Ajouter à la scène
-                this.scene.add(mesh);
+                // Pas de renderOrder comme dans le système solaire
+                
+                // Ajouter la planète au groupe
+                planetSystem.add(mesh);
+                
+                // Ajouter le groupe complet à la scène
+                this.scene.add(planetSystem);
                 this.exoplanets.push(mesh);
                 
                 console.log(`   ✅ Mesh créé avec texture (rayon visuel: ${visualRadius.toFixed(2)} unités)`);
@@ -160,10 +259,12 @@ export class ExoplanetSceneManager {
                 console.log(`   🎨 Utilisation d'une couleur par défaut`);
                 
                 const fallbackColor = this.getFallbackColor(type);
-                const material = new THREE.MeshStandardMaterial({
+                const material = new THREE.MeshPhongMaterial({
                     color: fallbackColor,
-                    roughness: 0.7,
-                    metalness: 0.1
+                    transparent: false,  // ✅ Matériau opaque
+                    depthWrite: true,    // ✅ Écrire dans le depth buffer
+                    depthTest: true,     // ✅ Tester la profondeur
+                    fog: false           // ✅ DÉSACTIVER le fog pour éviter la perte d'opacité
                 });
                 
                 const mesh = new THREE.Mesh(geometry, material);
@@ -182,12 +283,19 @@ export class ExoplanetSceneManager {
                     distance: visualDistance,
                     radius: visualRadius,
                     orbitSpeed: this.calculateOrbitSpeed(distance),
+                    rotationSpeed: this.calculateRotationSpeed(visualRadius, type),
                     currentAngle: angle,
                     temperature: temperature,
                     confidence: confidence
                 };
                 
-                this.scene.add(mesh);
+                // Pas de renderOrder comme dans le système solaire
+                
+                // Ajouter la planète au groupe
+                planetSystem.add(mesh);
+                
+                // Ajouter le groupe complet à la scène
+                this.scene.add(planetSystem);
                 this.exoplanets.push(mesh);
                 
                 console.log(`   ✅ Mesh créé avec couleur (rayon visuel: ${visualRadius.toFixed(2)} unités)`);
@@ -196,42 +304,142 @@ export class ExoplanetSceneManager {
     }
     
     /**
-     * Crée une orbite circulaire (même système que le système solaire)
+     * Crée une exoplanète en utilisant EXACTEMENT la fonction createPlanet du système solaire
+     */
+    createExoplanetWithSolarSystemFunction(planet, index) {
+        const {
+            name,
+            radius,
+            distance,
+            temperature,
+            classification,
+            type,  // ✅ Maintenant type contient la clé (grassland, jungle, etc.)
+            texturePath,
+            confidence
+        } = planet;
+        
+        console.log(`\n🌍 Création avec fonction système solaire: ${name}`);
+        
+        // Calculer les dimensions visuelles
+        const visualRadius = this.calculateVisualRadius(radius);
+        const visualDistance = this.calculateVisualDistance(distance);
+        
+        // Calculer la position initiale sur l'orbite
+        const angle = (index / this.totalPlanets) * Math.PI * 2;
+        
+        // Nous n'avons pas besoin de pré-charger la texture, nous allons modifier
+        // l'appel à createPlanet pour utiliser directement le chemin de texture
+        
+        // Utiliser la fonction createPlanet du système solaire avec la texture pré-configurée
+        if (typeof window.createPlanet === 'function') {
+            // Créer un matériau personnalisé pour éviter les coutures
+            const customMaterial = new THREE.MeshPhongMaterial({
+                shininess: 10,         // Réduire la brillance pour un aspect plus réaliste
+                specular: 0x333333,    // Réflexion spéculaire plus subtile
+                reflectivity: 0.2      // Augmenter légèrement la réflectivité
+            });
+            
+            // Charger la texture manuellement avec des paramètres personnalisés
+            const texture = new THREE.TextureLoader().load(texturePath, (loadedTexture) => {
+                loadedTexture.anisotropy = 16;  // Augmenter l'anisotropie pour réduire les coutures
+                loadedTexture.generateMipmaps = true;
+                loadedTexture.minFilter = THREE.LinearMipmapLinearFilter;  // Filtrage trilinéaire
+                loadedTexture.wrapS = THREE.ClampToEdgeWrapping;  // Ne pas répéter aux bords
+                loadedTexture.wrapT = THREE.ClampToEdgeWrapping;  // Ne pas répéter aux bords
+                customMaterial.map = loadedTexture;
+                customMaterial.needsUpdate = true;
+            });
+            
+            // Utiliser createPlanet avec notre matériau personnalisé
+            const planetData = window.createPlanet(
+                name,                    // planetName
+                visualRadius,           // size
+                visualDistance,         // position (rayon orbital)
+                0,                      // tilt
+                customMaterial,         // matériau personnalisé au lieu du chemin de texture
+                null,                   // bump
+                null,                   // ring
+                null,                   // atmosphere
+                null                    // moons
+            );
+            
+            // Modifier la couleur de l'orbite selon le type d'exoplanète
+            const orbitColor = this.orbitColors[type] || this.orbitColors.default;
+            if (planetData.planetSystem) {
+                planetData.planetSystem.children.forEach(child => {
+                    if (child instanceof THREE.LineLoop) {
+                        // Remplacer complètement le matériau par un identique au PlanetMarkerSystem
+                        child.material = new THREE.LineBasicMaterial({
+                            color: orbitColor,
+                            transparent: true,
+                            opacity: 0.4
+                            // Pas de depthWrite/depthTest - utiliser les valeurs par défaut
+                        });
+                    }
+                });
+            }
+            
+            // Positionner la planète à l'angle calculé
+            if (planetData.planet) {
+                const initialX = visualDistance * Math.cos(angle);
+                const initialZ = visualDistance * Math.sin(angle);
+                
+                planetData.planet.position.x = initialX;
+                planetData.planet.position.z = initialZ;
+                planetData.planet.position.y = 0;
+                
+                // Ajouter les métadonnées d'exoplanète
+                planetData.planet.userData = {
+                    name, classification, type, distance: visualDistance,
+                    radius: visualRadius, orbitSpeed: this.calculateOrbitSpeed(distance),
+                    rotationSpeed: this.calculateRotationSpeed(visualRadius, type),
+                    currentAngle: angle, temperature, confidence
+                };
+                
+                this.exoplanets.push(planetData.planet);
+                console.log(`   ✅ Exoplanète créée avec fonction système solaire`);
+            }
+        } else {
+            console.error('❌ Fonction createPlanet non disponible');
+            // Fallback vers la méthode actuelle
+            this.createExoplanet(planet, index);
+        }
+    }
+    
+    /**
+     * Crée une orbite circulaire EXACTEMENT comme le système solaire
      * @param {Number} radius - Rayon de l'orbite
      * @param {Number} color - Couleur de l'orbite
      * @returns {THREE.LineLoop} L'orbite
      */
     createOrbit(radius, color) {
-        // Utiliser EllipseCurve comme dans le système solaire
+        // COPIE EXACTE du système solaire (lignes 3276-3294 de script.js)
         const orbitPath = new THREE.EllipseCurve(
-            0, 0,              // centre (ax, aY)
-            radius, radius,    // xRadius, yRadius (cercle parfait)
+            0, 0,              // ax, aY
+            radius, radius,    // xRadius, yRadius
             0, 2 * Math.PI,    // aStartAngle, aEndAngle
             false,             // aClockwise
             0                  // aRotation
         );
         
-        // Générer les points de l'orbite
-        const pathPoints = orbitPath.getPoints(128);
+        // Utiliser un nombre fixe élevé de points pour toutes les orbites (2048 points pour un cercle parfait)
+        const ORBIT_SEGMENTS = 2048;
+        const pathPoints = orbitPath.getPoints(ORBIT_SEGMENTS);
         const orbitGeometry = new THREE.BufferGeometry().setFromPoints(pathPoints);
-        
-        // Matériau avec opacité et respect du depth test complet
-        const orbitMaterial = new THREE.LineBasicMaterial({
-            color: color,
-            transparent: true,
-            opacity: 0.5,     // Plus visible que 0.03 du système solaire
-            depthWrite: true,  // ✅ Écrire dans le depth buffer pour être caché par les planètes
-            depthTest: true    // ✅ Tester la profondeur pour occlusion
+        const orbitMaterial = new THREE.LineBasicMaterial({ 
+            color: color, 
+            transparent: true, 
+            opacity: 0.002,  // ✅ ULTRA-FINE : opacité très réduite pour simuler finesse
+            depthWrite: true,   // ✅ CRUCIAL : Écrire dans le z-buffer
+            depthTest: true,    // ✅ Tester la profondeur pour masquer derrière le soleil
+            fog: false          // ✅ DÉSACTIVER le fog pour éviter la perte d'opacité
         });
-        
-        // Créer la ligne en boucle
         const orbit = new THREE.LineLoop(orbitGeometry, orbitMaterial);
-        
-        // Rotation pour mettre l'orbite dans le plan horizontal (comme le système solaire)
         orbit.rotation.x = Math.PI / 2;
         
-        // Les orbites sont rendues normalement (pas besoin de renderOrder négatif)
-        // Le depthTest s'occupera de les cacher derrière les planètes
+        // 🔥 LOG DE DEBUG - NOUVELLES MODIFICATIONS ACTIVES
+        console.log(`🔧 ORBITE MODIFIÉE: points=${pathPoints.length}, opacity=${orbitMaterial.opacity}, color=#${color.toString(16)}`);
+        console.log(`🔥 VERSION MISE À JOUR: ${new Date().toLocaleTimeString()}`);
         
         return orbit;
     }
@@ -313,8 +521,10 @@ export class ExoplanetSceneManager {
             planet.position.x = distance * Math.cos(newAngle);
             planet.position.z = distance * Math.sin(newAngle);
             
-            // Rotation sur elle-même
-            planet.rotation.y += 0.001;
+            // ☀️ ROTATION SUR ELLE-MÊME : Vitesse augmentée
+            // L'éclairage jour/nuit est géré automatiquement par la PointLight centrale
+            const baseRotationSpeed = this.calculateRotationSpeed(planet.userData.radius, planet.userData.type);
+            planet.rotation.y += baseRotationSpeed * 2.0; // x2 pour être plus visible
         });
     }
     
@@ -332,17 +542,32 @@ export class ExoplanetSceneManager {
                 planet.material.dispose();
             }
             this.scene.remove(planet);
+            
+            // 🧹 Nettoyer aussi l'orbite colorée du PlanetMarkerSystem
+            if (window.planetMarkerSystem && planet.userData && planet.userData.name) {
+                try {
+                    window.planetMarkerSystem.removeOrbit(planet.userData.name.toLowerCase());
+                    console.log(`   🗑️ Orbite colorée supprimée: ${planet.userData.name}`);
+                } catch (e) {
+                    console.warn(`   ⚠️ Erreur suppression orbite colorée:`, e);
+                }
+            }
         });
         
-        // Supprimer les orbites
-        this.orbits.forEach(orbit => {
-            if (orbit.geometry) orbit.geometry.dispose();
-            if (orbit.material) orbit.material.dispose();
-            this.scene.remove(orbit);
-        });
+        // Supprimer les orbites de base si elles existent
+        if (this.orbits && Array.isArray(this.orbits)) {
+            this.orbits.forEach(orbit => {
+                if (orbit.geometry) orbit.geometry.dispose();
+                if (orbit.material) orbit.material.dispose();
+                this.scene.remove(orbit);
+            });
+            this.orbits = [];
+        } else {
+            // Initialiser si undefined
+            this.orbits = [];
+        }
         
         this.exoplanets = [];
-        this.orbits = [];
         
         console.log('✅ Scène nettoyée');
     }
@@ -356,12 +581,27 @@ export class ExoplanetSceneManager {
     }
     
     /**
-     * Obtient une exoplanète par son nom
-     * @param {String} name - Nom de l'exoplanète
-     * @returns {THREE.Mesh|null} Le mesh ou null
+     * Récupère une exoplanète par son nom
+     * @param {string} name - Nom de l'exoplanète (insensible à la casse)
+     * @returns {THREE.Mesh|null} Le mesh de l'exoplanète ou null si non trouvé
      */
     getExoplanetByName(name) {
-        return this.exoplanets.find(planet => planet.userData.name === name) || null;
+        if (!name) return null;
+        
+        const searchName = name.toLowerCase();
+        const exoplanet = this.exoplanets.find(p => 
+            p.userData && 
+            p.userData.name && 
+            p.userData.name.toLowerCase() === searchName
+        );
+        
+        if (exoplanet) {
+            console.log(`✅ Exoplanète trouvée par nom: ${name}`);
+            return exoplanet;
+        } else {
+            console.warn(`⚠️ Exoplanète non trouvée par nom: ${name}`);
+            return null;
+        }
     }
     
     /**
@@ -505,6 +745,80 @@ export class ExoplanetSceneManager {
             }
         }
         return 'Système Kepler';
+    }
+    
+    /**
+     * Liste toutes les exoplanètes disponibles pour le centrage
+     * @returns {Array} Liste des exoplanètes avec leurs noms
+     */
+    getAvailableExoplanets() {
+        return this.exoplanets.map(planet => ({
+            name: planet.userData.name,
+            displayName: planet.userData.name,
+            type: planet.userData.type,
+            classification: planet.userData.classification,
+            mesh: planet
+        }));
+    }
+    
+    /**
+     * Centre la caméra sur une exoplanète spécifique
+     * @param {string} planetName - Nom de l'exoplanète
+     * @returns {boolean} True si le centrage a réussi
+     */
+    centerOnExoplanet(planetName) {
+        const exoplanet = this.getExoplanetByName(planetName);
+        if (exoplanet && typeof window.centerOnPlanet === 'function') {
+            window.centerOnPlanet(planetName, 'exoplanet');
+            return true;
+        }
+        console.warn(`⚠️ Impossible de centrer sur l'exoplanète: ${planetName}`);
+        return false;
+    }
+    
+    /**
+     * Calcule la vitesse de rotation selon la taille et le type de planète
+     */
+    calculateRotationSpeed(radius, type) {
+        // Vitesse de base selon le type (comme le système solaire)
+        const baseSpeed = {
+            grassland: 0.01,    // Comme la Terre
+            jungle: 0.008,      // Planètes denses
+            snowy: 0.006,       // Planètes froides
+            tundra: 0.007,      // 
+            arid: 0.012,        // Planètes sèches (rotation rapide)
+            sandy: 0.011,       // 
+            dusty: 0.009,       // 
+            martian: 0.01,      // Comme Mars
+            barren: 0.005,      // Planètes mortes (lent)
+            marshy: 0.008,      // 
+            gaseous: 0.015,     // Géantes gazeuses (rotation rapide)
+            methane: 0.012,     // Comme Uranus/Neptune
+            default: 0.008
+        };
+        
+        const speed = baseSpeed[type] || baseSpeed.default;
+        
+        // Ajuster selon la taille (plus grande = plus lente généralement)
+        const sizeModifier = Math.max(0.3, 1 - (radius / 50));
+        
+        // Ajouter de la variabilité réaliste
+        const variation = 0.8 + Math.random() * 0.4; // Entre 0.8x et 1.2x
+        
+        return speed * sizeModifier * variation;
+    }
+    
+    /**
+     * Centre la caméra sur l'étoile Kepler
+     * @returns {boolean} True si le centrage a réussi
+     */
+    centerOnKeplerStar() {
+        if (typeof window.centerOnPlanet === 'function') {
+            window.centerOnPlanet('sun', 'kepler_star');
+            return true;
+        }
+        console.warn(`⚠️ Impossible de centrer sur l'étoile Kepler`);
+        return false;
     }
 }
 

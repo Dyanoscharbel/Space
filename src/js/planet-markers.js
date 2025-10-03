@@ -25,14 +25,13 @@ export class PlanetMarkerSystem {
             labelFontSize: 84,           // Taille de police équilibrée (un peu plus)
             
             // Orbites
-            orbitOpacity: 0.4,           // Opacité des orbites (plus visible)
+            orbitOpacity: 0.4,           // Opacité des orbites (plus visible) - NORMALE
             orbitSegments: 2048,         // Nombre de segments pour des cercles ultra-précis
-            orbitLineWidth: 2,           // Épaisseur des lignes d'orbite (plus épais)
+            orbitLineWidth: 2,           // Épaisseur des lignes d'orbite (plus épais) - NORMALE
             
             // Logique de disparition basée sur la taille apparente de la planète
             planetVisibilityThreshold: 20,  // Seuil plus bas pour garder les marqueurs plus longtemps
             fixedSize: true,                 // Taille fixe, pas d'adaptation au zoom
-            
             // Configuration spéciale pour les LUNES
             moonMarkerSize: 100,             // Plus gros pour faciliter la sélection (était 67)
             moonLabelSize: 1000,             // MÊME TAILLE que les planètes
@@ -51,6 +50,22 @@ export class PlanetMarkerSystem {
                 uranus: 0x4FD0E7,
                 neptune: 0x4B70DD,
                 pluto: 0x9CA4AB
+            },
+            
+            // Couleurs par TYPE d'exoplanète (basé sur userData.type)
+            exoplanetTypeColors: {
+                grassland: 0x7CFC00,   // Vert prairie
+                jungle: 0x228B22,      // Vert forêt
+                snowy: 0xE0FFFF,       // Cyan clair
+                tundra: 0x87CEEB,      // Bleu ciel
+                arid: 0xD2691E,        // Marron orangé
+                sandy: 0xF4A460,       // Sable
+                dusty: 0xC0C0C0,       // Gris
+                martian: 0xFF4500,     // Rouge orangé
+                barren: 0x696969,      // Gris foncé
+                marshy: 0x556B2F,      // Vert olive
+                gaseous: 0xFFA500,     // Orange
+                methane: 0x4169E1      // Bleu royal
             }
         };
     }
@@ -73,7 +88,28 @@ export class PlanetMarkerSystem {
      * Méthode générique pour créer un marqueur (planète ou lune)
      */
     createMarker(objectName, objectMesh, displayName = null, type = 'planet', parentPlanet = null) {
-        const color = this.config.planetColors[objectName.toLowerCase()] || this.config.markerColor;
+        // 🎨 Choisir la couleur selon le type
+        let color;
+        
+        console.log(`\n🔍 DEBUG createMarker pour "${objectName}":`);
+        console.log(`   - objectMesh.userData:`, objectMesh.userData);
+        console.log(`   - objectMesh.userData.type:`, objectMesh.userData?.type);
+        
+        // Vérifier d'abord si c'est une exoplanète avec un type spécifique
+        if (objectMesh.userData && objectMesh.userData.type) {
+            const exoType = objectMesh.userData.type;
+            const foundColor = this.config.exoplanetTypeColors[exoType];
+            color = foundColor || this.config.markerColor;
+            console.log(`   🎨 Type exoplanète: "${exoType}"`);
+            console.log(`   🎨 Couleur trouvée: ${foundColor ? `#${foundColor.toString(16)}` : 'NON TROUVÉE (utilise défaut)'}`);
+            console.log(`   🎨 Couleur finale: #${color.toString(16)}`);
+        } else {
+            // Sinon, utiliser les couleurs des planètes du système solaire
+            color = this.config.planetColors[objectName.toLowerCase()] || this.config.markerColor;
+            console.log(`   🪐 Planète système solaire: "${objectName.toLowerCase()}"`);
+            console.log(`   🎨 Couleur: #${color.toString(16)}`);
+        }
+        
         const name = displayName || objectName.charAt(0).toUpperCase() + objectName.slice(1);
         
         // Tailles selon le type (planète ou lune)
@@ -94,8 +130,12 @@ export class PlanetMarkerSystem {
         const clickMaterial = new THREE.MeshBasicMaterial({
             color: color,
             transparent: true,
-            opacity: 0,  // Invisible mais cliquable
-            side: THREE.DoubleSide
+            opacity: 0.001,  // ✅ FIX: Opacité très légère pour être détectable par le raycaster
+            side: THREE.DoubleSide,
+            fog: false,  // Empêcher la perte d'opacité avec la distance
+            alphaTest: 0.01,  // ✅ FIX: Permettre au raycaster de détecter les objets semi-transparents
+            depthTest: true,  // ✅ FIX: Tester la profondeur normalement
+            depthWrite: false  // ✅ FIX: Ne pas écrire dans le buffer de profondeur (transparence)
         });
         
         // Créer l'anneau visuel (pour l'affichage)
@@ -109,7 +149,8 @@ export class PlanetMarkerSystem {
             color: color,
             transparent: true,
             opacity: this.config.markerOpacity,
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide,
+            fog: false  // ✅ Empêcher la perte d'opacité avec la distance
         });
         
         // Créer les deux meshes
@@ -125,7 +166,8 @@ export class PlanetMarkerSystem {
         const innerMaterial = new THREE.MeshBasicMaterial({
             color: color,
             transparent: true,
-            opacity: 1
+            opacity: 1,
+            fog: false  // ✅ Empêcher la perte d'opacité avec la distance
             // MeshBasicMaterial ne supporte pas emissive - supprimé
         });
         
@@ -142,7 +184,8 @@ export class PlanetMarkerSystem {
             color: color,
             transparent: true,
             opacity: this.config.markerOpacity * 0.7,
-            linewidth: this.config.markerLineWidth
+            linewidth: this.config.markerLineWidth,
+            fog: false  // ✅ Empêcher la perte d'opacité avec la distance
         });
         const connectionLine = new THREE.Line(lineGeometry, lineMaterial);
         markerGroup.add(connectionLine);
@@ -253,9 +296,26 @@ export class PlanetMarkerSystem {
      * Créer une orbite visible pour une planète
      */
     createOrbit(planetName, orbitRadius, color = null) {
-        const orbitColor = color || this.config.planetColors[planetName.toLowerCase()] || 0xffffff;
+        let orbitColor;
         
-        // Créer la courbe de l'orbite avec BEAUCOUP plus de points pour un cercle parfait
+        if (color) {
+            // Couleur explicitement fournie
+            orbitColor = color;
+        } else {
+            // Chercher la couleur selon le marqueur associé
+            const markerData = this.markers.get(planetName.toLowerCase());
+            if (markerData && markerData.planet && markerData.planet.userData && markerData.planet.userData.type) {
+                // Exoplanète : utiliser la couleur basée sur le type
+                const exoType = markerData.planet.userData.type;
+                orbitColor = this.config.exoplanetTypeColors[exoType] || 0xffffff;
+                console.log(`🌈 Orbite pour ${planetName} (type: ${exoType}): #${orbitColor.toString(16)}`);
+            } else {
+                // Planète du système solaire : utiliser planetColors
+                orbitColor = this.config.planetColors[planetName.toLowerCase()] || 0xffffff;
+            }
+        }
+        
+        // Créer la courbe de l'orbite avec un nombre adaptatif de points
         const curve = new THREE.EllipseCurve(
             0, 0,                           // Centre
             orbitRadius, orbitRadius,       // Rayons x et y
@@ -264,8 +324,14 @@ export class PlanetMarkerSystem {
             0                               // Rotation
         );
         
-        // Utiliser encore plus de points pour des cercles ultra-lisses
-        const points = curve.getPoints(this.config.orbitSegments);
+        // Utiliser un nombre fixe élevé de segments pour TOUTES les orbites
+        // Cela garantit une uniformité parfaite entre toutes les orbites
+        const ORBIT_SEGMENTS = 2048; // Même valeur que dans createPlanet
+        
+        console.log(`🔄 Orbite marqueur pour ${planetName}: rayon = ${orbitRadius}, segments = ${ORBIT_SEGMENTS} (fixe)`);
+        
+        // Utiliser le nombre fixe de points pour un cercle parfait et uniforme
+        const points = curve.getPoints(ORBIT_SEGMENTS);
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         
         // Rotation pour mettre l'orbite dans le plan XZ
@@ -442,10 +508,10 @@ export class PlanetMarkerSystem {
         // Deuxième passe : détecter les chevauchements et masquer si nécessaire
         this.checkOverlaps();
         
-        // Mettre à jour l'opacité des orbites - PLUS VISIBLE pour planètes éloignées
+        // Mettre à jour l'opacité des orbites - OPACITÉ FIXE pour éviter la transparence
         const cameraDistance = this.camera.position.length();
-        // Opacité MINIMALE plus élevée pour toujours voir les orbites
-        const orbitOpacityFactor = Math.max(0.6, Math.min(1, cameraDistance / 8000)); // Plus visible
+        // OPACITÉ CONSTANTE - ne plus varier avec la distance
+        const orbitOpacityFactor = 1.0; // ✅ TOUJOURS opaque, pas de variation
         
         this.orbits.forEach((orbitData) => {
             orbitData.line.material.opacity = this.config.orbitOpacity * orbitOpacityFactor;

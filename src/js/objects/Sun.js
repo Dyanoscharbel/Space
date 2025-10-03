@@ -57,20 +57,27 @@ export class Sun {
   }
 
   createLight() {
-    // Create point light at sun's center
-    this.pointLight = new THREE.PointLight(0xffffff, 3, 0, 1.5); // Augmenter l'intensité et réduire l'atténuation
+    // Create point light at sun's center - Intensité d'origine restaurée
+    this.pointLight = new THREE.PointLight(0xffffff, 25, 0, 2); 
     this.pointLight.position.set(0, 0, 0);
     this.pointLight.castShadow = true;
     
-    // Configure shadow properties
-    this.pointLight.shadow.mapSize.width = 2048;
-    this.pointLight.shadow.mapSize.height = 2048;
-    this.pointLight.shadow.camera.near = 0.1;
-    this.pointLight.shadow.camera.far = 2000; // Augmenter la portée des ombres
+    // Configure shadow properties for realistic shadows
+    this.pointLight.shadow.mapSize.width = 4096; // Haute résolution
+    this.pointLight.shadow.mapSize.height = 4096;
+    this.pointLight.shadow.camera.near = 0.5;
+    this.pointLight.shadow.camera.far = 5000; // Portée adaptée
     this.pointLight.shadow.bias = -0.0001;
-    this.pointLight.shadow.radius = 3; // Adoucir les ombres
+    this.pointLight.shadow.radius = 2; // Ombres douces
     
     this.group.add(this.pointLight);
+    
+    console.log('☀️ Lumière solaire créée (intensité restaurée):', {
+      intensity: this.pointLight.intensity,
+      decay: this.pointLight.decay,
+      castShadow: this.pointLight.castShadow,
+      shadowMapSize: `${this.pointLight.shadow.mapSize.width}x${this.pointLight.shadow.mapSize.height}`
+    });
   }
 
   async createCorona() {

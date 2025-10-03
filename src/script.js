@@ -84,126 +84,8 @@ function initializeHUD() {
     }
 
 // Fonction pour mettre à jour l'intensité du soleil
-function updateSunIntensity(intensity) {
-  if (typeof sunMat !== 'undefined' && sunMat) {
-    sunMat.emissiveIntensity = intensity;
-    console.log('☀️ Intensité du soleil mise à jour:', intensity);
-    return true;
-  }
-  return false;
-}
-
-// Ensure Sun intensity buttons are present in the sidebar and wired
-function ensureSunIntensityControl() {
-  console.log('☀️ ensureSunIntensityControl() démarrée');
-  const panel = document.querySelector('#settings-panel .settings-body');
-  console.log('📋 Panel .settings-body trouvé:', !!panel);
-  if (!panel) {
-    console.error('❌ Panel .settings-body non trouvé !');
-    return;
-  }
-  
-  // Supprimer l'ancien contrôle s'il existe
-  const existingControl = document.getElementById('sun-intensity-control');
-  if (existingControl) {
-    existingControl.remove();
-    console.log('🗑️ Ancien contrôle d\'intensité du soleil supprimé');
-  }
-
-  const group = document.createElement('div');
-  group.className = 'setting-group';
-  group.id = 'sun-intensity-control';
-  group.innerHTML = `
-    <label class="setting-label">INTENSITÉ DU SOLEIL</label>
-    <div class="setting-buttons" style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;">
-      <button class="intensity-btn" data-value="0.1" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">10%</button>
-      <button class="intensity-btn" data-value="0.25" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">25%</button>
-      <button class="intensity-btn" data-value="0.5" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">50%</button>
-      <button class="intensity-btn" data-value="0.75" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">75%</button>
-      <button class="intensity-btn" data-value="1.0" style="flex: 1; min-width: 60px; padding: 8px 12px; border: 1px solid #444; background: #222; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">100%</button>
-    </div>
-    <div class="current-intensity" style="margin-top: 8px; font-size: 12px; color: #888; text-align: center;">
-      Intensité actuelle: <span id="current-intensity-value">50%</span>
-    </div>
-  `;
-  panel.appendChild(group);
-  console.log('✅ Contrôle intensité soleil (boutons) ajouté au DOM');
-
-  // Load persisted value or use current settings
-  let currentIntensity = settings.sunIntensity ?? 0.5;
-  try {
-    const saved = localStorage.getItem('sunIntensity');
-    if (saved) currentIntensity = parseFloat(saved);
-  } catch {}
-  
-  // Mettre à jour l'affichage de l'intensité actuelle
-  const currentValueEl = document.getElementById('current-intensity-value');
-  if (currentValueEl) {
-    currentValueEl.textContent = Math.round(currentIntensity * 100) + '%';
-  }
-  
-  // Mettre à jour le matériau du soleil
-    if (typeof sunMat !== 'undefined' && sunMat) {
-    sunMat.emissiveIntensity = currentIntensity;
-  }
-
-  // Ajouter les événements aux boutons
-  const buttons = group.querySelectorAll('.intensity-btn');
-  buttons.forEach(button => {
-    const value = parseFloat(button.dataset.value);
-    
-    // Marquer le bouton actuel comme actif
-    if (Math.abs(value - currentIntensity) < 0.01) {
-      button.style.background = '#4CAF50';
-      button.style.borderColor = '#4CAF50';
-    }
-    
-    button.addEventListener('click', (e) => {
-      const intensity = parseFloat(e.target.dataset.value);
-      console.log('☀️ Intensité soleil changée:', intensity, '(' + Math.round(intensity * 100) + '%)');
-      
-      // Mettre à jour le matériau du soleil
-      const updated = updateSunIntensity(intensity);
-      if (!updated) {
-      console.warn('⚠️ sunMat non disponible, valeur stockée dans settings');
-    }
-      
-      // Sauvegarder dans settings
-      settings.sunIntensity = intensity;
-      try { localStorage.setItem('sunIntensity', String(intensity)); } catch {}
-      
-      // Mettre à jour l'affichage
-      if (currentValueEl) {
-        currentValueEl.textContent = Math.round(intensity * 100) + '%';
-      }
-      
-      // Mettre à jour l'apparence des boutons
-      buttons.forEach(btn => {
-        btn.style.background = '#222';
-        btn.style.borderColor = '#444';
-      });
-      e.target.style.background = '#4CAF50';
-      e.target.style.borderColor = '#4CAF50';
-    });
-    
-    // Effet hover
-    button.addEventListener('mouseenter', (e) => {
-      if (e.target.style.background !== 'rgb(76, 175, 80)') {
-        e.target.style.background = '#333';
-        e.target.style.borderColor = '#666';
-      }
-    });
-    
-    button.addEventListener('mouseleave', (e) => {
-      if (e.target.style.background !== 'rgb(76, 175, 80)') {
-        e.target.style.background = '#222';
-        e.target.style.borderColor = '#444';
-      }
-    });
-  });
-  
-  console.log('✅ Boutons d\'intensité du soleil configurés');
-}
+// ✅ FONCTIONS DE CONTRÔLE D'INTENSITÉ DU SOLEIL SUPPRIMÉES
+// L'intensité du soleil est maintenant fixée à une valeur optimale (150)
 
 // Ajouter le bouton de navigation (Kepler ou retour système solaire) dans la sidebar
 function addKeplerFollowButton() {
@@ -764,23 +646,10 @@ function ensureAstreSearchControl() {
         const grp = scaleFactorSetting.closest('.setting-group');
         if (grp) grp.style.display = 'none';
     }
-
-    // Inject Sun intensity control in sidebar (petit délai pour s'assurer que sidebar est prête)
+    
     setTimeout(() => {
-        console.log('🔧 Appel de ensureSunIntensityControl()');
-        ensureSunIntensityControl();
-        console.log('🔧 ensureSunIntensityControl() terminé');
-        
-        // Vérification supplémentaire après un délai
-        setTimeout(() => {
-          const slider = document.getElementById('sun-intensity-setting');
-          if (!slider) {
-            console.error('❌ Jauge d\'intensité du soleil non créée, tentative de recréation...');
-            ensureSunIntensityControl();
-          } else {
-            console.log('✅ Jauge d\'intensité du soleil confirmée dans le DOM');
-          }
-        }, 500);
+        // ✅ CONTRÔLE D'INTENSITÉ DU SOLEIL SUPPRIMÉ
+        // L'intensité du soleil est maintenant fixée à une valeur optimale (150)
         
         // Ajouter le bouton de suivi de Kepler
         addKeplerFollowButton();
@@ -1366,9 +1235,13 @@ function updateCoordinates() {
 console.log("Create the scene");
 const scene = new THREE.Scene();
 
+// ✅ DÉSACTIVER LE FOG GLOBALEMENT pour éviter la perte d'opacité avec la distance
+scene.fog = null;
+console.log("🌫️ Fog désactivé globalement pour préserver l'opacité des objets");
+
 console.log("Create a perspective projection camera");
 // We'll set the aspect ratio after we know the container size
-var camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 0.001, 100000000 ); // Horizon ULTRA lointain pour dézoomer jusqu'à voir le système comme un point
+var camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 0.1, 10000000 ); // Valeurs équilibrées pour éviter les problèmes de précision
 camera.position.set(-3000, 2000, 1000); // Position initiale adaptée aux nouvelles échellesénorme pour voir tout le système
 
 console.log("Create the renderer");
@@ -1410,7 +1283,7 @@ controls.dampingFactor = 0.05;
 controls.screenSpacePanning = false;
 
 // Contrôles ultra-libres pour navigation totale
-controls.minDistance = 0.01; // Permet de zoomer TRÈS près (presque à l'intérieur)
+controls.minDistance = 1; // Distance minimale raisonnable pour éviter les problèmes de rendu
 controls.maxDistance = 50000000; // Zoom ULTRA lointain pour voir tout le système comme un point
 controls.enableZoom = true;
 controls.zoomSpeed = 3.0; // Zoom encore plus rapide
@@ -1479,9 +1352,11 @@ function createPlanetSelectionSpheres() {
     if (typeof earth !== 'undefined' && earth) {
         planetData.push({ name: 'Earth', planet: earth, displayName: 'Earth', realSize: getRealisticPlanetSize('earth') });
     }
+    
     if (typeof mars !== 'undefined' && mars) {
         planetData.push({ name: 'Mars', planet: mars, displayName: 'Mars', realSize: getRealisticPlanetSize('mars') });
     }
+    
     if (typeof jupiter !== 'undefined' && jupiter) {
         planetData.push({ name: 'Jupiter', planet: jupiter, displayName: 'Jupiter', realSize: getRealisticPlanetSize('jupiter') });
     }
@@ -2108,7 +1983,7 @@ composer.addPass(bloomPass);
 
 // ****** AMBIENT LIGHT ******
 console.log("Add the ambient light");
-var lightAmbient = new THREE.AmbientLight(0x222244, 2.5); // Légèrement plus forte pour voir le côté nuit
+var lightAmbient = new THREE.AmbientLight(0x222222, 1.5); // Lumière ambiante faible et neutre
 scene.add(lightAmbient);
 
 // ******  Star background  ******
@@ -2213,10 +2088,25 @@ function onDocumentMouseDown(event) {
   raycaster.setFromCamera(mouse, camera);
   
   // Chercher les intersections avec les planètes
-  const intersects = raycaster.intersectObjects(raycastTargets);
+  const intersects = raycaster.intersectObjects(raycastTargets, false);
   
   console.log("🖱️ Clic détecté:", mouse, "Intersections:", intersects.length);
   console.log("🎯 Objets raycastables:", raycastTargets.length);
+  
+  // ✅ FIX: Liste les marqueurs d'exoplanètes qui sont censés être cliquables
+  if (window.currentExoplanets) {
+    const exoMarkers = raycastTargets.filter(obj => 
+      obj.userData?.isMarker && 
+      obj.userData?.planetName && 
+      window.currentExoplanets.some(p => 
+        p.name.toLowerCase() === obj.userData.planetName.toLowerCase()
+      )
+    );
+    console.log(`🎯 Marqueurs d'exoplanètes cliquables: ${exoMarkers.length}`);
+    exoMarkers.forEach(marker => {
+      console.log(`  → Marqueur: ${marker.userData.planetName}, type: ${marker.userData.type}, isExoplanetMarker: ${!!marker.userData.isExoplanetMarker}`);
+    });
+  }
   
   // Debug: afficher les objets intersectés
   if (intersects.length > 0) {
@@ -2261,10 +2151,35 @@ function onDocumentMouseDown(event) {
     const clickedObject = intersects[0].object;
     
     // Vérifier si c'est une sphère de sélection ou un marqueur
-    if (clickedObject.userData && (clickedObject.userData.isSelectionSphere || clickedObject.userData.isMarker)) {
-      const objectName = clickedObject.userData.planetName;
-      const objectType = clickedObject.userData.type || 'planet';
-      const emoji = objectType === 'moon' ? '🌙' : '🪐';
+    if (clickedObject.userData && (clickedObject.userData.isSelectionSphere || clickedObject.userData.isMarker || clickedObject.userData.isExoplanetMarker)) {
+      let objectName = clickedObject.userData.planetName;
+      let objectType = clickedObject.userData.type || 'planet';
+      let realPlanetMesh = clickedObject.userData.planetMesh;
+      
+      console.log(`🔍 DEBUG CLIC MARKER: userData=`, clickedObject.userData);
+      
+      // ✅ FIX: Détecter automatiquement les exoplanètes
+      if (window.currentExoplanets) {
+        const isExoplanet = window.currentExoplanets.some(p => 
+          p.name.toLowerCase() === objectName.toLowerCase()
+        );
+        
+        if (isExoplanet) {
+          objectType = 'exoplanet';
+          console.log(`🪐 Marqueur d'exoplanète détecté: ${objectName}`);
+          
+          // ✅ FIX: Récupérer la vraie exoplanète depuis le manager
+          if (exoplanetSceneManager) {
+            const exoplanet = exoplanetSceneManager.getExoplanetByName(objectName);
+            if (exoplanet) {
+              realPlanetMesh = exoplanet;
+              console.log(`🚀 Récupéré le vrai mesh d'exoplanète: ${objectName}`);
+            }
+          }
+        }
+      }
+      
+      const emoji = objectType === 'moon' ? '🌙' : objectType === 'exoplanet' ? '🪐' : '🌎';
       
       console.log(`🔘 Marqueur/Sphère cliqué: ${emoji} ${objectName} (${objectType})`);
       
@@ -2287,11 +2202,23 @@ function onDocumentMouseDown(event) {
         console.log(`🔴 selectedPlanet avant:`, selectedPlanet);
       }
       
+      // ✅ FIX: Pour les exoplanètes, construire un objet selectedPlanet complet
+      if (objectType === 'exoplanet' && realPlanetMesh) {
+        selectedPlanet = { 
+          name: objectName, 
+          type: objectType,
+          object: realPlanetMesh,
+          userData: realPlanetMesh.userData
+        };
+        console.log(`🪐 Exoplanète sélectionnée via marqueur:`, selectedPlanet);
+      } else {
+        selectedPlanet = { name: objectName, type: objectType };
+      }
+      
       // Centrer sur l'objet (planète ou lune)
       centerOnPlanet(objectName, objectType);
       
       // Afficher les infos
-      selectedPlanet = { name: objectName, type: objectType };
       // closeInfoNoZoomOut(); // Temporairement commenté pour test
       showPlanetInfo(objectName, objectType);
       
@@ -2853,16 +2780,31 @@ function centerOnPlanet(objectName, objectType = 'planet') {
   } else if (objectType === 'exoplanet') {
     // Gérer les exoplanètes
     if (exoplanetSceneManager && exoplanetSceneManager.exoplanets.length > 0) {
-      const exoplanet = exoplanetSceneManager.exoplanets.find(p => p.userData.name === objectName);
+      const exoplanet = exoplanetSceneManager.exoplanets.find(p => 
+        p.userData.name === objectName || p.userData.name.toLowerCase() === objectName.toLowerCase()
+      );
       if (exoplanet) {
         targetObject = exoplanet;
         console.log("🪐 Centrage sur exoplanète:", objectName);
+        console.log("   Position:", exoplanet.position);
+        console.log("   Données:", exoplanet.userData);
+      } else {
+        console.warn("⚠️ Exoplanète non trouvée:", objectName);
+        console.log("   Exoplanètes disponibles:", exoplanetSceneManager.exoplanets.map(p => p.userData.name));
       }
     }
+  } else if (objectType === 'kepler_star' || (objectType === 'sun' && window.currentExoplanets)) {
+    // Gérer l'étoile Kepler (le soleil dans un système Kepler)
+    if (sun) {
+      targetObject = sun;
+      const starName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Étoile Kepler';
+      console.log("⭐ Centrage sur étoile Kepler:", starName);
+    }
   } else if (objectType === 'sun') {
-    // Gérer le Soleil
+    // Gérer le Soleil du système solaire
     if (objectName.toLowerCase() === 'soleil' || objectName.toLowerCase() === 'sun') {
       targetObject = sun; // Le soleil est défini comme une variable globale
+      console.log("☀️ Centrage sur le Soleil");
     }
   } else if (objectType === 'dwarf_planet') {
     // Gérer les planètes naines
@@ -2933,6 +2875,62 @@ function centerOnPlanetSimple(planetName) {
     
     console.log(`🎯 Centré sur ${planetName} - position caméra inchangée`);
   }
+}
+
+// Fonction utilitaire pour centrer sur les objets Kepler
+function centerOnKeplerObject(objectName, objectType = 'auto') {
+  console.log(`🎯 Tentative de centrage Kepler sur: ${objectName} (${objectType})`);
+  
+  // Auto-détection du type si nécessaire
+  if (objectType === 'auto') {
+    if (objectName.toLowerCase().includes('kepler') && !objectName.includes(' ')) {
+      objectType = 'kepler_star';
+      objectName = 'sun';
+    } else {
+      objectType = 'exoplanet';
+    }
+  }
+  
+  // Utiliser la fonction centerOnPlanet existante
+  centerOnPlanet(objectName, objectType);
+  
+  // Afficher les informations
+  if (objectType === 'exoplanet' && exoplanetSceneManager) {
+    const exoplanet = exoplanetSceneManager.getExoplanetByName(objectName);
+    if (exoplanet && exoplanet.userData) {
+      showPlanetInfo(objectName, objectType);
+    }
+  } else if (objectType === 'kepler_star') {
+    const starName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Étoile Kepler';
+    showPlanetInfo(starName, 'kepler_star');
+  }
+}
+
+// Fonction pour lister toutes les exoplanètes disponibles
+function listAvailableExoplanets() {
+  if (!exoplanetSceneManager || exoplanetSceneManager.exoplanets.length === 0) {
+    console.log('❌ Aucune exoplanète disponible');
+    return [];
+  }
+  
+  const exoplanets = exoplanetSceneManager.getAvailableExoplanets();
+  console.log('\n🪐 EXOPLANÈTES DISPONIBLES POUR CENTRAGE:');
+  console.log('═══════════════════════════════════════════');
+  
+  exoplanets.forEach((planet, index) => {
+    console.log(`${index + 1}. ${planet.name} (${planet.type})`);
+    console.log(`   Classification: ${planet.classification}`);
+    console.log(`   Commande: centerOnKeplerObject("${planet.name}")`);
+  });
+  
+  // Ajouter l'étoile Kepler
+  const starName = exoplanetSceneManager.getKeplerStarName();
+  console.log(`${exoplanets.length + 1}. ${starName} (étoile)`);
+  console.log(`   Commande: centerOnKeplerObject("${starName}", "kepler_star")`);
+  
+  console.log('═══════════════════════════════════════════\n');
+  
+  return exoplanets;
 }
 
 // Fonction pour zoomer sur une planète (utilisée par les raccourcis clavier)
@@ -3109,36 +3107,23 @@ console.log(`☀️ Soleil: ${sunSize.toFixed(1)} unités (${SUN_EARTH_RATIO}x l
 
 // Géométrie et matériau du Soleil
 const sunGeom = new THREE.SphereGeometry(sunSize, 64, 32); // Plus de détails
-let sunMat = new THREE.MeshStandardMaterial({
-  emissive: 0xFFF88F,
-  emissiveMap: loadTexture.load(sunTexture),
-  emissiveIntensity: settings.sunIntensity
+let sunMat = new THREE.MeshBasicMaterial({
+  color: 0xFFFF00,   // Jaune plus vif
+  map: loadTexture.load(sunTexture),
+  // MeshBasicMaterial ignore l'éclairage et brille uniformément
 });
 const sun = new THREE.Mesh(sunGeom, sunMat);
 scene.add(sun);
 
 // Mettre à jour le contrôle d'intensité du soleil maintenant que sunMat existe
-if (typeof ensureSunIntensityControl === 'function') {
-  console.log('☀️ Mise à jour du contrôle d\'intensité du soleil après création du matériau');
-  // Mettre à jour la valeur du slider si il existe
-  const sunIntensitySlider = document.getElementById('sun-intensity-setting');
-  if (sunIntensitySlider) {
-    sunIntensitySlider.value = settings.sunIntensity;
-    const sunIntensityValue = document.getElementById('sun-intensity-value');
-    if (sunIntensityValue) {
-      sunIntensityValue.textContent = Number(settings.sunIntensity).toFixed(1) + 'x';
-    }
-    console.log('✅ Contrôle d\'intensité du soleil synchronisé avec le matériau');
-  }
-}
+// ✅ CONTRÔLE D'INTENSITÉ DU SOLEIL SUPPRIMÉ
+// L'intensité du soleil est maintenant fixée à une valeur optimale (150)
 
-//point light in the sun - AJUSTÉE À LA NOUVELLE TAILLE
-// Intensité et portée proportionnelles à la taille du Soleil
-const lightIntensity = 25; // Éclairage normal du Soleil
-const lightDistance = 0; // Portée infinie pour éclairer tout le système solaire
-const pointLight = new THREE.PointLight(0xFDFFD3, lightIntensity, lightDistance, 1.8);
-// Positionner la lumière exactement au centre du Soleil
-pointLight.position.set(0, 0, 0);
+//point light in the sun - LUMIÈRE PRINCIPALE ET UNIQUE
+const lightIntensity = 100; // ✅ INTENSITÉ FORTEMENT AUGMENTÉE pour une meilleure visibilité
+const lightDistance = 0; // Portée infinie pour atteindre toutes les planètes
+const pointLight = new THREE.PointLight(0xFDFFD3, lightIntensity, lightDistance, 0.5); // Decay réduit pour que la lumière atteigne mieux les planètes éloignées
+pointLight.position.set(0, 0, 0); // Au centre du soleil
 
 // *** CONFIGURER LES OMBRES IMMÉDIATEMENT ***
 pointLight.castShadow = true;
@@ -3149,18 +3134,19 @@ pointLight.shadow.camera.far = 50000;
 pointLight.shadow.radius = 1;
 pointLight.shadow.bias = -0.001;
 
-console.log(`💡 Lumière solaire: intensité ${lightIntensity.toFixed(0)}, portée ${lightDistance.toFixed(0)} unités`);
+console.log(`💡 Lumière solaire: intensité ${lightIntensity.toFixed(0)}, portée infinie`);
 console.log(`🌑 Ombres configurées: ${pointLight.shadow.mapSize.width}x${pointLight.shadow.mapSize.height}, portée: ${pointLight.shadow.camera.far}`);
 scene.add(pointLight);
 
-// Ajouter une lumière directionnelle pour l'effet jour/nuit CORRECT
-const directionalLight = new THREE.DirectionalLight(0xFDFFD3, 2);
-directionalLight.position.set(0, 0, 0); // Position au centre (Soleil)
-directionalLight.target.position.set(1000, 0, 0); // Cible vers l'extérieur du système
-directionalLight.castShadow = false; // PAS d'ombres - seule la PointLight en génère
-scene.add(directionalLight);
-scene.add(directionalLight.target);
-console.log(`🌅 Lumière directionnelle corrigée pour l'effet jour/nuit`);
+// Supprimer complètement la lumière directionnelle
+// La PointLight du soleil sera notre seule source lumineuse
+// Cela garantit que la lumière vient vraiment du soleil dans toutes les directions
+console.log(`🌅 Lumière directionnelle supprimée, utilisation exclusive de la PointLight`)
+
+// Ajouter une lumière ambiante très faible pour éviter que les planètes ne soient complètement noires du côté non éclairé
+const ambientLight = new THREE.AmbientLight(0x404040, 0.3); // Couleur grise avec faible intensité
+scene.add(ambientLight);
+console.log(`✨ Lumière ambiante faible ajoutée pour améliorer la visibilité`)
 
 // DEBUG: Vérifier que les ombres sont activées
 console.log(`🌑 Système d'ombres:`, {
@@ -3182,19 +3168,29 @@ function createPlanet(planetName, size, position, tilt, texture, bump, ring, atm
   } 
   else if(bump){
     material = new THREE.MeshPhongMaterial({
-    map: loadTexture.load(texture),
-    bumpMap: loadTexture.load(bump),
-    bumpScale: 0.7
+      map: loadTexture.load(texture),
+      bumpMap: loadTexture.load(bump),
+      bumpScale: 0.7,
+      shininess: 10,        // Réduire la brillance pour un aspect plus réaliste
+      specular: 0x333333,   // Réflexion spéculaire plus subtile
+      reflectivity: 0.2     // Augmenter légèrement la réflectivité
     });
   }
   else {
     material = new THREE.MeshPhongMaterial({
-    map: loadTexture.load(texture)
+      map: loadTexture.load(texture),
+      shininess: 10,        // Réduire la brillance pour un aspect plus réaliste
+      specular: 0x333333,   // Réflexion spéculaire plus subtile
+      reflectivity: 0.2     // Augmenter légèrement la réflectivité
     });
   } 
 
   const name = planetName;
   const geometry = new THREE.SphereGeometry(size, 32, 20);
+  
+  // 🔧 CORRECTION : S'assurer que les normales pointent vers l'extérieur
+  geometry.computeVertexNormals();
+  
   const planet = new THREE.Mesh(geometry, material);
   const planet3d = new THREE.Object3D;
   const planetSystem = new THREE.Group();
@@ -3213,7 +3209,9 @@ function createPlanet(planetName, size, position, tilt, texture, bump, ring, atm
     0                 // aRotation
 );
 
-  const pathPoints = orbitPath.getPoints(100);
+  // Utiliser un nombre fixe élevé de points pour toutes les orbites (2048 points pour un cercle parfait)
+  const ORBIT_SEGMENTS = 2048;
+  const pathPoints = orbitPath.getPoints(ORBIT_SEGMENTS);
   const orbitGeometry = new THREE.BufferGeometry().setFromPoints(pathPoints);
   const orbitMaterial = new THREE.LineBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.03 });
   const orbit = new THREE.LineLoop(orbitGeometry, orbitMaterial);
@@ -3737,12 +3735,38 @@ raycastTargets.forEach((target, index) => {
 console.log("🎯 Initializing Planet Marker System...");
 planetMarkerSystem = new PlanetMarkerSystem(scene, camera);
 
+// Exposer les variables globales pour les managers d'exoplanètes
+window.planetMarkerSystem = planetMarkerSystem;
+window.raycastTargets = raycastTargets;
+window.createPlanet = createPlanet;  // Exposer la fonction createPlanet
+window.centerOnPlanet = centerOnPlanet;  // Exposer la fonction de centrage
+window.centerOnKeplerObject = centerOnKeplerObject;  // Fonction spécifique Kepler
+window.listAvailableExoplanets = listAvailableExoplanets;  // Lister les exoplanètes
+console.log("🌍 Variables globales exposées pour les exoplanètes");
+
 // Helper function pour ajouter les marqueurs aux raycastTargets
 function addMarkerToRaycast(objectName) {
     const markerData = planetMarkerSystem.markers.get(objectName);
     if (markerData) {
+        // Ajouter l'anneau visible aux cibles du raycast
         raycastTargets.push(markerData.ring);
-        raycastTargets.push(markerData.clickArea); // Zone de clic élargie
+        
+        // Ajouter la zone de clic (disque invisible) aux cibles du raycast
+        raycastTargets.push(markerData.clickArea);
+        
+        // ✅ FIX: S'assurer que clickArea a bien la référence vers l'exoplanète
+        if (window.currentExoplanets && markerData.planet.userData && markerData.planet.userData.type) {
+            // Pour les exoplanètes, s'assurer que userData.planetMesh est correctement défini
+            markerData.clickArea.userData.planetMesh = markerData.planet;
+            markerData.ring.userData.planetMesh = markerData.planet;
+            
+            // Ajouter une référence explicite à l'exoplanète
+            markerData.clickArea.userData.isExoplanetMarker = true;
+            markerData.ring.userData.isExoplanetMarker = true;
+            
+            console.log(`🚀 Marqueur exoplanète ${objectName} configuré avec planetMesh pour le clic`);
+        }
+        
         console.log(`✅ Marqueur ${objectName} ajouté aux raycastTargets (${markerData.type || 'planet'})`);
     } else {
         console.log(`❌ Marqueur ${objectName} non trouvé pour raycast`);
@@ -4181,30 +4205,58 @@ function animate() {
   }
   
   // Rotation du soleil
-  sun.rotation.y += 0.005 * settings.acceleration;
+  sun.rotation.y += 0.008 * settings.acceleration;
 
-  // Rotation des planètes
-  mercury.planet.rotateY(0.01 * settings.acceleration);
+  // ☀️ SYSTÈME D'ÉCLAIRAGE : La PointLight au centre du soleil est la SEULE source de lumière
+  // Elle émet dans toutes les directions et éclaire les planètes sur le côté face au soleil
+  // Les planètes tournent sur elles-mêmes, l'éclairage est géré par Three.js
+  
+  // Mercury - rotation + orbite
+  mercury.planet.rotateY(0.015 * settings.acceleration);
   mercury.planet3d.rotateY(0.002 * settings.accelerationOrbit);
-  venus.planet.rotateY(0.005 * settings.acceleration);
+  
+  // Venus - rotation + orbite
+  venus.planet.rotateY(0.008 * settings.acceleration);
   venus.planet3d.rotateY(0.0015 * settings.accelerationOrbit);
-  earth.planet.rotateY(0.01 * settings.acceleration);
-  earth.Atmosphere.rotateY(0.001 * settings.acceleration);
+  
+  // Earth - rotation + orbite + atmosphère
+  earth.planet.rotateY(0.015 * settings.acceleration);
   earth.planet3d.rotateY(0.001 * settings.accelerationOrbit);
-  mars.planet.rotateY(0.01 * settings.acceleration);
+  if (earth.Atmosphere) {
+    earth.Atmosphere.rotateY(0.0015 * settings.acceleration);
+  }
+  
+  // 🌍 CORRECTION ÉCLAIRAGE TERRE : Mettre à jour la position du soleil dans le shader
+  if (earth.planet.material.uniforms && earth.planet.material.uniforms.sunPosition) {
+    earth.planet.material.uniforms.sunPosition.value.set(0, 0, 0);
+  }
+  
+  // Mars - rotation + orbite
+  mars.planet.rotateY(0.015 * settings.acceleration);
   mars.planet3d.rotateY(0.0007 * settings.accelerationOrbit);
-  jupiter.planet.rotateY(0.005 * settings.acceleration);
+  
+  // Jupiter - rotation + orbite
+  jupiter.planet.rotateY(0.008 * settings.acceleration);
   jupiter.planet3d.rotateY(0.0003 * settings.accelerationOrbit);
-  saturn.planet.rotateY(0.01 * settings.acceleration);
+  
+  // Saturn - rotation + orbite
+  saturn.planet.rotateY(0.015 * settings.acceleration);
   saturn.planet3d.rotateY(0.0002 * settings.accelerationOrbit);
-  uranus.planet.rotateY(0.005 * settings.acceleration);
+  
+  // Uranus - rotation + orbite
+  uranus.planet.rotateY(0.008 * settings.acceleration);
   uranus.planet3d.rotateY(0.0001 * settings.accelerationOrbit);
-  neptune.planet.rotateY(0.005 * settings.acceleration);
+  
+  // Neptune - rotation + orbite
+  neptune.planet.rotateY(0.008 * settings.acceleration);
   neptune.planet3d.rotateY(0.00008 * settings.accelerationOrbit);
-  pluto.planet.rotateY(0.001 * settings.acceleration);
+  
+  // Pluto - rotation + orbite
+  pluto.planet.rotateY(0.002 * settings.acceleration);
   pluto.planet3d.rotateY(0.00006 * settings.accelerationOrbit);
 
-  // Animation des lunes de la Terre
+  // 🌙 Animation des lunes de la Terre
+  // L'éclairage est géré automatiquement par la PointLight
   if (earth.moons) {
     earth.moons.forEach(moon => {
       const time = performance.now();
@@ -4215,11 +4267,11 @@ function animate() {
       const moonZ = earth.planet.position.z + moon.orbitRadius * Math.sin(time * moon.orbitSpeed) * Math.cos(tiltAngle);
 
       moon.mesh.position.set(moonX, moonY, moonZ);
-      moon.mesh.rotateY(0.01);
+      moon.mesh.rotateY(0.015);
     });
   }
 
-  // Animation des lunes de Mars
+  // 🌙 Animation des lunes de Mars
   if (marsMoons) {
     marsMoons.forEach(moon => {
       if (moon.mesh) {
@@ -4228,12 +4280,12 @@ function animate() {
         const moonY = moon.orbitRadius * Math.sin(time * moon.orbitSpeed);
         const moonZ = mars.planet.position.z + moon.orbitRadius * Math.sin(time * moon.orbitSpeed);
         moon.mesh.position.set(moonX, moonY, moonZ);
-        moon.mesh.rotateY(0.001);
+        moon.mesh.rotateY(0.002);
       }
     });
   }
   
-  // Animate Earth satellites - Kepler Space Telescope
+  // 🛰️ Animate Earth satellites - Kepler Space Telescope
   if (earthSatellites) {
     earthSatellites.forEach(satellite => {
       if (satellite.mesh) {
@@ -4244,12 +4296,12 @@ function animate() {
         const satelliteZ = earth.planet.position.z + satellite.orbitRadius * Math.sin(time * satellite.orbitSpeed);
         
         satellite.mesh.position.set(satelliteX, satelliteY, satelliteZ);
-        satellite.mesh.rotateY(0.002); // Rotation légèrement plus rapide que les lunes
+        satellite.mesh.rotateY(0.003);
       }
     });
   }
 
-  // Animation des lunes de Jupiter
+  // 🌙 Animation des lunes de Jupiter
   if (jupiter.moons) {
     jupiter.moons.forEach(moon => {
       const time = performance.now();
@@ -4257,7 +4309,7 @@ function animate() {
       const moonY = moon.orbitRadius * Math.sin(time * moon.orbitSpeed);
       const moonZ = jupiter.planet.position.z + moon.orbitRadius * Math.sin(time * moon.orbitSpeed);
       moon.mesh.position.set(moonX, moonY, moonZ);
-      moon.mesh.rotateY(0.01);
+      moon.mesh.rotateY(0.015);
     });
   }
 
@@ -4505,6 +4557,33 @@ function processExoplanets(exoplanets) {
         
         exoplanetSceneManager.createExoplanets(processedPlanets, currentSunRadius);
         
+        // 🎨 CRÉER LES MARQUEURS ET ORBITES COLORÉES POUR LES EXOPLANÈTES
+        console.log(`🎨 Création des marqueurs colorés pour ${exoplanetSceneManager.exoplanets.length} exoplanètes...`);
+        exoplanetSceneManager.exoplanets.forEach((exoplanet, index) => {
+            const planetName = exoplanet.userData.name.toLowerCase();
+            const planetType = exoplanet.userData.type;
+            
+            console.log(`\n🔍 DEBUG Exoplanète ${index + 1}:`);
+            console.log(`   - Nom: ${exoplanet.userData.name}`);
+            console.log(`   - Type: ${planetType}`);
+            console.log(`   - userData complet:`, exoplanet.userData);
+            
+            // Créer le marqueur (cercle coloré)
+            if (planetMarkerSystem) {
+                planetMarkerSystem.createPlanetMarker(planetName, exoplanet, exoplanet.userData.name);
+                
+                // Créer l'orbite colorée
+                const orbitRadius = exoplanet.userData.distance;
+                planetMarkerSystem.createOrbit(planetName, orbitRadius);
+                
+                // Ajouter le marqueur aux raycastTargets pour le rendre cliquable
+                addMarkerToRaycast(planetName);
+                
+                console.log(`   ✅ Marqueur créé pour ${exoplanet.userData.name} (${planetType}, distance: ${orbitRadius.toFixed(1)})`);
+            }
+        });
+        console.log(`✨ ${exoplanetSceneManager.exoplanets.length} marqueurs d'exoplanètes créés avec succès`);
+        
         // Ajouter les exoplanètes aux raycastTargets pour les rendre cliquables
         console.log(`📊 Exoplanètes disponibles dans le manager: ${exoplanetSceneManager.exoplanets.length}`);
         const clickableObjects = exoplanetSceneManager.getClickableObjects();
@@ -4518,8 +4597,16 @@ function processExoplanets(exoplanets) {
         
         // Mettre à jour les contrôles de la sidebar (cacher la recherche ASTRE)
         setTimeout(() => {
-            ensureAstreSearchControl();
-            addKeplerFollowButton(); // Mettre à jour le bouton pour le mode Kepler
+            try {
+                if (typeof ensureAstreSearchControl === 'function') {
+                    ensureAstreSearchControl();
+                }
+                if (typeof addKeplerFollowButton === 'function') {
+                    addKeplerFollowButton();
+                }
+            } catch (error) {
+                console.warn('⚠️ Erreur lors de la mise à jour de l\'interface:', error.message);
+            }
         }, 100);
     }
     
@@ -4555,8 +4642,16 @@ routeHandler.navigateToSolarSystem = function() {
     
     // Réafficher les contrôles de la sidebar (montrer la recherche ASTRE)
     setTimeout(() => {
-        ensureAstreSearchControl();
-        addKeplerFollowButton(); // Mettre à jour le bouton pour le mode système solaire
+        try {
+            if (typeof ensureAstreSearchControl === 'function') {
+                ensureAstreSearchControl();
+            }
+            if (typeof addKeplerFollowButton === 'function') {
+                addKeplerFollowButton();
+            }
+        } catch (error) {
+            console.warn('⚠️ Erreur lors de la mise à jour de l\'interface:', error.message);
+        }
     }, 100);
     
     // Appeler la fonction originale
