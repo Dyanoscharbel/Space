@@ -1158,9 +1158,9 @@ function ensureAstreSearchControl() {
   const group = document.createElement('div');
   group.className = 'setting-group';
   group.innerHTML = `
-    <label class="setting-label"> ASTRE</label>
+    <label class="setting-label"> OBJECT</label>
     <div class="setting-toggles">
-      <button class="setting-toggle-btn" id="astre-search-btn">RECHERCHER UN ASTRE</button>
+      <button class="setting-toggle-btn" id="astre-search-btn">SEARCH OBJECT</button>
     </div>
   `;
   panel.appendChild(group);
@@ -1934,7 +1934,7 @@ function setupScaleCardHeader() {
     
     const title = document.createElement('span');
     title.className = 'scale-title';
-    title.textContent = 'ASTRE';
+    title.textContent = 'OBJECT';
     Object.assign(title.style, {
       fontSize: '0.9rem',
       fontWeight: '700',
@@ -2021,11 +2021,11 @@ function setScaleCardTitle(name) {
   const header = scaleDisplay.querySelector('.scale-header');
   if (!header) return;
   const titleEl = header.querySelector('.scale-title');
-  if (titleEl) titleEl.textContent = name || 'ASTRE';
+  if (titleEl) titleEl.textContent = name || 'OBJECT';
 }
 
 function resetScaleCard() {
-  setScaleCardTitle('ASTRE');
+  setScaleCardTitle('OBJECT');
   const brInfo = document.getElementById('br-info');
   if (brInfo) brInfo.style.display = 'none';
   
@@ -3183,10 +3183,20 @@ function onDocumentMouseDown(event) {
           if (uncenterBtn) uncenterBtn.style.display = 'none';
           if (stopBtn) stopBtn.style.display = 'none';
           console.log('☀️ Clic sur le soleil : caméra décentrée - retour au centre du système');
+        } else if (selectedPlanet.type === 'kepler_star') {
+          // Pour l'étoile Kepler, utiliser la logique UNCENTER
+          controls.target.set(0, 0, 0);
+          controls.update();
+          followedPlanet = null;
+          const uncenterBtn = document.getElementById('br-uncenter-btn');
+          const stopBtn = document.getElementById('br-stop-follow-btn');
+          if (uncenterBtn) uncenterBtn.style.display = 'none';
+          if (stopBtn) stopBtn.style.display = 'none';
+          console.log('⭐ Clic direct sur étoile Kepler : caméra décentrée - retour au centre du système (comme UNCENTER)');
         } else {
           // Pour les autres objets, utiliser le centrage normal
-          const objectName = selectedPlanet.type === 'kepler_star' ? 'sun' : selectedPlanet.name.toLowerCase();
-          centerOnPlanet(objectName, selectedPlanet.type === 'kepler_star' ? 'sun' : selectedPlanet.type);
+          const objectName = selectedPlanet.name.toLowerCase();
+          centerOnPlanet(objectName, selectedPlanet.type);
         }
       }
       
@@ -3225,10 +3235,16 @@ function identifyPlanet(clickedObject) {
     }
   }
   
-  // Check the Sun (only for solar system, not Kepler systems)
-  if (clickedObject.material === sun.material && !window.currentExoplanets) {
+  // Check the Sun (works for both solar system and Kepler systems)
+  if (clickedObject.material === sun.material) {
     offset = 100;
-    return { type: 'sun', name: 'sun', object: sun };
+    // Dans un système Kepler, traiter comme une étoile Kepler
+    if (window.currentExoplanets) {
+      return { type: 'kepler_star', name: 'sun', object: sun };
+    } else {
+      // Dans le système solaire
+      return { type: 'sun', name: 'sun', object: sun };
+    }
   }
   
   // Check planets
@@ -3746,39 +3762,45 @@ function centerOnPlanet(objectName, objectType = 'planet') {
       }
     }
   } else if (objectType === 'kepler_star' || (objectType === 'sun' && window.currentExoplanets)) {
-    // Gérer l'étoile Kepler (le soleil dans un système Kepler)
-    if (sun) {
-      targetObject = sun;
-      const starName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Étoile Kepler';
-      console.log("⭐ Centrage sur étoile Kepler:", starName);
-    }
+    // Gérer l'étoile Kepler (le soleil dans un système Kepler) - utiliser la logique UNCENTER
+    // Utiliser la même logique que le bouton UNCENTER
+    controls.target.set(0, 0, 0);
+    controls.update();
+    followedPlanet = null;
+    
+    // Cacher les boutons de décentrage
+    const uncenterBtn = document.getElementById('br-uncenter-btn');
+    const stopBtn = document.getElementById('br-stop-follow-btn');
+    if (uncenterBtn) uncenterBtn.style.display = 'none';
+    if (stopBtn) stopBtn.style.display = 'none';
+    
+    const starName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Kepler Star';
+    console.log(`⭐ Clic sur étoile Kepler ${starName} : caméra décentrée - retour au centre du système (comme UNCENTER)`);
+    
+    // Afficher les informations de l'étoile Kepler
+    showPlanetInfo(objectName, objectType);
+    
+    return; // Sortir ici pour éviter le code de centrage normal
   } else if (objectType === 'sun') {
-    // Gérer le Soleil du système solaire avec distance de sécurité
+    // Gérer le Soleil du système solaire - utiliser la logique UNCENTER
     if (objectName.toLowerCase() === 'soleil' || objectName.toLowerCase() === 'sun') {
-      if (sun) {
-        // Centrer sur le Soleil avec une distance de sécurité
-        const sunPosition = new THREE.Vector3();
-        sun.getWorldPosition(sunPosition);
-        
-        // Distance de sécurité pour éviter d'entrer dans le Soleil
-        const safeDistance = 50; // Distance de sécurité
-        const cameraDirection = new THREE.Vector3();
-        camera.getWorldDirection(cameraDirection);
-        
-        // Position de sécurité
-        const safePosition = sunPosition.clone().add(cameraDirection.multiplyScalar(-safeDistance));
-        
-        // Centrer le target sur le Soleil
-        controls.target.copy(sunPosition);
-        
-        // Positionner la caméra à distance de sécurité
-        camera.position.copy(safePosition);
-        controls.update();
-        
-        followedPlanet = sun;
-        console.log("☀️ Centrage sur le Soleil avec distance de sécurité");
-        return; // Sortir ici pour éviter le code de centrage normal
-      }
+      // Utiliser la même logique que le bouton UNCENTER
+      controls.target.set(0, 0, 0);
+      controls.update();
+      followedPlanet = null;
+      
+      // Cacher les boutons de décentrage
+      const uncenterBtn = document.getElementById('br-uncenter-btn');
+      const stopBtn = document.getElementById('br-stop-follow-btn');
+      if (uncenterBtn) uncenterBtn.style.display = 'none';
+      if (stopBtn) stopBtn.style.display = 'none';
+      
+      console.log('☀️ Clic sur Sun : caméra décentrée - retour au centre du système (comme UNCENTER)');
+      
+      // Afficher les informations du Soleil
+      showPlanetInfo('Sun', 'sun');
+      
+      return; // Sortir ici pour éviter le code de centrage normal
     }
   } else if (objectType === 'dwarf_planet') {
     // Gérer les planètes naines
@@ -4844,6 +4866,15 @@ if (marsMarkerIndices.length > 0) {
 
   // ******  PLANETS DATA  ******
   const planetData = {
+    'Sun': {
+        radius: '696,340 km',
+        tilt: '7.25°',
+        rotation: '25-35 Earth days',
+        orbit: 'N/A (center of system)',
+        distance: '0 km (system center)',
+        moons: '0',
+        info: 'The Sun is the star at the center of our solar system. It provides the energy that drives weather and climate on Earth.'
+    },
     'Mercury': {
         radius: '2,439.7 km',
         tilt: '0.034°',

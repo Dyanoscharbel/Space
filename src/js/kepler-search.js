@@ -6,9 +6,9 @@ class KeplerSearchSystem {
         this.selectedIndex = -1;
         this.suggestions = [];
         
-        // Systèmes disponibles (Système Solaire + Kepler)
+        // Available systems (Solar System + Kepler)
         this.keplerSystems = [
-            'Système Solaire', // ⭐ Système Solaire en premier
+            'Solar System', // ⭐ Solar System first
             'Kepler-11', 'Kepler-90', 'Kepler-186', 'Kepler-442', 'Kepler-452',
             'Kepler-20', 'Kepler-62', 'Kepler-444', 'Kepler-296', 'Kepler-438',
             'Kepler-283', 'Kepler-1649', 'Kepler-1411', 'Kepler-257', 'Kepler-1638',
@@ -32,13 +32,13 @@ class KeplerSearchSystem {
         helpPopup.innerHTML = `
             <button class="close-btn" onclick="this.parentElement.remove()">×</button>
             <div class="help-title">
-                🚀 Navigation Rapide
+                🚀 Quick Navigation
             </div>
             <div class="help-text">
-                Recherchez rapidement un système Kepler
+                Quickly search for a Kepler system
             </div>
             <div class="help-text">
-                Appuyez sur <span class="help-shortcut">Ctrl + K</span>
+                Press <span class="help-shortcut">Ctrl + K</span>
             </div>
         `;
         
@@ -81,7 +81,7 @@ class KeplerSearchSystem {
                         justify-content: center;
                         font-size: 20px;
                     ">🔍</div>
-                    <span>Recherche de Système Kepler</span>
+                    <span>Kepler System Search</span>
                 </div>
                 
                 <div class="search-body" style="padding: 24px;">
@@ -94,7 +94,7 @@ class KeplerSearchSystem {
                             type="text" 
                             class="search-input" 
                             id="search-input"
-                            placeholder="Tapez le nom d'un système (ex: Kepler-11, Kepler-442...)"
+                            placeholder="Type system name (ex: Kepler-11, Kepler-442...)"
                             autocomplete="off"
                             style="
                                 width: 100%;
@@ -258,8 +258,8 @@ class KeplerSearchSystem {
                 return true;
             }
             
-            // Alias pour le système solaire
-            if (system === 'Système Solaire') {
+            // Alias for solar system
+            if (system === 'Solar System') {
                 return ['solaire', 'terre', 'earth', 'home', 'maison'].some(alias => 
                     alias.includes(queryLower) || queryLower.includes(alias)
                 );
@@ -284,14 +284,14 @@ class KeplerSearchSystem {
         if (suggestions.length === 0) {
             this.searchSuggestions.innerHTML = `
                 <div class="search-suggestion">
-                    <span>❌ Aucun système trouvé</span>
+                    <span>❌ No system found</span>
                 </div>
             `;
             return;
         }
         
         const html = suggestions.map((system, index) => {
-            const icon = system === 'Système Solaire' ? '🌍' : '🌌';
+            const icon = system === 'Solar System' ? '🌍' : '🌌';
             return `
                 <div class="search-suggestion" data-index="${index}" onclick="keplerSearch.loadSystem('${system}')" style="
                     display: flex;
@@ -379,10 +379,10 @@ class KeplerSearchSystem {
         // Charger le système via le routeHandler
         if (window.solarSystemScript && window.solarSystemScript.routeHandler) {
             try {
-                // Gérer le système solaire spécialement
-                if (systemName === 'Système Solaire') {
+                // Handle solar system specially
+                if (systemName === 'Solar System') {
                     window.solarSystemScript.routeHandler.navigateToSolarSystem();
-                    this.showNotification(`🌍 Retour au Système Solaire - Actualisation...`, 'success');
+                    this.showNotification(`🌍 Return to the Solar System - Update...`, 'success');
                     
                     // Actualiser la page après un court délai
                     setTimeout(() => {
@@ -391,7 +391,7 @@ class KeplerSearchSystem {
                     
                 } else {
                     window.solarSystemScript.routeHandler.navigateToKeplerSystem(systemName);
-                    this.showNotification(`🚀 Chargement de ${systemName} - Actualisation...`, 'success');
+                    this.showNotification(`🚀 Loading ${systemName} - Updating...`, 'success');
                     
                     // Actualiser la page après un court délai
                     setTimeout(() => {
@@ -401,11 +401,11 @@ class KeplerSearchSystem {
                 
             } catch (error) {
                 console.error('❌ Erreur lors du chargement:', error);
-                this.showNotification(`❌ Erreur: ${systemName} introuvable`, 'error');
+                this.showNotification(`❌ Error: ${systemName} not found`, 'error');
             }
         } else {
             console.error('❌ RouteHandler non disponible');
-            this.showNotification('❌ Système de navigation non disponible', 'error');
+            this.showNotification('❌ Navigation system not available', 'error');
         }
     }
     
