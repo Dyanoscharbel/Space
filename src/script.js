@@ -11,6 +11,7 @@ import PlanetMarkerSystem from './js/planet-markers.js';
 import { RouteHandler } from './js/utils/RouteHandler.js';
 import { ExoplanetGenerator } from './js/generators/ExoplanetGenerator.js';
 import { ExoplanetSceneManager } from './js/generators/ExoplanetSceneManager.js';
+import { loadingSystem } from './js/ui/LoadingSystem.js';
 
 import bgTexture1 from '/images/1.jpg';
 import bgTexture2 from '/images/2.jpg';
@@ -87,7 +88,233 @@ function initializeHUD() {
 // ✅ FONCTIONS DE CONTRÔLE D'INTENSITÉ DU SOLEIL SUPPRIMÉES
 // L'intensité du soleil est maintenant fixée à une valeur optimale (150)
 
-// Ajouter le bouton de navigation (Kepler ou retour système solaire) dans la sidebar
+// Créer la sidebar pour les systèmes Kepler
+function createKeplerSidebar() {
+  const panel = document.querySelector('#settings-panel .settings-body');
+  if (!panel) return;
+  
+  // Vider la sidebar
+  panel.innerHTML = '';
+  
+  // Ajouter le bouton de retour au système solaire
+  const navigationGroup = document.createElement('div');
+  navigationGroup.className = 'setting-group';
+  navigationGroup.innerHTML = `
+    <label class="setting-label">NAVIGATION</label>
+    <div class="kepler-controls" style="margin-top: 10px;">
+      <button id="kepler-follow-button" class="kepler-follow-btn" style="
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #FF9800, #F57C00);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      ">
+        <span style="font-size: 16px;">🌍</span>
+        <span>Revenir au système solaire</span>
+      </button>
+    </div>
+  `;
+  panel.appendChild(navigationGroup);
+  
+  // Ajouter KOI Data Explorer
+  const koiGroup = document.createElement('div');
+  koiGroup.className = 'setting-group';
+  koiGroup.innerHTML = `
+    <label class="setting-label">EXPLORATION DES DONNÉES</label>
+    <div class="koi-controls" style="margin-top: 10px;">
+      <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      ">
+        <span style="font-size: 16px;">🔬</span>
+        <span>KOI Data Explorer</span>
+      </button>
+    </div>
+  `;
+  panel.appendChild(koiGroup);
+  
+  // Ajouter les event listeners
+  setupKeplerSidebarEvents();
+}
+
+// Créer la sidebar pour le système solaire
+function createSolarSystemSidebar() {
+  const panel = document.querySelector('#settings-panel .settings-body');
+  if (!panel) return;
+  
+  // Vider la sidebar
+  panel.innerHTML = '';
+  
+  // Ajouter le bouton Kepler
+  const keplerGroup = document.createElement('div');
+  keplerGroup.className = 'setting-group';
+  keplerGroup.innerHTML = `
+    <label class="setting-label">SATELLITE KEPLER</label>
+    <div class="kepler-controls" style="margin-top: 10px;">
+      <button id="kepler-follow-button" class="kepler-follow-btn" style="
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      ">
+        <span style="font-size: 16px;">🛰️</span>
+        <span>Suivre le satellite Kepler</span>
+      </button>
+    </div>
+  `;
+  panel.appendChild(keplerGroup);
+  
+  // Ajouter KOI Data Explorer
+  const koiGroup = document.createElement('div');
+  koiGroup.className = 'setting-group';
+  koiGroup.innerHTML = `
+    <label class="setting-label">EXPLORATION DES DONNÉES</label>
+    <div class="koi-controls" style="margin-top: 10px;">
+      <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      ">
+        <span style="font-size: 16px;">🔬</span>
+        <span>KOI Data Explorer</span>
+      </button>
+    </div>
+  `;
+  panel.appendChild(koiGroup);
+  
+  // Ajouter la section ASTRE
+  const astreGroup = document.createElement('div');
+  astreGroup.className = 'setting-group';
+  astreGroup.innerHTML = `
+    <label class="setting-label">ASTRE</label>
+    <div class="setting-toggles">
+      <button class="setting-toggle-btn" id="astre-search-btn">RECHERCHER UN ASTRE</button>
+    </div>
+  `;
+  panel.appendChild(astreGroup);
+  
+  // Ajouter les event listeners
+  setupSolarSystemSidebarEvents();
+}
+
+// Event listeners pour la sidebar Kepler
+function setupKeplerSidebarEvents() {
+  const followButton = document.getElementById('kepler-follow-button');
+  if (followButton) {
+    followButton.addEventListener('click', () => {
+      console.log('🌍 Retour au système solaire demandé');
+      
+      // Utiliser la même fonction que Ctrl+K
+      if (window.solarSystemScript && window.solarSystemScript.routeHandler) {
+        window.solarSystemScript.routeHandler.navigateToSolarSystem();
+        
+        // Actualiser la page après un court délai (comme Ctrl+K)
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    });
+  }
+  
+  const koiButton = document.getElementById('koi-data-explorer-button');
+  if (koiButton) {
+    koiButton.addEventListener('click', () => {
+      window.open('https://koi-data-explorer.vercel.app', '_blank');
+    });
+  }
+}
+
+// Event listeners pour la sidebar système solaire
+function setupSolarSystemSidebarEvents() {
+  const followButton = document.getElementById('kepler-follow-button');
+  if (followButton) {
+    followButton.addEventListener('click', () => {
+      console.log('🛰️ Suivi de Kepler activé');
+      centerOnPlanet('kepler', 'satellite');
+    });
+  }
+  
+  const koiButton = document.getElementById('koi-data-explorer-button');
+  if (koiButton) {
+    koiButton.addEventListener('click', () => {
+      window.open('https://koi-data-explorer.vercel.app', '_blank');
+    });
+  }
+  
+  const astreButton = document.getElementById('astre-search-btn');
+  if (astreButton) {
+    // Ajouter la logique de recherche d'astre ici
+    console.log('Bouton ASTRE configuré');
+  }
+}
+
+// Fonction principale pour mettre à jour la sidebar
+function updateSidebar() {
+  const isInKeplerSystem = window.currentExoplanets && window.currentExoplanets.length > 0;
+  
+  if (isInKeplerSystem) {
+    createKeplerSidebar();
+    console.log('✅ Sidebar Kepler créée');
+  } else {
+    createSolarSystemSidebar();
+    console.log('✅ Sidebar système solaire créée');
+  }
+}
+
+// Exposer la fonction globalement pour le bouton hamburger
+window.updateSidebar = updateSidebar;
+
+// ANCIENNE FONCTION - maintenant remplacée par updateSidebar()
 function addKeplerFollowButton() {
   const panel = document.querySelector('#settings-panel .settings-body');
   if (!panel) {
@@ -250,6 +477,8 @@ function addKOIDataExplorerButton() {
     return;
   }
   
+  // Ne pas masquer KOI Data Explorer - vous ne l'avez pas demandé
+  
   // Vérifier si le bouton existe déjà
   if (document.getElementById('koi-data-explorer-button')) {
     console.log('🔬 Bouton KOI Data Explorer déjà présent');
@@ -260,7 +489,7 @@ function addKOIDataExplorerButton() {
   group.className = 'setting-group';
   group.id = 'koi-data-explorer-control';
   group.innerHTML = `
-    <label class="setting-label">EXPLORATION DES DONNÉES</label>
+    <label class="setting-label"> EXPLORATION DES DONNÉES</label>
     <div class="koi-controls" style="margin-top: 10px;">
       <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
         width: 100%;
@@ -355,10 +584,10 @@ function ensureAstreSearchControl() {
   const existingControl = document.getElementById('astre-search-btn')?.closest('.setting-group');
   
   if (isInKeplerSystem) {
-    // Dans un système Kepler : cacher le contrôle s'il existe
+    // Dans un système Kepler : supprimer complètement le contrôle
     if (existingControl) {
-      existingControl.style.display = 'none';
-      console.log('🙈 Contrôle ASTRE caché (système Kepler actif)');
+      existingControl.remove();
+      console.log('🙈 Contrôle ASTRE supprimé (système Kepler actif)');
     }
     return;
   } else {
@@ -375,7 +604,7 @@ function ensureAstreSearchControl() {
   const group = document.createElement('div');
   group.className = 'setting-group';
   group.innerHTML = `
-    <label class="setting-label">ASTRE</label>
+    <label class="setting-label"> ASTRE</label>
     <div class="setting-toggles">
       <button class="setting-toggle-btn" id="astre-search-btn">RECHERCHER UN ASTRE</button>
     </div>
@@ -4204,6 +4433,29 @@ function animate() {
     animate.callCount++;
   }
   
+  // Masquer le chargement après les premiers frames (système chargé)
+  if (animate.callCount === 3) {
+    setTimeout(() => {
+      // Retirer la classe loading du body pour réafficher l'interface
+      document.body.classList.remove('loading');
+      
+      // La sidebar est maintenant gérée directement dans le HTML
+      
+      // Masquer l'écran de chargement initial du HTML
+      const initialOverlay = document.getElementById('initial-loading-overlay');
+      if (initialOverlay) {
+        initialOverlay.style.opacity = '0';
+        setTimeout(() => {
+          initialOverlay.style.display = 'none';
+        }, 500);
+      }
+      // Masquer aussi le système de chargement JS s'il est visible
+      if (loadingSystem.visible) {
+        loadingSystem.hide();
+      }
+    }, 3000); // 3 secondes pour voir l'animation
+  }
+  
   // Rotation du soleil
   sun.rotation.y += 0.008 * settings.acceleration;
 
@@ -4431,6 +4683,15 @@ console.log('🛣️ Initialisation du RouteHandler...');
 routeHandler = new RouteHandler();
 routeHandler.init();
 
+// Initialiser le système de chargement
+console.log('🌟 Initialisation du LoadingSystem...');
+loadingSystem.init();
+
+// Afficher le chargement au démarrage immédiatement - AVANT tout le reste
+setTimeout(() => {
+    loadingSystem.show('Initialisation du système solaire...');
+}, 0);
+
 // Initialiser le gestionnaire de scène des exoplanètes
 console.log('🪐 Initialisation du ExoplanetSceneManager...');
 let exoplanetSceneManager = null;
@@ -4537,6 +4798,10 @@ function processExoplanets(exoplanets) {
     console.log(`🔬 CLASSIFICATION DES EXOPLANÈTES`);
     console.log(`${'='.repeat(80)}\n`);
     
+    // Afficher l'écran de chargement et masquer l'interface
+    document.body.classList.add('loading');
+    loadingSystem.showSystemLoading('kepler');
+    
     // Cacher les planètes du système solaire
     setSolarSystemPlanetsVisibility(false);
     
@@ -4545,6 +4810,11 @@ function processExoplanets(exoplanets) {
     
     // Sauvegarder les planètes traitées pour usage ultérieur
     window.currentExoplanets = processedPlanets;
+    
+    // Mettre à jour la sidebar pour le système Kepler
+    setTimeout(() => {
+        updateSidebar();
+    }, 100);
     
     console.log(`\n✅ ${processedPlanets.length} exoplanètes classifiées et prêtes à être affichées`);
     console.log(`💡 Accès via: window.currentExoplanets\n`);
@@ -4607,16 +4877,44 @@ function processExoplanets(exoplanets) {
             } catch (error) {
                 console.warn('⚠️ Erreur lors de la mise à jour de l\'interface:', error.message);
             }
+            
+            // Masquer l'écran de chargement après la création complète
+            setTimeout(() => {
+                document.body.classList.remove('loading');
+                loadingSystem.hide();
+            }, 2500); // 2.5 secondes pour les exoplanètes
         }, 100);
     }
     
     return processedPlanets;
 }
 
+// Écouter le chargement d'un système Kepler
+window.addEventListener('kepler-system-loaded', (event) => {
+    console.log('🌌 Système Kepler chargé, mise à jour de la sidebar...');
+    
+    // Mettre à jour la sidebar pour le système Kepler
+    setTimeout(() => {
+        updateSidebar();
+    }, 100);
+});
+
 // Écouter le retour au système solaire
 const originalNavigateToSolarSystem = routeHandler.navigateToSolarSystem.bind(routeHandler);
 routeHandler.navigateToSolarSystem = function() {
     console.log('\n🌍 Retour au système solaire...');
+    
+    // Réinitialiser les exoplanètes
+    window.currentExoplanets = null;
+    
+    // Mettre à jour la sidebar pour le système solaire
+    setTimeout(() => {
+        updateSidebar();
+    }, 100);
+    
+    // Afficher l'écran de chargement et masquer l'interface
+    document.body.classList.add('loading');
+    loadingSystem.showSystemLoading('solar');
     
     // Nettoyer les exoplanètes
     if (exoplanetSceneManager) {
@@ -4652,6 +4950,12 @@ routeHandler.navigateToSolarSystem = function() {
         } catch (error) {
             console.warn('⚠️ Erreur lors de la mise à jour de l\'interface:', error.message);
         }
+        
+        // Masquer l'écran de chargement après la restauration complète
+        setTimeout(() => {
+            document.body.classList.remove('loading');
+            loadingSystem.hide();
+        }, 2000); // 2 secondes pour le retour au système solaire
     }, 100);
     
     // Appeler la fonction originale

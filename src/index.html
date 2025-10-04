@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/search-popup.css">
+    <link rel="stylesheet" href="js/ui/loarding.css">
     <style>
         /* ===== RESET ===== */
         * {
@@ -23,6 +24,23 @@
             background: #000;
             font-family: 'Orbitron', monospace;
             color: #00ffff;
+        }
+
+        /* Masquer l'interface au démarrage pour éviter le flash */
+        body.loading .planet-tooltip {
+            display: none !important;
+        }
+
+        /* Permettre à la sidebar de fonctionner même pendant le chargement */
+        body.loading .settings-panel {
+            display: block !important;
+        }
+
+        /* S'assurer que le bouton hamburger est toujours visible */
+        #settings-toggle-float {
+            display: flex !important;
+            z-index: 10001 !important;
+            position: fixed !important;
         }
 
         /* ===== CANVAS CONTAINER ===== */
@@ -321,48 +339,7 @@
         }
 
 
-        .settings-toggle {
-            position: absolute;
-            right: -50px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 100px;
-            background: linear-gradient(145deg, rgba(0, 20, 40, 0.95) 0%, rgba(0, 40, 80, 0.9) 100%);
-            border: 1px solid #00ffff;
-            border-left: none;
-            border-radius: 0 15px 15px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(20px);
-            box-shadow: 2px 0 15px rgba(0, 255, 255, 0.4);
-        }
 
-        .settings-toggle:hover {
-            background: linear-gradient(145deg, rgba(0, 40, 80, 0.95) 0%, rgba(0, 80, 120, 0.9) 100%);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-        }
-
-        .toggle-icon {
-            font-size: 1.2rem;
-            animation: pulse 2s ease-in-out infinite;
-            margin-bottom: 8px;
-        }
-
-        .toggle-text {
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #00ffff;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
 
         .settings-header {
             padding: 15px 20px;
@@ -542,88 +519,126 @@
             font-size: 0.85rem;
             color: #00ffff;
             font-weight: 700;
-            text-align: right;
         }
     </style>
 </head>
-<body>
-    <!-- Canvas Container -->
-    <div id="canvas-container"></div>
-
-    <!-- Scale and Distance Display -->
-    <div id="scale-display" class="scale-display" style="display: none;">
-        <div class="scale-header">
-            <span class="scale-icon">📏</span>
-            <span class="scale-title">ÉCHELLE & DISTANCE</span>
-        </div>
-        <div class="scale-info">
-            <div class="scale-item">
-                <span class="scale-label">Distance caméra:</span>
-                <span class="scale-value" id="camera-distance">0 km</span>
+<body class="loading">
+    <!-- Écran de chargement initial -->
+    <div id="initial-loading-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 1; transition: opacity 0.5s ease-in-out;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 40px;">
+            <div class="section-banner-sun">
+                <div id="star-1">
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-bottomright"></div>
+                        <div id="curved-corner-bottomleft"></div>
+                    </div>
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-topright"></div>
+                        <div id="curved-corner-topleft"></div>
+                    </div>
+                </div>
+                <div id="star-2">
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-bottomright"></div>
+                        <div id="curved-corner-bottomleft"></div>
+                    </div>
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-topright"></div>
+                        <div id="curved-corner-topleft"></div>
+                    </div>
+                </div>
+                <div id="star-3">
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-bottomright"></div>
+                        <div id="curved-corner-bottomleft"></div>
+                    </div>
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-topright"></div>
+                        <div id="curved-corner-topleft"></div>
+                    </div>
+                </div>
+                <div id="star-4">
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-bottomright"></div>
+                        <div id="curved-corner-bottomleft"></div>
+                    </div>
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-topright"></div>
+                        <div id="curved-corner-topleft"></div>
+                    </div>
+                </div>
+                <div id="star-5">
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-bottomright"></div>
+                        <div id="curved-corner-bottomleft"></div>
+                    </div>
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-topright"></div>
+                        <div id="curved-corner-topleft"></div>
+                    </div>
+                </div>
+                <div id="star-6">
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-bottomright"></div>
+                        <div id="curved-corner-bottomleft"></div>
+                    </div>
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-topright"></div>
+                        <div id="curved-corner-topleft"></div>
+                    </div>
+                </div>
+                <div id="star-7">
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-bottomright"></div>
+                        <div id="curved-corner-bottomleft"></div>
+                    </div>
+                    <div class="curved-corner-star">
+                        <div id="curved-corner-topright"></div>
+                        <div id="curved-corner-topleft"></div>
+                    </div>
+                </div>
             </div>
-            <div class="scale-item">
-                <span class="scale-label">Échelle:</span>
-                <span class="scale-value" id="scale-ratio">1:1</span>
-            </div>
-            <div class="scale-item" id="target-distance-item" style="display: none;">
-                <span class="scale-label">Distance à l'objet:</span>
-                <span class="scale-value" id="target-distance">0 km</span>
+            <div style="text-align: center; color: white; font-family: 'Arial', sans-serif;">
+                <h2 style="font-size: 2.5rem; font-weight: bold; margin: 0 0 10px 0; background: linear-gradient(45deg, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">NASA Space Explorer</h2>
+                <p style="font-size: 1.2rem; margin: 0 0 20px 0; opacity: 0.8;">Initialisation du système solaire...</p>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #ffd700; animation: loadingDots 1.5s infinite ease-in-out;"></span>
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #ffd700; animation: loadingDots 1.5s infinite ease-in-out; animation-delay: 0.3s;"></span>
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #ffd700; animation: loadingDots 1.5s infinite ease-in-out; animation-delay: 0.6s;"></span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Settings Panel -->
+
+    <!-- Bouton hamburger fixe -->
+    <button id="hamburger-btn" style="
+        position: fixed;
+        left: 15px;
+        top: 15px;
+        width: 50px;
+        height: 50px;
+        background: rgba(0, 40, 80, 0.9);
+        border: 2px solid #00ffff;
+        border-radius: 10px;
+        color: #00ffff;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        font-family: Arial, sans-serif;
+    ">☰</button>
+
+    <!-- Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Settings Panel - SIDEBAR 2 (créée par JavaScript) -->
     <div id="settings-panel" class="settings-panel">
-        <div class="settings-toggle" id="settings-toggle">
-            <span class="toggle-icon">⚙️</span>
-            <span class="toggle-text">PARAMÈTRES</span>
-        </div>
-        <div class="settings-content">
-            <div class="settings-header">
-                <h3>PARAMÈTRES</h3>
-            </div>
-            <div class="settings-body">
-                <div class="setting-group">
-                    <label class="setting-label">VITESSE ORBITALE</label>
-                    <div class="setting-slider">
-                        <input type="range" id="orbit-speed-setting" min="0" max="5" value="0.5" step="0.1">
-                        <span class="slider-value" id="orbit-speed-value">0.5x</span>
-                    </div>
-                </div>
-                
-                <div class="setting-group">
-                    <label class="setting-label">VITESSE ROTATION</label>
-                    <div class="setting-slider">
-                        <input type="range" id="rotation-speed-setting" min="0" max="5" value="1" step="0.1">
-                        <span class="slider-value" id="rotation-speed-value">1.0x</span>
-                    </div>
-                </div>
-                
-                <div class="setting-group">
-                    <label class="setting-label">VITESSE ANIMATION</label>
-                    <div class="setting-slider">
-                        <input type="range" id="animation-speed-setting" min="0.1" max="3" value="1" step="0.1">
-                        <span class="slider-value" id="animation-speed-value">1.0x</span>
-                    </div>
-                </div>
-                
-                <div class="setting-group">
-                    <label class="setting-label">ÉCHELLE NASA</label>
-                    <div class="setting-slider">
-                        <input type="range" id="scale-factor-setting" min="0.1" max="10" value="1" step="0.1">
-                        <span class="slider-value" id="scale-factor-value">1.0 UA/unité</span>
-                    </div>
-                </div>
-                
-                <div class="setting-group">
-                    <label class="setting-label">AFFICHAGE</label>
-                    <div class="setting-toggles">
-                        <button class="setting-toggle-btn active" id="show-orbits-btn">ORBITES</button>
-                        <button class="setting-toggle-btn active" id="show-labels">LABELS</button>
-                        <button class="setting-toggle-btn active" id="show-moons">LUNES</button>
-                    </div>
-                </div>
-            </div>
+        <div class="settings-body">
+            <!-- Contenu ajouté dynamiquement par JavaScript -->
         </div>
     </div>
 
@@ -659,8 +674,51 @@
         </div>
     </div>
 
+    <!-- Script sidebar simple -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('settings-panel');
+            
+            if (hamburgerBtn && sidebar) {
+                console.log('Bouton hamburger et sidebar trouves');
+                
+                // État initial
+                sidebar.style.left = '-270px';
+                
+                hamburgerBtn.addEventListener('click', function() {
+                    console.log('Clic sur hamburger');
+                    const isOpen = sidebar.style.left === '0px';
+                    
+                    if (isOpen) {
+                        sidebar.style.left = '-270px';
+                        hamburgerBtn.style.display = 'flex';
+                        console.log('Sidebar fermee');
+                    } else {
+                        // Mettre à jour le contenu de la sidebar selon le système
+                        if (typeof window.updateSidebar === 'function') {
+                            window.updateSidebar();
+                        }
+                        sidebar.style.left = '0px';
+                        hamburgerBtn.style.display = 'none';
+                        console.log('Sidebar ouverte');
+                    }
+                });
+                
+                // Fermer en cliquant à l'extérieur
+                document.addEventListener('click', function(e) {
+                    if (sidebar.style.left === '0px' && !sidebar.contains(e.target) && e.target !== hamburgerBtn) {
+                        sidebar.style.left = '-270px';
+                        hamburgerBtn.style.display = 'flex';
+                    }
+                });
+            } else {
+                console.error('Bouton ou sidebar non trouve');
+            }
+        });
+    </script>
+
     <!-- Scripts -->
-    <script src="js/sidebar-toggle.js"></script>
     <script type="module" src="./script.js"></script>
     <script type="module" src="js/kepler-search.js"></script>
 </body>
