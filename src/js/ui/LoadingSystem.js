@@ -170,9 +170,9 @@ export class LoadingSystem {
     
     showSystemLoading(systemType) {
         const messages = {
-            solar: 'Chargement du système solaire...',
-            kepler: 'Chargement des exoplanètes Kepler...',
-            transition: 'Transition entre les systèmes...'
+            solar: 'Loading Solar System...',
+            kepler: 'Loading Kepler Exoplanets...',
+            transition: 'Transitioning between systems...'
         };
         this.show(messages[systemType] || messages.transition);
     }

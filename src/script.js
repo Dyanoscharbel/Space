@@ -90,38 +90,101 @@ function initializeHUD() {
 
 // Créer la sidebar pour les systèmes Kepler
 function createKeplerSidebar() {
-  const panel = document.querySelector('#settings-panel .settings-body');
+  const panel = document.querySelector('#settings-panel');
   if (!panel) return;
   
   // Vider la sidebar
   panel.innerHTML = '';
   
+  // Ajouter la section du système actuel
+  const currentSystemGroup = document.createElement('div');
+  currentSystemGroup.className = 'setting-group';
+  const currentSystemName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Système Kepler';
+  currentSystemGroup.innerHTML = `
+    <label class="setting-label" style="
+      color: var(--accent-cyan);
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-md);
+      display: block;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--spacing-sm);
+    ">CURRENT SYSTEM</label>
+    <div class="current-system-info" style="margin-top: var(--spacing-md);">
+      <button id="change-system-button" class="change-system-btn" style="
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+        color: var(--accent-cyan);
+        border: var(--border-width) solid var(--accent-cyan);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-family: var(--font-primary);
+        font-weight: 600;
+        font-size: var(--font-size-sm);
+        transition: all var(--transition-normal);
+        box-shadow: 0 0 10px var(--glow-cyan);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      ">
+        <span>🌟 ${currentSystemName}</span>
+      </button>
+      <div style="
+        margin-top: var(--spacing-sm);
+        font-size: var(--font-size-xs);
+        color: var(--text-secondary);
+        text-align: center;
+        font-family: var(--font-primary);
+      ">Click to change system (Ctrl+K)</div>
+    </div>
+  `;
+  panel.appendChild(currentSystemGroup);
+  
   // Ajouter le bouton de retour au système solaire
   const navigationGroup = document.createElement('div');
   navigationGroup.className = 'setting-group';
   navigationGroup.innerHTML = `
-    <label class="setting-label">NAVIGATION</label>
-    <div class="kepler-controls" style="margin-top: 10px;">
+    <label class="setting-label" style="
+      color: var(--accent-cyan);
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-md);
+      display: block;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--spacing-sm);
+    ">NAVIGATION</label>
+    <div class="kepler-controls" style="margin-top: var(--spacing-md);">
       <button id="kepler-follow-button" class="kepler-follow-btn" style="
         width: 100%;
-        padding: 12px 16px;
-        background: linear-gradient(135deg, #FF9800, #F57C00);
-        color: white;
-        border: none;
-        border-radius: 6px;
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+        color: var(--accent-orange);
+        border: var(--border-width) solid var(--accent-orange);
+        border-radius: var(--border-radius);
         cursor: pointer;
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        font-family: var(--font-primary);
+        font-weight: 500;
+        font-size: var(--font-size-sm);
+        transition: all var(--transition-normal);
+        box-shadow: 0 0 10px var(--glow-orange);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: var(--spacing-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       ">
-        <span style="font-size: 16px;">🌍</span>
-        <span>Revenir au système solaire</span>
+        <span>Return to Solar System</span>
       </button>
     </div>
   `;
@@ -131,40 +194,55 @@ function createKeplerSidebar() {
   const koiGroup = document.createElement('div');
   koiGroup.className = 'setting-group';
   koiGroup.innerHTML = `
-    <label class="setting-label">EXPLORATION DES DONNÉES</label>
-    <div class="koi-controls" style="margin-top: 10px;">
+    <label class="setting-label" style="
+      color: var(--accent-cyan);
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-md);
+      display: block;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--spacing-sm);
+    ">DATA EXPLORATION</label>
+    <div class="koi-controls" style="margin-top: var(--spacing-md);">
       <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
         width: 100%;
-        padding: 12px 16px;
+        padding: var(--spacing-md) var(--spacing-lg);
         background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-        color: white;
-        border: none;
-        border-radius: 6px;
+        color: var(--text-primary);
+        border: var(--border-width) solid #9C27B0;
+        border-radius: var(--border-radius);
         cursor: pointer;
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+        font-family: var(--font-primary);
+        font-weight: 500;
+        font-size: var(--font-size-sm);
+        transition: all var(--transition-normal);
+        box-shadow: 0 0 10px rgba(156, 39, 176, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: var(--spacing-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       ">
-        <span style="font-size: 16px;">🔬</span>
+        <span style="font-size: 16px;"></span>
         <span>KOI Data Explorer</span>
       </button>
     </div>
   `;
   panel.appendChild(koiGroup);
   
-  // Ajouter les event listeners
-  setupKeplerSidebarEvents();
+  // Ajouter les event listeners avec un délai pour s'assurer que les éléments sont dans le DOM
+  setTimeout(() => {
+    setupKeplerSidebarEvents();
+  }, 100);
 }
 
 // Créer la sidebar pour le système solaire
 function createSolarSystemSidebar() {
-  const panel = document.querySelector('#settings-panel .settings-body');
+  const panel = document.querySelector('#settings-panel');
   if (!panel) return;
   
   // Vider la sidebar
@@ -174,28 +252,41 @@ function createSolarSystemSidebar() {
   const keplerGroup = document.createElement('div');
   keplerGroup.className = 'setting-group';
   keplerGroup.innerHTML = `
-    <label class="setting-label">SATELLITE KEPLER</label>
-    <div class="kepler-controls" style="margin-top: 10px;">
+    <label class="setting-label" style="
+      color: var(--accent-cyan);
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-md);
+      display: block;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--spacing-sm);
+    ">KEPLER SATELLITE</label>
+    <div class="kepler-controls" style="margin-top: var(--spacing-md);">
       <button id="kepler-follow-button" class="kepler-follow-btn" style="
         width: 100%;
-        padding: 12px 16px;
-        background: linear-gradient(135deg, #2196F3, #1976D2);
-        color: white;
-        border: none;
-        border-radius: 6px;
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+        color: var(--accent-cyan);
+        border: var(--border-width) solid var(--accent-cyan);
+        border-radius: var(--border-radius);
         cursor: pointer;
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        font-family: var(--font-primary);
+        font-weight: 500;
+        font-size: var(--font-size-sm);
+        transition: all var(--transition-normal);
+        box-shadow: 0 0 10px var(--glow-cyan);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: var(--spacing-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       ">
         <span style="font-size: 16px;">🛰️</span>
-        <span>Suivre le satellite Kepler</span>
+        <span>Follow Kepler Satellite</span>
       </button>
     </div>
   `;
@@ -205,25 +296,38 @@ function createSolarSystemSidebar() {
   const koiGroup = document.createElement('div');
   koiGroup.className = 'setting-group';
   koiGroup.innerHTML = `
-    <label class="setting-label">EXPLORATION DES DONNÉES</label>
-    <div class="koi-controls" style="margin-top: 10px;">
+    <label class="setting-label" style="
+      color: var(--accent-cyan);
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-md);
+      display: block;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--spacing-sm);
+    ">DATA EXPLORATION</label>
+    <div class="koi-controls" style="margin-top: var(--spacing-md);">
       <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
         width: 100%;
-        padding: 12px 16px;
+        padding: var(--spacing-md) var(--spacing-lg);
         background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-        color: white;
-        border: none;
-        border-radius: 6px;
+        color: var(--text-primary);
+        border: var(--border-width) solid #9C27B0;
+        border-radius: var(--border-radius);
         cursor: pointer;
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+        font-family: var(--font-primary);
+        font-weight: 500;
+        font-size: var(--font-size-sm);
+        transition: all var(--transition-normal);
+        box-shadow: 0 0 10px rgba(156, 39, 176, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: var(--spacing-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       ">
         <span style="font-size: 16px;">🔬</span>
         <span>KOI Data Explorer</span>
@@ -232,24 +336,96 @@ function createSolarSystemSidebar() {
   `;
   panel.appendChild(koiGroup);
   
-  // Ajouter la section ASTRE
+  // Ajouter la section ASTRES avec recherche intégrée
   const astreGroup = document.createElement('div');
   astreGroup.className = 'setting-group';
   astreGroup.innerHTML = `
-    <label class="setting-label">ASTRE</label>
-    <div class="setting-toggles">
-      <button class="setting-toggle-btn" id="astre-search-btn">RECHERCHER UN ASTRE</button>
-    </div>
+    <label class="setting-label" style="
+      color: var(--accent-cyan);
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-md);
+      display: block;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--spacing-sm);
+    ">SOLAR SYSTEM OBJECTS</label>
+    
+    <!-- Zone de recherche SIMPLE -->
+    <input 
+      type="text" 
+      id="astre-search-input-sidebar" 
+      placeholder="🔍 Search object..." 
+    />
+    <style>
+      #astre-search-input-sidebar {
+        width: 100% !important;
+        padding: 12px !important;
+        margin-bottom: 16px !important;
+        background: #1E2A42 !important;
+        border: 1px solid #2A3B5C !important;
+        border-radius: 8px !important;
+        color: #FFFFFF !important;
+        font-family: 'Rajdhani', sans-serif !important;
+        font-size: 14px !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        position: static !important;
+        z-index: auto !important;
+      }
+      #astre-search-input-sidebar:focus {
+        border-color: #00D4FF !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+      }
+    </style>
+    
+    <!-- Liste des astres -->
+    <div id="astre-list-sidebar" style="
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: 100%;
+      padding-right: 4px;
+      margin-top: 8px;
+      background: rgba(30, 42, 66, 0.3);
+      border-radius: 6px;
+      padding: 8px;
+    "></div>
   `;
   panel.appendChild(astreGroup);
   
-  // Ajouter les event listeners
-  setupSolarSystemSidebarEvents();
+  // Ajouter les event listeners avec un délai pour s'assurer que les éléments sont dans le DOM
+  setTimeout(() => {
+    setupSolarSystemSidebarEvents();
+  }, 100);
 }
 
 // Event listeners pour la sidebar Kepler
 function setupKeplerSidebarEvents() {
+  console.log('🔧 Configuration des événements Kepler...');
+  
+  // Bouton pour changer de système (ouvre la popup Ctrl+K)
+  const changeSystemButton = document.getElementById('change-system-button');
+  console.log('📝 Bouton changement système trouvé:', !!changeSystemButton);
+  
+  if (changeSystemButton) {
+    changeSystemButton.addEventListener('click', () => {
+      console.log('🌟 Ouverture de la recherche de système Kepler');
+      // Utiliser la même fonction que Ctrl+K
+      if (window.keplerSearch) {
+        window.keplerSearch.showSearch();
+      } else {
+        console.warn('⚠️ KeplerSearchSystem non disponible');
+      }
+    });
+  }
+  
   const followButton = document.getElementById('kepler-follow-button');
+  console.log('📝 Bouton Kepler trouvé:', !!followButton);
+  
   if (followButton) {
     followButton.addEventListener('click', () => {
       console.log('🌍 Retour au système solaire demandé');
@@ -267,11 +443,16 @@ function setupKeplerSidebarEvents() {
   }
   
   const koiButton = document.getElementById('koi-data-explorer-button');
+  console.log('📝 Bouton KOI trouvé:', !!koiButton);
+  
   if (koiButton) {
     koiButton.addEventListener('click', () => {
+      console.log('🔬 Ouverture de KOI Data Explorer');
       window.open('https://koi-data-explorer.vercel.app', '_blank');
     });
   }
+  
+  console.log('✅ Événements Kepler configurés');
 }
 
 // Event listeners pour la sidebar système solaire
@@ -279,7 +460,7 @@ function setupSolarSystemSidebarEvents() {
   const followButton = document.getElementById('kepler-follow-button');
   if (followButton) {
     followButton.addEventListener('click', () => {
-      console.log('🛰️ Suivi de Kepler activé');
+      console.log('🛰️ Centrage sur Kepler');
       centerOnPlanet('kepler', 'satellite');
     });
   }
@@ -291,11 +472,177 @@ function setupSolarSystemSidebarEvents() {
     });
   }
   
-  const astreButton = document.getElementById('astre-search-btn');
-  if (astreButton) {
-    // Ajouter la logique de recherche d'astre ici
-    console.log('Bouton ASTRE configuré');
+  // Configurer la recherche d'astres dans la sidebar
+  setupSidebarAstreSearch();
+}
+
+// Configurer la recherche et liste d'astres dans la sidebar (basé sur la popup fonctionnelle)
+function setupSidebarAstreSearch() {
+  console.log('🔧 Configuration de la recherche d\'astres...');
+  
+  const searchInput = document.getElementById('astre-search-input-sidebar');
+  const astreList = document.getElementById('astre-list-sidebar');
+  
+  console.log('📝 Éléments trouvés:', { searchInput: !!searchInput, astreList: !!astreList });
+  
+  if (!searchInput || !astreList) {
+    console.error('❌ Éléments manquants pour la recherche d\'astres');
+    return;
   }
+
+  // SOLUTION : Empêcher la propagation des événements vers le canvas SAUF pour les clics sur les astres
+  const sidebar = document.getElementById('settings-panel');
+  if (sidebar) {
+    sidebar.addEventListener('click', (e) => {
+      // Permettre les clics sur les résultats d'astres ET les boutons
+      if (e.target.closest('.astre-result') || 
+          e.target.closest('button') || 
+          e.target.closest('.kepler-follow-btn') || 
+          e.target.closest('.koi-data-explorer-btn')) {
+        console.log('✅ Clic autorisé sur un élément interactif');
+        return; // Laisser passer
+      }
+      
+      e.stopPropagation();
+      console.log('🛡️ Clic intercepté sur la sidebar');
+    }, true);
+    
+    sidebar.addEventListener('mousedown', (e) => {
+      // Permettre les clics sur les résultats d'astres, l'input ET les boutons
+      if (e.target.closest('.astre-result') || 
+          e.target.closest('#astre-search-input-sidebar') || 
+          e.target.closest('button') || 
+          e.target.closest('.kepler-follow-btn') || 
+          e.target.closest('.koi-data-explorer-btn')) {
+        return; // Laisser passer
+      }
+      e.stopPropagation();
+    }, true);
+    
+    sidebar.addEventListener('mouseup', (e) => {
+      // Permettre les clics sur les résultats d'astres, l'input ET les boutons
+      if (e.target.closest('.astre-result') || 
+          e.target.closest('#astre-search-input-sidebar') || 
+          e.target.closest('button') || 
+          e.target.closest('.kepler-follow-btn') || 
+          e.target.closest('.koi-data-explorer-btn')) {
+        return; // Laisser passer
+      }
+      e.stopPropagation();
+    }, true);
+  }
+
+  // Forcer le focus sur l'input quand on clique dessus
+  searchInput.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    setTimeout(() => {
+      searchInput.focus();
+      console.log('🎯 Focus forcé sur l\'input');
+    }, 0);
+  });
+
+  // Utiliser la même logique que la popup fonctionnelle
+  const buildCandidates = () => {
+    const items = [];
+    items.push({name:'Sun', key:'sun', type:'sun'});
+    const planets = [
+      {name:'Mercury', key:'mercury', type:'planet'},
+      {name:'Venus', key:'venus', type:'planet'},
+      {name:'Earth', key:'earth', type:'planet'},
+      {name:'Mars', key:'mars', type:'planet'},
+      {name:'Jupiter', key:'jupiter', type:'planet'},
+      {name:'Saturn', key:'saturn', type:'planet'},
+      {name:'Uranus', key:'uranus', type:'planet'},
+      {name:'Neptune', key:'neptune', type:'planet'}
+    ];
+    items.push(...planets);
+    
+    const moons = [
+      {name:'Moon', key:'moon', type:'moon'},
+      {name:'Phobos', key:'phobos', type:'moon'},
+      {name:'Deimos', key:'deimos', type:'moon'},
+      {name:'Io', key:'io', type:'moon'},
+      {name:'Europa', key:'europa', type:'moon'},
+      {name:'Ganymède', key:'ganymede', type:'moon'},
+      {name:'Callisto', key:'callisto', type:'moon'},
+      {name:'Titan', key:'titan', type:'moon'},
+      {name:'Encelade', key:'enceladus', type:'moon'}
+    ];
+    items.push(...moons);
+    
+    return items;
+  };
+
+  const renderResults = (q) => {
+    const query = (q||'').toLowerCase().trim();
+    const list = buildCandidates().filter(it => it.name.toLowerCase().includes(query));
+    if (!list.length) {
+      astreList.innerHTML = `<div style="padding:10px; color:#80c0ff; font-family:'Rajdhani',sans-serif;">Aucun résultat</div>`;
+      return;
+    }
+    astreList.innerHTML = list.map(it => `
+      <div class="astre-result" data-key="${it.key}" data-type="${it.type}" data-name="${it.name}"
+           style="padding:10px 12px; margin-bottom:6px; background:rgba(0,255,255,0.05); border-left:2px solid rgba(0,255,255,0.3); border-radius:6px; cursor:pointer;">
+        <div style="font-weight:700; color:#00ffff; font-family:'Rajdhani',sans-serif;">${it.name}</div>
+        <div style="font-size:0.8rem; color:#0080ff; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">${it.type}</div>
+      </div>
+    `).join('');
+    astreList.querySelectorAll('.astre-result').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation(); // Empêcher la propagation vers le canvas
+        
+        const name = el.getAttribute('data-name');
+        const type = el.getAttribute('data-type');
+        const objType = type === 'sun' ? 'sun' : (type || 'planet');
+        
+        console.log(`🎯 Clic sur astre: ${name} (${type}) -> objType: ${objType}`);
+        
+        // Vérifier si centerOnPlanet existe
+        if (typeof centerOnPlanet === 'function') {
+          // Traitement spécial pour le Soleil
+          if (objType === 'sun') {
+            console.log('☀️ Centrage spécial sur le Soleil avec sécurité');
+            centerOnPlanet('soleil', 'sun');
+          } else {
+            centerOnPlanet(name, objType);
+          }
+          console.log(`✅ centerOnPlanet appelé pour ${name}`);
+        } else {
+          console.error('❌ centerOnPlanet function not found');
+        }
+        
+        // Update info card content
+        try { 
+          if (typeof showPlanetInfo === 'function') {
+            showPlanetInfo(name, objType);
+            console.log(`✅ showPlanetInfo appelé pour ${name}`);
+          }
+        } catch (e) { 
+          console.warn('showPlanetInfo failed', e); 
+        }
+        
+        try {
+          if (typeof setScaleCardTitle === 'function') {
+            setScaleCardTitle(name);
+            console.log(`✅ setScaleCardTitle appelé pour ${name}`);
+          }
+        } catch (e) {
+          console.warn('setScaleCardTitle failed', e);
+        }
+      });
+    });
+  };
+
+  searchInput.addEventListener('input', (e) => renderResults(e.target.value));
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      renderResults('');
+    }
+  });
+
+  // Afficher tous les résultats au début
+  renderResults('');
 }
 
 // Fonction principale pour mettre à jour la sidebar
@@ -313,6 +660,213 @@ function updateSidebar() {
 
 // Exposer la fonction globalement pour le bouton hamburger
 window.updateSidebar = updateSidebar;
+
+// Initialiser la sidebar au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 Initialisation de la sidebar au chargement...');
+  setTimeout(() => {
+    updateSidebar();
+  }, 500);
+});
+
+// Les raccourcis clavier d'OrbitControls sont maintenant désactivés dans la configuration des contrôles
+
+// Créer la modal de recherche d'astre
+function createAstreSearchModal() {
+  const modal = document.createElement('div');
+  modal.id = 'astre-modal';
+  Object.assign(modal.style, {
+    position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh',
+    background: 'rgba(0,0,0,0.7)', display: 'none', alignItems: 'center', justifyContent: 'center', zIndex: '100002'
+  });
+  modal.innerHTML = `
+    <div id="astre-modal-card" style="
+      min-width: 340px; 
+      max-width: 520px; 
+      background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); 
+      border: var(--border-width) solid var(--accent-cyan); 
+      border-radius: var(--border-radius); 
+      padding: var(--spacing-lg); 
+      box-shadow: 0 0 25px var(--glow-cyan);
+      font-family: var(--font-primary);
+    ">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:var(--spacing-md);">
+        <div style="font-family: var(--font-primary); font-weight:700; color: var(--accent-cyan); font-size: var(--font-size-lg);">Search Object</div>
+        <button id="astre-modal-close" title="Fermer" style="
+          margin-left:auto; 
+          width:28px; 
+          height:28px; 
+          display:inline-flex; 
+          align-items:center; 
+          justify-content:center; 
+          border: var(--border-width) solid var(--accent-cyan); 
+          background: var(--bg-tertiary); 
+          color: var(--accent-cyan); 
+          border-radius: var(--border-radius); 
+          cursor:pointer;
+          transition: all var(--transition-normal);
+        ">×</button>
+      </div>
+      <input id="astre-search-input" type="text" placeholder="Nom d'astre (ex: Mars, Phobos, Venus, Soleil)" style="
+        width:100%; 
+        padding: var(--spacing-md); 
+        border-radius: var(--border-radius); 
+        border: var(--border-width) solid var(--border); 
+        background: var(--bg-tertiary); 
+        color: var(--text-primary); 
+        outline:none;
+        font-family: var(--font-primary);
+        transition: all var(--transition-normal);
+      " />
+      <div id="astre-search-results" style="margin-top: var(--spacing-md); max-height:260px; overflow:auto;"></div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+
+  const closeModal = () => { modal.style.display = 'none'; };
+  modal.addEventListener('click', (e) => { if (e.target.id === 'astre-modal') closeModal(); });
+  modal.querySelector('#astre-modal-close').addEventListener('click', closeModal);
+
+  // Ajouter les styles hover
+  const closeBtn = modal.querySelector('#astre-modal-close');
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.background = 'var(--accent-cyan)';
+    closeBtn.style.color = 'var(--bg-primary)';
+  });
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.background = 'var(--bg-tertiary)';
+    closeBtn.style.color = 'var(--accent-cyan)';
+  });
+
+  const input = modal.querySelector('#astre-search-input');
+  input.addEventListener('focus', () => {
+    input.style.borderColor = 'var(--accent-cyan)';
+    input.style.boxShadow = '0 0 10px var(--glow-cyan-soft)';
+  });
+  input.addEventListener('blur', () => {
+    input.style.borderColor = 'var(--border)';
+    input.style.boxShadow = 'none';
+  });
+
+  // Ajouter la logique de recherche
+  setupAstreSearchLogic();
+}
+
+// Configurer la logique de recherche d'astres
+function setupAstreSearchLogic() {
+  const inputEl = document.getElementById('astre-search-input');
+  const resultsEl = document.getElementById('astre-search-results');
+  
+  if (!inputEl || !resultsEl) return;
+
+  const buildCandidates = () => {
+    const items = [];
+    items.push({name:'Sun', key:'sun', type:'sun'});
+    const planets = [
+      {name:'Mercury', key:'mercury', type:'planet'},
+      {name:'Venus', key:'venus', type:'planet'},
+      {name:'Earth', key:'earth', type:'planet'},
+      {name:'Mars', key:'mars', type:'planet'},
+      {name:'Jupiter', key:'jupiter', type:'planet'},
+      {name:'Saturn', key:'saturn', type:'planet'},
+      {name:'Uranus', key:'uranus', type:'planet'},
+      {name:'Neptune', key:'neptune', type:'planet'}
+    ];
+    items.push(...planets);
+    
+    // Ajouter les lunes
+    const moons = [
+      {name:'Lune', key:'moon', type:'moon', parent:'earth'},
+      {name:'Phobos', key:'phobos', type:'moon', parent:'mars'},
+      {name:'Deimos', key:'deimos', type:'moon', parent:'mars'},
+      {name:'Io', key:'io', type:'moon', parent:'jupiter'},
+      {name:'Europa', key:'europa', type:'moon', parent:'jupiter'},
+      {name:'Ganymède', key:'ganymede', type:'moon', parent:'jupiter'},
+      {name:'Callisto', key:'callisto', type:'moon', parent:'jupiter'},
+      {name:'Titan', key:'titan', type:'moon', parent:'saturn'},
+      {name:'Encelade', key:'enceladus', type:'moon', parent:'saturn'}
+    ];
+    items.push(...moons);
+    
+    return items;
+  };
+
+  const renderResults = (q) => {
+    const query = (q||'').toLowerCase().trim();
+    const list = buildCandidates().filter(it => it.name.toLowerCase().includes(query));
+    if (!list.length) {
+      resultsEl.innerHTML = `<div style="padding: var(--spacing-md); color: var(--text-secondary); font-family: var(--font-primary);">Aucun résultat</div>`;
+      return;
+    }
+    
+    resultsEl.innerHTML = list.map(item => {
+      const emoji = item.type === 'sun' ? '☀️' : item.type === 'planet' ? '🪐' : '🌙';
+      const typeText = item.type === 'sun' ? 'Étoile' : item.type === 'planet' ? 'Planète' : 'Lune';
+      
+      return `
+        <div class="astre-result-item" data-key="${item.key}" data-type="${item.type}" style="
+          padding: var(--spacing-md);
+          margin-bottom: var(--spacing-xs);
+          background: var(--bg-tertiary);
+          border: var(--border-width) solid var(--border);
+          border-radius: var(--border-radius);
+          cursor: pointer;
+          transition: all var(--transition-normal);
+          font-family: var(--font-primary);
+        ">
+          <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+            <span style="font-size: 20px;">${emoji}</span>
+            <div>
+              <div style="color: var(--text-primary); font-weight: 500;">${item.name}</div>
+              <div style="color: var(--text-secondary); font-size: var(--font-size-xs);">${typeText}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    // Ajouter les event listeners pour les résultats
+    resultsEl.querySelectorAll('.astre-result-item').forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        item.style.background = 'var(--bg-secondary)';
+        item.style.borderColor = 'var(--accent-cyan)';
+        item.style.boxShadow = '0 0 10px var(--glow-cyan-soft)';
+      });
+      
+      item.addEventListener('mouseleave', () => {
+        item.style.background = 'var(--bg-tertiary)';
+        item.style.borderColor = 'var(--border)';
+        item.style.boxShadow = 'none';
+      });
+      
+      item.addEventListener('click', () => {
+        const key = item.dataset.key;
+        const type = item.dataset.type;
+        console.log(`🎯 Centrage sur ${key} (${type})`);
+        
+        // Fermer la modal
+        document.getElementById('astre-modal').style.display = 'none';
+        
+        // Centrer sur l'objet
+        if (typeof centerOnPlanet === 'function') {
+          centerOnPlanet(key, type);
+        }
+      });
+    });
+  };
+
+  // Event listeners pour la recherche
+  inputEl.addEventListener('input', (e) => renderResults(e.target.value));
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('astre-modal').style.display = 'none';
+    }
+  });
+
+  // Afficher tous les résultats au début
+  renderResults('');
+}
 
 // ANCIENNE FONCTION - maintenant remplacée par updateSidebar()
 function addKeplerFollowButton() {
@@ -359,15 +913,15 @@ function addKeplerFollowButton() {
           gap: 8px;
         ">
           <span style="font-size: 16px;">🌍</span>
-          <span>Revenir au système solaire</span>
+          <span>Return to Solar System</span>
         </button>
       </div>
     `;
-    console.log('✅ Bouton "Revenir au système solaire" ajouté au DOM');
+    console.log('✅ Bouton "Return to Solar System" ajouté au DOM');
   } else {
     // Mode système solaire : bouton pour suivre Kepler
     group.innerHTML = `
-      <label class="setting-label">SATELLITE KEPLER</label>
+      <label class="setting-label">KEPLER SATELLITE</label>
       <div class="kepler-controls" style="margin-top: 10px;">
         <button id="kepler-follow-button" class="kepler-follow-btn" style="
           width: 100%;
@@ -388,11 +942,11 @@ function addKeplerFollowButton() {
           gap: 8px;
         ">
           <span style="font-size: 16px;">🛰️</span>
-          <span>Suivre le satellite Kepler</span>
+          <span>Follow Kepler Satellite</span>
         </button>
       </div>
     `;
-    console.log('✅ Bouton "Suivre le satellite Kepler" ajouté au DOM');
+    console.log('✅ Bouton "Follow Kepler Satellite" ajouté au DOM');
   }
   
   panel.appendChild(group);
@@ -450,7 +1004,7 @@ function addKeplerFollowButton() {
         followButton.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
         followButton.innerHTML = `
           <span style="font-size: 16px;">✅</span>
-          <span>Kepler suivi</span>
+          <span>Kepler Followed</span>
         `;
         
         // Remettre le bouton normal après 2 secondes
@@ -458,13 +1012,13 @@ function addKeplerFollowButton() {
           followButton.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
           followButton.innerHTML = `
             <span style="font-size: 16px;">🛰️</span>
-            <span>Suivre le satellite Kepler</span>
+            <span>Follow Kepler Satellite</span>
           `;
         }, 2000);
       }
     });
     
-    console.log(`✅ Événements du bouton ${isInKeplerSystem ? 'retour système solaire' : 'suivi Kepler'} configurés`);
+    console.log(`✅ Événements du bouton ${isInKeplerSystem ? 'return to solar system' : 'follow Kepler'} configurés`);
   }
 }
 
@@ -622,10 +1176,10 @@ function ensureAstreSearchControl() {
     modal.innerHTML = `
       <div id="astre-modal-card" style="min-width: 340px; max-width: 520px; background: linear-gradient(145deg, rgba(0, 20, 40, 0.98) 0%, rgba(0, 40, 80, 0.95) 100%); border:1px solid #00ffff; border-radius:12px; padding:16px; box-shadow: 0 0 25px rgba(0,255,255,0.35);">
         <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-          <div style="font-family:'Rajdhani',sans-serif; font-weight:700; color:#00ffff;">Rechercher un astre</div>
-          <button id="astre-modal-close" title="Fermer" style="margin-left:auto; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,255,255,0.3); background:rgba(0,128,255,0.08); color:#00ffff; border-radius:6px; cursor:pointer;">×</button>
+          <div style="font-family:'Rajdhani',sans-serif; font-weight:700; color:#00ffff;">Search Object</div>
+          <button id="astre-modal-close" title="Close" style="margin-left:auto; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,255,255,0.3); background:rgba(0,128,255,0.08); color:#00ffff; border-radius:6px; cursor:pointer;">×</button>
         </div>
-        <input id="astre-search-input" type="text" placeholder="Nom d'astre (ex: Mars, Phobos, Venus, Soleil)" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(0,255,255,0.3); background:rgba(0,20,40,0.6); color:#00ffff; outline:none;" />
+        <input id="astre-search-input" type="text" placeholder="Object name (ex: Mars, Phobos, Venus, Sun)" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(0,255,255,0.3); background:rgba(0,20,40,0.6); color:#00ffff; outline:none;" />
         <div id="astre-search-results" style="margin-top:10px; max-height:260px; overflow:auto;"></div>
       </div>
     `;
@@ -637,7 +1191,7 @@ function ensureAstreSearchControl() {
 
     const buildCandidates = () => {
       const items = [];
-      items.push({name:'Soleil', key:'sun', type:'sun'});
+      items.push({name:'Sun', key:'sun', type:'sun'});
       const planets = [
         {name:'Mercury', key:'mercury'}, {name:'Venus', key:'venus'}, {name:'Earth', key:'earth'},
         {name:'Mars', key:'mars'}, {name:'Jupiter', key:'jupiter'}, {name:'Saturn', key:'saturn'},
@@ -950,14 +1504,15 @@ function ensureBottomRightInfoPanel() {
       position: 'fixed',
       bottom: '20px',
       right: '20px',
-      width: '280px',
-      background: 'linear-gradient(145deg, rgba(0, 20, 40, 0.95) 0%, rgba(0, 40, 80, 0.9) 100%)',
-      border: '1px solid #00ffff',
-      borderRadius: '12px',
-      backdropFilter: 'blur(20px)',
-      boxShadow: '0 0 25px rgba(0, 255, 255, 0.3)',
+      width: '380px',
+      background: 'linear-gradient(145deg, rgba(5, 15, 35, 0.98) 0%, rgba(10, 25, 50, 0.95) 50%, rgba(0, 20, 40, 0.92) 100%)',
+      border: '2px solid rgba(0, 255, 255, 0.4)',
+      borderRadius: '16px',
+      backdropFilter: 'blur(25px) saturate(1.2)',
+      boxShadow: '0 8px 32px rgba(0, 255, 255, 0.15), 0 0 60px rgba(0, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       zIndex: '1000',
-      fontFamily: 'Rajdhani, sans-serif'
+      fontFamily: 'Rajdhani, sans-serif',
+      overflow: 'hidden'
     });
     document.body.appendChild(scaleBox);
   }
@@ -974,19 +1529,65 @@ function ensureBottomRightInfoPanel() {
     container.style.pointerEvents = 'auto';
 
     container.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
-        <div>
-          <div id="br-name" style="font-weight:700; color:#00ffff; font-family:'Rajdhani', sans-serif;">—</div>
-          <div id="br-type" style="font-size:0.8rem; color:#0080ff; font-family:'Rajdhani', sans-serif;">—</div>
-        </div>
-        <div style="display:flex; gap:6px; align-items:center;">
-          <button id="br-toggle-btn" type="button" title="Réduire / Afficher" style="width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,255,255,0.3); background:rgba(0,128,255,0.08); color:#00ffff; border-radius:6px; cursor:pointer; user-select:none;">▾</button>
-          <button id="br-uncenter-btn" class="uncenter-btn" style="padding:6px 10px; display:none; border:1px solid rgba(255,165,0,0.5); background:rgba(255,165,0,0.1); color:#ffa500; border-radius:4px; cursor:pointer; font-size:0.8rem;">Décentrer</button>
-          <button id="br-stop-follow-btn" class="stop-follow-btn" style="padding:6px 10px; display:none;">Libérer</button>
+      <!-- Elements simples sans barre -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div id="br-name" style="display: none;">—</div>
+        <div id="br-type" style="
+          font-size: 14px; 
+          color: #00D4FF; 
+          font-family: 'Rajdhani', sans-serif;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+        ">—</div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button id="br-toggle-btn" type="button" title="Collapse / Expand" style="
+            width: 24px; 
+            height: 24px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            border: 1px solid rgba(0, 255, 255, 0.3); 
+            background: rgba(0, 255, 255, 0.1); 
+            color: #00FFFF; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            user-select: none;
+            transition: all 0.3s ease;
+            font-size: 12px;
+          ">▾</button>
+          <button id="br-uncenter-btn" class="uncenter-btn" style="
+            padding: 4px 8px; 
+            display: none; 
+            border: 1px solid rgba(255, 165, 0, 0.4); 
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15) 0%, rgba(255, 140, 0, 0.1) 100%); 
+            color: #FFB347; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 11px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+          ">UNCENTER</button>
         </div>
       </div>
-      <div id="br-content" class="tooltip-content"></div>
-      <div id="br-description" class="tooltip-description" style="margin-top:8px;"></div>
+      
+      <!-- Contenu des données -->
+      <div id="br-content" class="tooltip-content" style="
+        padding: 0 20px;
+        margin-bottom: 16px;
+      "></div>
+      
+      <!-- Description -->
+      <div id="br-description" class="tooltip-description" style="
+        padding: 0 20px 20px 20px;
+        color: rgba(255, 255, 255, 0.8);
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+      "></div>
     `;
 
     scaleBox.appendChild(container);
@@ -1084,24 +1685,117 @@ function updateBottomRightInfo(name, type, info, objectType) {
   typeEl.textContent = type || '—';
 
   contentEl.innerHTML = `
-    <div class="tooltip-info">
-      <span class="info-label">Rayon</span>
-      <span class="info-value">${info.radius || '—'}</span>
-    </div>
-    <div class="tooltip-info">
-      <span class="info-label">Distance</span>
-      <span class="info-value">${info.distance || '—'}</span>
-    </div>
-    <div class="tooltip-info">
-      <span class="info-label">Orbite</span>
-      <span class="info-value">${info.orbit || '—'}</span>
-    </div>
-    ${objectType !== 'sun' ? `
-      <div class="tooltip-info">
-        <span class="info-label">Lunes</span>
-        <span class="info-value">${info.moons || '—'}</span>
+    <div style="display: grid; gap: 12px;">
+      <div style="
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
+        border: 1px solid rgba(0, 255, 255, 0.15);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+      ">
+        <span style="
+          color: #00D4FF; 
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 600; 
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        ">RADIUS :</span>
+        <span style="
+          color: #FFFFFF; 
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 700; 
+          font-size: 16px;
+          text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+        ">${info.radius || '—'}</span>
       </div>
-    ` : ''}
+      
+      <div style="
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
+        border: 1px solid rgba(0, 255, 255, 0.15);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+      ">
+        <span style="
+          color: #00D4FF; 
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 600; 
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        ">DISTANCE :</span>
+        <span style="
+          color: #FFFFFF; 
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 700; 
+          font-size: 16px;
+          text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+        ">${info.distance || '—'}</span>
+      </div>
+      
+      <div style="
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
+        border: 1px solid rgba(0, 255, 255, 0.15);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+      ">
+        <span style="
+          color: #00D4FF; 
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 600; 
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        ">ORBIT :</span>
+        <span style="
+          color: #FFFFFF; 
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 700; 
+          font-size: 16px;
+          text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+        ">${info.orbit || '—'}</span>
+      </div>
+      
+      ${objectType !== 'sun' ? `
+        <div style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
+          border: 1px solid rgba(0, 255, 255, 0.15);
+          border-radius: 10px;
+          transition: all 0.3s ease;
+        ">
+          <span style="
+            color: #00D4FF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 600; 
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">MOONS :</span>
+          <span style="
+            color: #FFFFFF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 700; 
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+          ">${info.moons || '—'}</span>
+        </div>
+      ` : ''}
+    </div>
   `;
 
   descEl.textContent = info.info || '';
@@ -1510,6 +2204,10 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.screenSpacePanning = false;
+
+// DÉSACTIVER les raccourcis clavier d'OrbitControls
+controls.enableKeys = false; // Désactive TOUS les raccourcis clavier
+controls.keys = {}; // Vide l'objet des touches
 
 // Contrôles ultra-libres pour navigation totale
 controls.minDistance = 1; // Distance minimale raisonnable pour éviter les problèmes de rendu
@@ -2464,19 +3162,32 @@ function onDocumentMouseDown(event) {
     if (selectedPlanet) {
       closeInfoNoZoomOut();
       
-      // Centrer sur l'objet - ACTIVÉ pour les lunes de Mars et TOUS les objets des systèmes Kepler
+      // Centrer sur l'objet - ACTIVÉ pour les lunes de Mars, le soleil et TOUS les objets des systèmes Kepler
       if ((selectedPlanet.type === 'moon' && (selectedPlanet.name === 'Phobos' || selectedPlanet.name === 'Deimos')) ||
           (selectedPlanet.type === 'exoplanet') || 
           (selectedPlanet.type === 'kepler_star') ||
-          (selectedPlanet.type === 'sun' && window.currentExoplanets)) {
+          (selectedPlanet.type === 'sun')) {
         
         const emoji = selectedPlanet.type === 'moon' ? '🌙' : 
                      selectedPlanet.type === 'exoplanet' ? '🪐' : '⭐';
         console.log(`${emoji} Centrage automatique sur ${selectedPlanet.type}:`, selectedPlanet.name);
         
-        // Utiliser le nom approprié pour centerOnPlanet
-        const objectName = (selectedPlanet.type === 'sun' || selectedPlanet.type === 'kepler_star') ? 'sun' : selectedPlanet.name.toLowerCase();
-        centerOnPlanet(objectName, selectedPlanet.type === 'kepler_star' ? 'sun' : selectedPlanet.type);
+        // Traitement spécial pour le soleil : appeler la même fonction que le bouton DÉCENTRER
+        if (selectedPlanet.type === 'sun') {
+          // Appeler exactement la même fonction que le bouton DÉCENTRER
+          controls.target.set(0, 0, 0);
+          controls.update();
+          followedPlanet = null;
+          const uncenterBtn = document.getElementById('br-uncenter-btn');
+          const stopBtn = document.getElementById('br-stop-follow-btn');
+          if (uncenterBtn) uncenterBtn.style.display = 'none';
+          if (stopBtn) stopBtn.style.display = 'none';
+          console.log('☀️ Clic sur le soleil : caméra décentrée - retour au centre du système');
+        } else {
+          // Pour les autres objets, utiliser le centrage normal
+          const objectName = selectedPlanet.type === 'kepler_star' ? 'sun' : selectedPlanet.name.toLowerCase();
+          centerOnPlanet(objectName, selectedPlanet.type === 'kepler_star' ? 'sun' : selectedPlanet.type);
+        }
       }
       
       console.log("🔍 Tentative d'affichage tooltip pour:", selectedPlanet.name, selectedPlanet.type);
@@ -2686,13 +3397,13 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     // Data for the Sun
     objectInfo = {
       radius: '696,340 km',
-      distance: '0 km (centre du système)',
-      orbit: 'N/A (étoile centrale)',
+      distance: '0 km (system center)',
+      orbit: 'N/A (central star)',
       moons: '0',
-      info: 'Le Soleil est l\'étoile au centre de notre système solaire. Il  génère son énergie par fusion nucléaire.'
+      info: 'The Sun is the star at the center of our solar system. It generates its energy through nuclear fusion.'
     };
-    displayName = 'Soleil';
-    displayType = 'Étoile';
+    displayName = 'Sun';
+    displayType = 'Star';
   } else if (objectType === 'exoplanet') {
     // Data for exoplanets
     console.log("🪐 Traitement exoplanète:", objectName);
@@ -2710,19 +3421,19 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     if (userData) {
       objectInfo = formatExoplanetInfo(userData);
       displayName = userData.name;
-      displayType = `Exoplanète (${userData.classification})`;
+      displayType = userData.classification.charAt(0).toUpperCase() + userData.classification.slice(1);
       console.log("✅ Données exoplanète formatées:", objectInfo);
     } else {
       console.warn("⚠️ Données exoplanète non trouvées pour:", objectName);
       objectInfo = {
-        radius: 'Données non disponibles',
-        distance: 'Données non disponibles',
-        orbit: 'Données non disponibles',
+        radius: 'Data not available',
+        distance: 'Data not available',
+        orbit: 'Data not available',
         moons: '0',
-        info: `Informations sur l'exoplanète ${objectName} en cours de chargement...`
+        info: `Information about exoplanet ${objectName} is loading...`
       };
       displayName = objectName;
-      displayType = 'Exoplanète';
+      displayType = 'Exoplanet';
     }
   } else if (objectType === 'kepler_star') {
     // Data for Kepler system stars
@@ -2736,36 +3447,36 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     
     if (userData) {
       objectInfo = {
-        radius: '696,340 km (similaire au Soleil)',
-        distance: '0 km (centre du système)',
-        orbit: 'N/A (étoile centrale)',
+        radius: '696,340 km (similar to Sun)',
+        distance: '0 km (system center)',
+        orbit: 'N/A (central star)',
         moons: '0',
         temperature: userData.temperature || '5778 K',
-        classification: userData.classification || 'Étoile de type G',
-        system: userData.system || 'Système Kepler',
-        info: `${userData.name} est l'étoile centrale du système ${userData.system || 'Kepler'}. Cette étoile de type solaire héberge plusieurs exoplanètes détectées par le télescope spatial Kepler.`
+        classification: userData.classification || 'G-type Star',
+        system: userData.system || 'Kepler System',
+        info: `${userData.name} is the central star of the ${userData.system || 'Kepler'} system. This solar-type star hosts several exoplanets detected by the Kepler space telescope.`
       };
       displayName = userData.name;
-      displayType = 'Étoile Kepler';
+      displayType = 'Kepler Star';
       console.log("✅ Données étoile Kepler formatées:", objectInfo);
     } else {
       console.warn("⚠️ Données étoile Kepler non trouvées pour:", objectName);
       objectInfo = {
-        radius: '696,340 km (estimation)',
-        distance: '0 km (centre du système)',
-        orbit: 'N/A (étoile centrale)',
+        radius: '696,340 km (estimated)',
+        distance: '0 km (system center)',
+        orbit: 'N/A (central star)',
         moons: '0',
-        info: `${objectName} est l'étoile centrale de ce système Kepler.`
+        info: `${objectName} is the central star of this Kepler system.`
       };
       displayName = objectName;
-      displayType = 'Étoile Kepler';
+      displayType = 'Kepler Star';
     }
   } else if (objectType === 'dwarf_planet') {
     // Data for dwarf planets (specifically Pluto)
     const planetKey = objectName.charAt(0).toUpperCase() + objectName.slice(1);
     objectInfo = planetData[planetKey];
     displayName = planetKey;
-    displayType = 'Planète naine';
+    displayType = 'Dwarf Planet';
     
     console.log("🔍 Recherche données planète naine:", planetKey, "Trouvé:", !!objectInfo);
   } else if (objectType === 'moon') {
@@ -2777,90 +3488,90 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     if (normalizedName === 'moon') {
       objectInfo = {
         radius: '1,737 km',
-        distance: '384,400 km de la Terre',
-        orbit: '27.3 jours',
+        distance: '384,400 km from Earth',
+        orbit: '27.3 days',
         moons: '0',
-        info: 'La Lune est le seul satellite naturel de la Terre. Elle influence les marées et stabilise l\'axe de rotation terrestre.'
+        info: 'The Moon is Earth\'s only natural satellite. It influences tides and stabilizes Earth\'s rotational axis.'
       };
-      displayName = 'Lune';
-      displayType = 'Satellite naturel';
+      displayName = 'Moon';
+      displayType = 'Natural Satellite';
     } else if (normalizedName === 'Io') {
       objectInfo = {
         radius: '1,821 km',
-        distance: '421,700 km de Jupiter',
-        orbit: '1.77 jours',
+        distance: '421,700 km from Jupiter',
+        orbit: '1.77 days',
         moons: '0',
-        info: 'Io est la lune la plus volcanique du système solaire avec plus de 400 volcans actifs. Elle est constamment déformée par les forces de marée de Jupiter.'
+        info: 'Io is the most volcanically active moon in the solar system with over 400 active volcanoes. It is constantly deformed by Jupiter\'s tidal forces.'
       };
       displayName = 'Io';
-      displayType = 'Satellite de Jupiter';
+      displayType = 'Jupiter Satellite';
     } else if (normalizedName === 'Europa') {
       objectInfo = {
         radius: '1,560 km',
-        distance: '671,034 km de Jupiter',
-        orbit: '3.55 jours',
+        distance: '671,034 km from Jupiter',
+        orbit: '3.55 days',
         moons: '0',
-        info: 'Europa possède un océan souterrain sous sa croûte de glace, ce qui en fait l\'un des endroits les plus prometteurs pour rechercher la vie dans le système solaire.'
+        info: 'Europa has a subsurface ocean beneath its ice crust, making it one of the most promising places to search for life in the solar system.'
       };
       displayName = 'Europa';
-      displayType = 'Satellite de Jupiter';
+      displayType = 'Jupiter Satellite';
     } else if (normalizedName === 'Ganymede') {
       objectInfo = {
         radius: '2,634 km',
-        distance: '1,070,412 km de Jupiter',
-        orbit: '7.15 jours',
+        distance: '1,070,412 km from Jupiter',
+        orbit: '7.15 days',
         moons: '0',
-        info: 'Ganymède est la plus grande lune du système solaire, plus grande que Mercure. Elle possède son propre champ magnétique et probablement un océan souterrain.'
+        info: 'Ganymede is the largest moon in the solar system, larger than Mercury. It has its own magnetic field and probably a subsurface ocean.'
       };
-      displayName = 'Ganymède';
-      displayType = 'Satellite de Jupiter';
+      displayName = 'Ganymede';
+      displayType = 'Jupiter Satellite';
     } else if (normalizedName === 'Callisto') {
       objectInfo = {
         radius: '2,410 km',
-        distance: '1,882,709 km de Jupiter',
-        orbit: '16.69 jours',
+        distance: '1,882,709 km from Jupiter',
+        orbit: '16.69 days',
         moons: '0',
-        info: 'Callisto est la lune la plus cratérisée du système solaire. Sa surface ancienne n\'a pas été modifiée par l\'activité géologique depuis des milliards d\'années.'
+        info: 'Callisto is the most heavily cratered moon in the solar system. Its ancient surface has not been modified by geological activity for billions of years.'
       };
       displayName = 'Callisto';
-      displayType = 'Satellite de Jupiter';
+      displayType = 'Jupiter Satellite';
     } else if (normalizedName === 'Phobos') {
       console.log("🔴 MATCH Phobos trouvé pour:", objectName);
       objectInfo = {
         radius: '11.3 km',
-        distance: '9,376 km de Mars',
-        orbit: '7.6 heures',
+        distance: '9,376 km from Mars',
+        orbit: '7.6 hours',
         moons: '0',
-        info: 'Phobos est la plus grande et la plus proche des deux lunes de Mars. Elle orbite si près de Mars qu\'elle se rapproche de 1.8 mètre par siècle et s\'écrasera sur Mars dans 50 millions d\'années.'
+        info: 'Phobos is the larger and closer of Mars\' two moons. It orbits so close to Mars that it approaches by 1.8 meters per century and will crash into Mars in 50 million years.'
       };
       displayName = 'Phobos';
-      displayType = 'Satellite de Mars';
+      displayType = 'Mars Satellite';
     } else if (normalizedName === 'Deimos') {
       console.log("🔴 MATCH Deimos trouvé pour:", objectName);
       objectInfo = {
         radius: '6.2 km',
-        distance: '23,463 km de Mars',
-        orbit: '30.3 heures',
+        distance: '23,463 km from Mars',
+        orbit: '30.3 hours',
         moons: '0',
-        info: 'Deimos est la plus petite et la plus éloignée des deux lunes de Mars. Son nom signifie "terreur" en grec. Elle s\'éloigne lentement de Mars à raison de quelques centimètres par siècle.'
+        info: 'Deimos is the smaller and more distant of Mars\' two moons. Its name means "terror" in Greek. It is slowly moving away from Mars at a rate of a few centimeters per century.'
       };
       displayName = 'Deimos';
-      displayType = 'Satellite de Mars';
+      displayType = 'Mars Satellite';
     } else if (normalizedName === 'kepler') {
       objectInfo = {
-        radius: '2.7 m (longueur)',
-        distance: 'Orbite héliocentrique (suivait la Terre)',
-        orbit: '372.5 jours',
+        radius: '2.7 m (length)',
+        distance: 'Heliocentric orbit (followed Earth)',
+        orbit: '372.5 days',
         moons: '0',
-        info: 'Kepler était un télescope spatial de la NASA conçu pour découvrir des planètes de taille terrestre en orbite autour d\'autres étoiles. Il a découvert plus de 2,600 exoplanètes confirmées.',
+        info: 'Kepler was a NASA space telescope designed to discover Earth-sized planets orbiting other stars. It discovered more than 2,600 confirmed exoplanets.',
         dataButton: {
-          text: 'Voir les données recueillies',
+          text: 'View collected data',
           url: 'https://koi-data-explorer.vercel.app',
-          description: 'Explorer les données d\'exoplanètes découvertes par Kepler'
+          description: 'Explore exoplanet data discovered by Kepler'
         }
       };
       displayName = 'Kepler';
-      displayType = 'Télescope spatial';
+      displayType = 'Space Telescope';
     }
   } else if (objectType === 'satellite') {
     // Data for artificial satellites
@@ -2868,19 +3579,19 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     
     if (objectName.toLowerCase() === 'kepler') {
       objectInfo = {
-        radius: '2.7 m (longueur)',
-        distance: 'Orbite héliocentrique (suivait la Terre)',
-        orbit: '372.5 jours',
+        radius: '2.7 m (length)',
+        distance: 'Heliocentric orbit (followed Earth)',
+        orbit: '372.5 days',
         moons: '0',
-        info: 'Kepler était un télescope spatial de la NASA conçu pour découvrir des planètes de taille terrestre en orbite autour d\'autres étoiles',
+        info: 'Kepler was a NASA space telescope designed to discover Earth-sized planets orbiting other stars',
         dataButton: {
-          text: 'Voir les données recueillies',
+          text: 'View collected data',
           url: 'https://koi-data-explorer.vercel.app',
-          description: 'Explorer les données d\'exoplanètes découvertes par Kepler'
+          description: 'Explore exoplanet data discovered by Kepler'
         }
       };
       displayName = 'Kepler';
-      displayType = 'Satellite artificiel';
+      displayType = 'Artificial Satellite';
     } else {
       // Fallback pour d'autres satellites
       objectInfo = {
@@ -2888,17 +3599,17 @@ function showPlanetInfo(objectName, objectType = 'planet') {
         distance: 'N/A',
         orbit: 'N/A',
         moons: '0',
-        info: 'Satellite artificiel en orbite autour de la Terre.'
+        info: 'Artificial satellite orbiting Earth.'
       };
       displayName = objectName;
-      displayType = 'Satellite artificiel';
+      displayType = 'Artificial Satellite';
     }
   } else {
     // Data for planets - CORRECTION: utiliser la bonne clé
     const planetKey = objectName.charAt(0).toUpperCase() + objectName.slice(1);
     objectInfo = planetData[planetKey];
     displayName = planetKey;
-    displayType = 'Planète';
+    displayType = 'Planet';
     
     console.log("🔍 Recherche données planète:", planetKey, "Trouvé:", !!objectInfo);
   }
@@ -2909,14 +3620,14 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     // Créer des informations par défaut pour les lunes non reconnues
     if (objectType === 'moon') {
       objectInfo = {
-        radius: 'Données non disponibles',
-        distance: 'Données non disponibles',
-        orbit: 'Données non disponibles',
+        radius: 'Data not available',
+        distance: 'Data not available',
+        orbit: 'Data not available',
         moons: '0',
-        info: `Informations sur ${objectName} en cours de chargement...`
+        info: `Information about ${objectName} is loading...`
       };
       displayName = objectName;
-      displayType = 'Satellite';
+      displayType = 'Moon';
     } else {
     return;
     }
@@ -3003,6 +3714,18 @@ function centerOnPlanet(objectName, objectType = 'planet') {
         if (Array.isArray(earthSatellites) && earthSatellites[0] && earthSatellites[0].mesh) {
           targetObject = earthSatellites[0].mesh;
           console.log("🛰️ Centrage sur Kepler (satellite de la Terre)");
+        } else {
+          console.error("❌ PROBLÈME KEPLER:", {
+            earthSatellitesExist: Array.isArray(earthSatellites),
+            firstSatelliteExists: earthSatellites && earthSatellites[0],
+            meshLoaded: earthSatellites && earthSatellites[0] && earthSatellites[0].mesh,
+            satelliteName: earthSatellites && earthSatellites[0] && earthSatellites[0].name
+          });
+          // FALLBACK: Centrer sur la Terre si Kepler n'est pas chargé
+          if (earth && earth.planet) {
+            targetObject = earth.planet;
+            console.log("🌍 Fallback: Centrage sur la Terre (Kepler pas encore chargé)");
+          }
         }
         break;
     }
@@ -3030,10 +3753,32 @@ function centerOnPlanet(objectName, objectType = 'planet') {
       console.log("⭐ Centrage sur étoile Kepler:", starName);
     }
   } else if (objectType === 'sun') {
-    // Gérer le Soleil du système solaire
+    // Gérer le Soleil du système solaire avec distance de sécurité
     if (objectName.toLowerCase() === 'soleil' || objectName.toLowerCase() === 'sun') {
-      targetObject = sun; // Le soleil est défini comme une variable globale
-      console.log("☀️ Centrage sur le Soleil");
+      if (sun) {
+        // Centrer sur le Soleil avec une distance de sécurité
+        const sunPosition = new THREE.Vector3();
+        sun.getWorldPosition(sunPosition);
+        
+        // Distance de sécurité pour éviter d'entrer dans le Soleil
+        const safeDistance = 50; // Distance de sécurité
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+        
+        // Position de sécurité
+        const safePosition = sunPosition.clone().add(cameraDirection.multiplyScalar(-safeDistance));
+        
+        // Centrer le target sur le Soleil
+        controls.target.copy(sunPosition);
+        
+        // Positionner la caméra à distance de sécurité
+        camera.position.copy(safePosition);
+        controls.update();
+        
+        followedPlanet = sun;
+        console.log("☀️ Centrage sur le Soleil avec distance de sécurité");
+        return; // Sortir ici pour éviter le code de centrage normal
+      }
     }
   } else if (objectType === 'dwarf_planet') {
     // Gérer les planètes naines
@@ -3349,9 +4094,9 @@ scene.add(sun);
 // L'intensité du soleil est maintenant fixée à une valeur optimale (150)
 
 //point light in the sun - LUMIÈRE PRINCIPALE ET UNIQUE
-const lightIntensity = 100; // ✅ INTENSITÉ FORTEMENT AUGMENTÉE pour une meilleure visibilité
-const lightDistance = 0; // Portée infinie pour atteindre toutes les planètes
-const pointLight = new THREE.PointLight(0xFDFFD3, lightIntensity, lightDistance, 0.5); // Decay réduit pour que la lumière atteigne mieux les planètes éloignées
+const lightIntensity = 4; // ✅ INTENSITÉ FORTEMENT AUGMENTÉE pour une meilleure visibilité
+const lightDistance = -5; // Portée infinie pour atteindre toutes les planètes
+const pointLight = new THREE.PointLight(0xFDFFD3, lightIntensity, lightDistance, 0); // Decay = 0 pour que la lumière atteigne toutes les planètes même Pluton
 pointLight.position.set(0, 0, 0); // Au centre du soleil
 
 // *** CONFIGURER LES OMBRES IMMÉDIATEMENT ***
@@ -4182,38 +4927,38 @@ if (marsMarkerIndices.length > 0) {
     },
     'Lune': {
         radius: '1,737 km',
-        distance: '384,400 km de la Terre',
-        orbit: '27.3 jours',
+        distance: '384,400 km from Earth',
+        orbit: '27.3 days',
         moons: '0',
-        info: 'La Lune est le seul satellite naturel de la Terre. Elle influence les marées et stabilise l\'axe de rotation terrestre.'
+        info: 'The Moon is Earth\'s only natural satellite. It influences tides and stabilizes Earth\'s rotational axis.'
     },
     'Io': {
         radius: '1,821.6 km',
-        distance: '421,700 km de Jupiter',
-        orbit: '1.77 jours',
+        distance: '421,700 km from Jupiter',
+        orbit: '1.77 days',
         moons: '0',
-        info: 'Lune volcanique de Jupiter, la plus active géologiquement du système solaire.'
+        info: 'Volcanic moon of Jupiter, the most geologically active in the solar system.'
     },
     'Europa': {
         radius: '1,560.8 km',
-        distance: '671,034 km de Jupiter',
-        orbit: '3.55 jours',
+        distance: '671,034 km from Jupiter',
+        orbit: '3.55 days',
         moons: '0',
-        info: 'Lune glacée avec un océan sous-terrain, candidate pour la vie extraterrestre.'
+        info: 'Icy moon with a subsurface ocean, candidate for extraterrestrial life.'
     },
     'Ganymède': {
         radius: '2,634.1 km',
-        distance: '1,070,412 km de Jupiter',
-        orbit: '7.15 jours',
+        distance: '1,070,412 km from Jupiter',
+        orbit: '7.15 days',
         moons: '0',
-        info: 'La plus grande lune du système solaire, plus grande que Mercure.'
+        info: 'The largest moon in the solar system, larger than Mercury.'
     },
     'Callisto': {
         radius: '2,410.3 km',
-        distance: '1,882,709 km de Jupiter',
-        orbit: '16.69 jours',
+        distance: '1,882,709 km from Jupiter',
+        orbit: '16.69 days',
         moons: '0',
-        info: 'Lune cratérisée, la plus éloignée des quatre lunes galiléennes.'
+        info: 'Cratered moon, the most distant of the four Galilean moons.'
     }
 };
 
@@ -4689,7 +5434,7 @@ loadingSystem.init();
 
 // Afficher le chargement au démarrage immédiatement - AVANT tout le reste
 setTimeout(() => {
-    loadingSystem.show('Initialisation du système solaire...');
+    loadingSystem.show('Initializing Solar System...');
 }, 0);
 
 // Initialiser le gestionnaire de scène des exoplanètes
@@ -4779,11 +5524,11 @@ function formatExoplanetInfo(userData) {
     const distanceKm = (parseFloat(distanceAU) * 149597870.7).toFixed(0); // Distance en km
     
     return {
-        radius: `${radiusKm} km (estimé)`,
+        radius: `${radiusKm} km (estimated)`,
         distance: `${distanceAU} UA (${distanceKm} km)`,
-        orbit: 'Période orbitale inconnue',
-        moons: '0 (données indisponibles)',
-        info: `Exoplanète de type ${classification} (${type}) avec ${confidence}% de confiance. Température estimée: ${temperature}K. Classification basée sur le rayon, la température et la distance à l'étoile.`,
+        orbit: 'Orbital period unknown',
+        moons: '0 (data unavailable)',
+        info: `Exoplanet of type ${classification} (${type}) with ${confidence}% confidence. Estimated temperature: ${temperature}K. Classification based on radius, temperature and distance to star.`,
         // Données supplémentaires pour l'affichage
         classification: classification,
         type: type,
@@ -4998,30 +5743,52 @@ console.log("✅ Mouse events attached to window");
 // Ajouter des raccourcis clavier pour la navigation
 document.addEventListener('keydown', (event) => {
     switch(event.key.toLowerCase()) {
-        case 'r': // Reset vue
-            followedPlanet = null; // Arrêter le suivi
-            camera.position.set(-175, 115, 5);
-            controls.target.set(0, 0, 0);
-            controls.update();
-            console.log("🔄 Vue réinitialisée");
+        case 'r': // Reset vue - DÉSACTIVÉ
+            // Permettre R seulement dans les champs de saisie
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return; // Laisser passer
+            }
+            console.log("🚫 Raccourci R désactivé - Vue non réinitialisée");
+            event.preventDefault();
+            return;
+            // ANCIEN CODE DÉSACTIVÉ :
+            // followedPlanet = null; // Arrêter le suivi
+            // camera.position.set(-175, 115, 5);
+            // controls.target.set(0, 0, 0);
+            // controls.update();
+            // console.log("🔄 Vue réinitialisée");
             break;
-        case 'h': // Home - vue d'ensemble
-            followedPlanet = null; // Arrêter le suivi
-            animateCameraTo(new THREE.Vector3(-175, 115, 5), new THREE.Vector3(0, 0, 0));
-            console.log("🏠 Retour à la vue d'ensemble");
+        case 'h': // Home - vue d'ensemble - DÉSACTIVÉ
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return; // Laisser passer dans les champs de saisie
+            }
+            console.log("🚫 Raccourci H désactivé");
+            event.preventDefault();
+            return;
             break;
-        case 'escape': // Fermer tooltip
-            closeInfo();
+        case 'escape': // Fermer tooltip - DÉSACTIVÉ
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return; // Laisser passer dans les champs de saisie
+            }
+            console.log("🚫 Raccourci Escape désactivé");
+            event.preventDefault();
+            return;
             break;
-        case '1': zoomToPlanet('mercury'); break;
-        case '2': zoomToPlanet('venus'); break;
-        case '3': zoomToPlanet('earth'); break;
-        case '4': zoomToPlanet('mars'); break;
-        case '5': zoomToPlanet('jupiter'); break;
-        case '6': zoomToPlanet('saturn'); break;
-        case '7': zoomToPlanet('uranus'); break;
-        case '8': zoomToPlanet('neptune'); break;
-        case '9': zoomToPlanet('pluto'); break;
+        case '1': // Mercure - DÉSACTIVÉ
+        case '2': // Vénus - DÉSACTIVÉ
+        case '3': // Terre - DÉSACTIVÉ
+        case '4': // Mars - DÉSACTIVÉ
+        case '5': // Jupiter - DÉSACTIVÉ
+        case '6': // Saturne - DÉSACTIVÉ
+        case '7': // Uranus - DÉSACTIVÉ
+        case '8': // Neptune - DÉSACTIVÉ
+        case '9': // Pluton - DÉSACTIVÉ
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return; // Laisser passer dans les champs de saisie
+            }
+            console.log(`🚫 Raccourci ${event.key} désactivé`);
+            event.preventDefault();
+            return;
     }
 });
 

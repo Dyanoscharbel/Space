@@ -47,36 +47,90 @@ class KeplerSearchSystem {
         searchOverlay.className = 'search-overlay';
         searchOverlay.id = 'search-overlay';
         searchOverlay.innerHTML = `
-            <div class="search-container">
-                <div class="search-header">
-                    🔍 Recherche de Système Kepler
+            <div class="search-container" style="
+                width: 480px;
+                max-width: 85vw;
+                margin: 20px auto 0;
+                background: linear-gradient(145deg, rgba(5, 15, 35, 0.98) 0%, rgba(10, 25, 50, 0.95) 50%, rgba(0, 20, 40, 0.92) 100%);
+                border: 2px solid rgba(0, 255, 255, 0.4);
+                border-radius: 16px;
+                backdrop-filter: blur(25px) saturate(1.2);
+                box-shadow: 0 8px 32px rgba(0, 255, 255, 0.15), 0 0 60px rgba(0, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                overflow: hidden;
+                font-family: 'Rajdhani', sans-serif;
+            ">
+                <!-- Header moderne avec gradient -->
+                <div class="search-header" style="
+                    background: linear-gradient(135deg, #00D4FF 0%, #0080FF 100%);
+                    padding: 20px 24px;
+                    color: white;
+                    font-weight: 700;
+                    font-size: 18px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                ">
+                    <div style="
+                        width: 40px;
+                        height: 40px;
+                        background: rgba(255, 255, 255, 0.2);
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 20px;
+                    ">🔍</div>
+                    <span>Recherche de Système Kepler</span>
                 </div>
-                <div class="search-body">
-                    <div class="search-input-group">
+                
+                <div class="search-body" style="padding: 24px;">
+                    <!-- Input de recherche moderne -->
+                    <div class="search-input-group" style="
+                        position: relative;
+                        margin-bottom: 20px;
+                    ">
                         <input 
                             type="text" 
                             class="search-input" 
                             id="search-input"
                             placeholder="Tapez le nom d'un système (ex: Kepler-11, Kepler-442...)"
                             autocomplete="off"
+                            style="
+                                width: 100%;
+                                padding: 16px 20px 16px 50px;
+                                background: rgba(0, 20, 40, 0.6);
+                                border: 2px solid rgba(0, 255, 255, 0.3);
+                                border-radius: 12px;
+                                color: #FFFFFF;
+                                font-family: 'Rajdhani', sans-serif;
+                                font-size: 16px;
+                                font-weight: 500;
+                                outline: none;
+                                transition: all 0.3s ease;
+                                box-sizing: border-box;
+                            "
                         >
-                        <div class="search-icon">🔍</div>
+                        <div class="search-icon" style="
+                            position: absolute;
+                            left: 16px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            color: #00D4FF;
+                            font-size: 18px;
+                            pointer-events: none;
+                        ">🔍</div>
                     </div>
-                    <div class="search-suggestions" id="search-suggestions"></div>
-                    <div class="search-help">
-                        <div class="search-help-item">
-                            <span class="search-key">↑↓</span>
-                            <span>Naviguer dans les suggestions</span>
-                        </div>
-                        <div class="search-help-item">
-                            <span class="search-key">Enter</span>
-                            <span>Charger le système sélectionné</span>
-                        </div>
-                        <div class="search-help-item">
-                            <span class="search-key">Esc</span>
-                            <span>Fermer la recherche</span>
-                        </div>
-                    </div>
+                    
+                    <!-- Suggestions avec style moderne -->
+                    <div class="search-suggestions" id="search-suggestions" style="
+                        max-height: 300px;
+                        overflow-y: auto;
+                        margin-bottom: 20px;
+                        border-radius: 12px;
+                        background: rgba(0, 20, 40, 0.3);
+                        border: 1px solid rgba(0, 255, 255, 0.1);
+                    "></div>
                 </div>
             </div>
         `;
@@ -239,9 +293,36 @@ class KeplerSearchSystem {
         const html = suggestions.map((system, index) => {
             const icon = system === 'Système Solaire' ? '🌍' : '🌌';
             return `
-                <div class="search-suggestion" data-index="${index}" onclick="keplerSearch.loadSystem('${system}')">
-                    <span>${icon}</span>
-                    <span>${system}</span>
+                <div class="search-suggestion" data-index="${index}" onclick="keplerSearch.loadSystem('${system}')" style="
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    padding: 16px 20px;
+                    margin: 8px 12px;
+                    background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
+                    border: 1px solid rgba(0, 255, 255, 0.15);
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-family: 'Rajdhani', sans-serif;
+                ">
+                    <div style="
+                        width: 40px;
+                        height: 40px;
+                        background: linear-gradient(135deg, #00D4FF 0%, #0080FF 100%);
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 20px;
+                        box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+                    ">${icon}</div>
+                    <div style="
+                        color: #FFFFFF;
+                        font-weight: 600;
+                        font-size: 16px;
+                        text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+                    ">${system}</div>
                 </div>
             `;
         }).join('');

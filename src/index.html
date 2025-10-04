@@ -10,6 +10,46 @@
     <link rel="stylesheet" href="styles/search-popup.css">
     <link rel="stylesheet" href="js/ui/loarding.css">
     <style>
+        /* ===== SCIENTIFIC SPACE THEME VARIABLES ===== */
+        :root {
+            --bg-primary: #0B0E1A;        /* Noir-bleu espace profond */
+            --bg-secondary: #151B2D;      /* Bleu-gris sombre */
+            --bg-tertiary: #1E2A42;       /* Bleu ardoise foncé */
+            --text-primary: #FFFFFF;      /* Blanc cristallin */
+            --text-secondary: #A8B2D1;    /* Bleu-gris clair */
+            --accent-cyan: #00D4FF;       /* Cyan électrique */
+            --accent-orange: #FF6B35;     /* Orange NASA */
+            --border: #2A3B5C;            /* Bordures bleu-gris */
+            --glow-cyan: rgba(0,212,255,0.4);
+            --glow-orange: rgba(255,107,53,0.3);
+            --glow-cyan-soft: rgba(0,212,255,0.15);
+            
+            /* Typographie */
+            --font-primary: 'Rajdhani', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            
+            /* Espacements */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            
+            /* Bordures et rayons */
+            --border-radius: 6px;
+            --border-width: 1px;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
         /* ===== RESET ===== */
         * {
             margin: 0;
@@ -26,17 +66,17 @@
             color: #00ffff;
         }
 
-        /* Masquer l'interface au démarrage pour éviter le flash */
+        /* Hide interface at startup to avoid flash */
         body.loading .planet-tooltip {
             display: none !important;
         }
 
-        /* Permettre à la sidebar de fonctionner même pendant le chargement */
+        /* Allow sidebar to work even during loading */
         body.loading .settings-panel {
             display: block !important;
         }
 
-        /* S'assurer que le bouton hamburger est toujours visible */
+        /* Ensure hamburger button is always visible */
         #settings-toggle-float {
             display: flex !important;
             z-index: 10001 !important;
@@ -325,17 +365,104 @@
             left: -270px;
             width: 270px;
             height: 100vh;
-            background: linear-gradient(145deg, rgba(0, 20, 40, 0.95) 0%, rgba(0, 40, 80, 0.9) 100%);
-            border-right: 2px solid #00ffff;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            border-right: var(--border-width) solid var(--accent-cyan);
+            box-shadow: 
+                0 0 20px var(--glow-cyan-soft),
+                inset 0 0 1px var(--accent-cyan);
             backdrop-filter: blur(20px);
-            box-shadow: 2px 0 30px rgba(0, 255, 255, 0.3);
-            transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: left var(--transition-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 1001;
-            overflow: hidden;
+            font-family: var(--font-primary);
+            
+            /* Styles de contenu (anciennement .settings-body) */
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .settings-panel.open {
             left: 0;
+        }
+
+        /* ===== SIDEBAR CONTENT STYLES ===== */
+
+        .setting-group {
+            flex-shrink: 0; /* Les premiers groupes gardent leur taille */
+        }
+
+        .setting-group:last-child {
+            flex: 1; /* Le dernier groupe (ASTRES) prend l'espace restant */
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Important pour permettre le scroll */
+        }
+
+        /* Style spécifique pour la liste des astres */
+        #astre-list-sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-cyan) var(--bg-tertiary);
+        }
+
+        #astre-list-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #astre-list-sidebar::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+        }
+
+        #astre-list-sidebar::-webkit-scrollbar-thumb {
+            background: var(--accent-cyan);
+            border-radius: 3px;
+        }
+
+        #astre-list-sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--text-primary);
+        }
+
+        /* ===== SEARCH INPUT STYLES ===== */
+        #astre-search-input-sidebar:focus {
+            border-color: var(--accent-cyan) !important;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+        }
+
+        #astre-search-input-sidebar:hover {
+            border-color: var(--accent-cyan) !important;
+        }
+
+        /* Animation de l'icône de recherche */
+        #astre-search-input-sidebar:focus + .search-icon svg,
+        #astre-search-input-sidebar:hover + .search-icon svg {
+            stroke: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        /* ===== BUTTON HOVER EFFECTS ===== */
+        .kepler-follow-btn:hover,
+        .koi-data-explorer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px var(--glow-cyan) !important;
+        }
+
+        .setting-toggle-btn:hover {
+            color: var(--accent-cyan) !important;
+            border-color: var(--accent-cyan) !important;
+            box-shadow: 0 0 10px var(--glow-cyan-soft) !important;
+        }
+
+        /* ===== HAMBURGER HOVER EFFECT ===== */
+        #hamburger-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 25px var(--glow-cyan),
+                inset 0 0 2px var(--accent-cyan) !important;
+            color: var(--text-primary) !important;
         }
 
 
@@ -523,7 +650,7 @@
     </style>
 </head>
 <body class="loading">
-    <!-- Écran de chargement initial -->
+    <!-- Initial loading screen -->
     <div id="initial-loading-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 1; transition: opacity 0.5s ease-in-out;">
         <div style="display: flex; flex-direction: column; align-items: center; gap: 40px;">
             <div class="section-banner-sun">
@@ -600,7 +727,7 @@
             </div>
             <div style="text-align: center; color: white; font-family: 'Arial', sans-serif;">
                 <h2 style="font-size: 2.5rem; font-weight: bold; margin: 0 0 10px 0; background: linear-gradient(45deg, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">NASA Space Explorer</h2>
-                <p style="font-size: 1.2rem; margin: 0 0 20px 0; opacity: 0.8;">Initialisation du système solaire...</p>
+                <p style="font-size: 1.2rem; margin: 0 0 20px 0; opacity: 0.8;">Initializing Solar System...</p>
                 <div style="display: flex; gap: 8px; justify-content: center;">
                     <span style="width: 8px; height: 8px; border-radius: 50%; background: #ffd700; animation: loadingDots 1.5s infinite ease-in-out;"></span>
                     <span style="width: 8px; height: 8px; border-radius: 50%; background: #ffd700; animation: loadingDots 1.5s infinite ease-in-out; animation-delay: 0.3s;"></span>
@@ -614,32 +741,35 @@
     <!-- Bouton hamburger fixe -->
     <button id="hamburger-btn" style="
         position: fixed;
-        left: 15px;
-        top: 15px;
+        left: var(--spacing-lg);
+        top: var(--spacing-lg);
         width: 50px;
         height: 50px;
-        background: rgba(0, 40, 80, 0.9);
-        border: 2px solid #00ffff;
-        border-radius: 10px;
-        color: #00ffff;
-        font-size: 20px;
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        border: var(--border-width) solid var(--accent-cyan);
+        border-radius: var(--border-radius);
+        color: var(--accent-cyan);
+        font-size: 18px;
+        font-weight: 300;
         cursor: pointer;
         z-index: 10000;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-        font-family: Arial, sans-serif;
+        box-shadow: 
+            0 0 15px var(--glow-cyan-soft),
+            inset 0 0 1px var(--accent-cyan);
+        font-family: var(--font-primary);
+        transition: all var(--transition-normal);
+        backdrop-filter: blur(10px);
     ">☰</button>
 
     <!-- Canvas Container -->
     <div id="canvas-container"></div>
 
-    <!-- Settings Panel - SIDEBAR 2 (créée par JavaScript) -->
+{{ ... }}
     <div id="settings-panel" class="settings-panel">
-        <div class="settings-body">
-            <!-- Contenu ajouté dynamiquement par JavaScript -->
-        </div>
+        <!-- Contenu ajouté dynamiquement par JavaScript -->
     </div>
 
     <!-- Planet Tooltip (Hidden by default) -->
