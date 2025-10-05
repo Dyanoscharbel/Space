@@ -237,7 +237,9 @@ export class ExoplanetSceneManager {
                     rotationSpeed: this.calculateRotationSpeed(visualRadius, type),
                     currentAngle: angle,
                     temperature: temperature,
-                    confidence: confidence
+                    confidence: confidence,
+                    // Inclure orbitalPeriod du backend
+                    orbitalPeriod: planet.orbitalPeriod
                 };
                 
                 // Pas de renderOrder comme dans le système solaire
@@ -286,7 +288,9 @@ export class ExoplanetSceneManager {
                     rotationSpeed: this.calculateRotationSpeed(visualRadius, type),
                     currentAngle: angle,
                     temperature: temperature,
-                    confidence: confidence
+                    confidence: confidence,
+                    // Inclure orbitalPeriod du backend
+                    orbitalPeriod: planet.orbitalPeriod
                 };
                 
                 // Pas de renderOrder comme dans le système solaire
@@ -393,7 +397,9 @@ export class ExoplanetSceneManager {
                     name, classification, type, distance: visualDistance,
                     radius: visualRadius, orbitSpeed: this.calculateOrbitSpeed(distance),
                     rotationSpeed: this.calculateRotationSpeed(visualRadius, type),
-                    currentAngle: angle, temperature, confidence
+                    currentAngle: angle, temperature, confidence,
+                    // Inclure orbitalPeriod du backend
+                    orbitalPeriod: planet.orbitalPeriod
                 };
                 
                 this.exoplanets.push(planetData.planet);

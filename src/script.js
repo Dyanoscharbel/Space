@@ -1706,88 +1706,142 @@ function updateBottomRightInfo(name, type, info, objectType) {
 
   contentEl.innerHTML = `
     <div style="display: grid; gap: 12px;">
-      <div style="
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center;
-        padding: 12px 16px;
-        background: #091E37;
-        /*border: 1px solid rgba(0, 255, 255, 0.15);*/
-        border-radius: 6px;
-        transition: all 0.3s ease;
-      ">
-        <span style="
-          color: #00D4FF; 
-          font-family: 'Rajdhani', sans-serif; 
-          font-weight: 600; 
-          font-size: 13px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        ">RADIUS :</span>
-        <span style="
-          color: #FFFFFF; 
-          font-family: 'Rajdhani', sans-serif; 
-          font-weight: 500; 
-          font-size: 16px;
-          /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
-        ">${info.radius || '—'}</span>
-      </div>
+      ${objectType !== 'kepler_star' ? `
+        <div style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center;
+          padding: 12px 16px;
+          background: #091E37;
+          /*border: 1px solid rgba(0, 255, 255, 0.15);*/
+          border-radius: 6px;
+          transition: all 0.3s ease;
+        ">
+          <span style="
+            color: #00D4FF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 600; 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">RADIUS :</span>
+          <span style="
+            color: #FFFFFF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 500; 
+            font-size: 16px;
+            /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
+          ">${info.radius || '—'}</span>
+        </div>
+        
+        <div style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center;
+          padding: 12px 16px;
+          background: #091E37;
+          /*border: 1px solid rgba(0, 255, 255, 0.15);*/
+          border-radius: 6px;
+          transition: all 0.3s ease;
+        ">
+          <span style="
+            color: #00D4FF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 600; 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">DISTANCE :</span>
+          <span style="
+            color: #FFFFFF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 500; 
+            font-size: 16px;
+            /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
+          ">${info.distance || '—'}</span>
+        </div>
+        
+        <div style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center;
+          padding: 12px 16px;
+          background: #091E37;
+          /*border: 1px solid rgba(0, 255, 255, 0.15);*/
+          border-radius: 6px;
+          transition: all 0.3s ease;
+        ">
+          <span style="
+            color: #00D4FF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 600; 
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">ORBIT :</span>
+          <span style="
+            color: #FFFFFF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 500; 
+            font-size: 16px;
+            /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
+          ">${info.orbit || '—'}</span>
+        </div>
+      ` : ''}
       
-      <div style="
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center;
-        padding: 12px 16px;
-        background: #091E37;
-        /*border: 1px solid rgba(0, 255, 255, 0.15);*/
-        border-radius: 6px;
-        transition: all 0.3s ease;
-      ">
-        <span style="
-          color: #00D4FF; 
-          font-family: 'Rajdhani', sans-serif; 
-          font-weight: 600; 
-          font-size: 13px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        ">DISTANCE :</span>
-        <span style="
-          color: #FFFFFF; 
-          font-family: 'Rajdhani', sans-serif; 
-          font-weight: 500; 
-          font-size: 16px;
-          /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
-        ">${info.distance || '—'}</span>
-      </div>
+      ${objectType === 'kepler_star' ? `
+        <div style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center;
+          padding: 12px 16px;
+          background: #091E37;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+        ">
+          <span style="
+            color: #00D4FF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 600; 
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">MASS :</span>
+          <span style="
+            color: #FFFFFF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 500; 
+            font-size: 16px;
+          ">${info.mass || '—'}</span>
+        </div>
+        
+        <div style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center;
+          padding: 12px 16px;
+          background: #091E37;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+        ">
+          <span style="
+            color: #00D4FF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 600; 
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">RADIUS :</span>
+          <span style="
+            color: #FFFFFF; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 500; 
+            font-size: 16px;
+          ">${info.radius || '—'}</span>
+        </div>
+      ` : ''}
       
-      <div style="
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center;
-        padding: 12px 16px;
-        background: #091E37;
-        /*border: 1px solid rgba(0, 255, 255, 0.15);*/
-        border-radius: 6px;
-        transition: all 0.3s ease;
-      ">
-        <span style="
-          color: #00D4FF; 
-          font-family: 'Rajdhani', sans-serif; 
-          font-weight: 600; 
-          font-size: 14px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        ">ORBIT :</span>
-        <span style="
-          color: #FFFFFF; 
-          font-family: 'Rajdhani', sans-serif; 
-          font-weight: 500; 
-          font-size: 16px;
-          /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
-        ">${info.orbit || '—'}</span>
-      </div>
-      
-      ${objectType !== 'sun' ? `
+      ${objectType === 'planet' || objectType === 'moon' ? `
         <div style="
           display: flex; 
           justify-content: space-between; 
@@ -3265,7 +3319,36 @@ function identifyPlanet(clickedObject) {
     offset = 100;
     // Dans un système Kepler, traiter comme une étoile Kepler
     if (window.currentExoplanets) {
-      return { type: 'kepler_star', name: 'sun', object: sun };
+      // Récupérer les données de l'étoile Kepler via ExoplanetSceneManager
+      const keplerStarName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Kepler Star';
+      const systemName = exoplanetSceneManager ? exoplanetSceneManager.getCurrentSystemName() : 'Kepler System';
+      
+      // Récupérer les données réelles de l'étoile depuis le backend (via la première exoplanète)
+      let starMass = '0.921 solar masses';
+      let starRadius = '1.046 solar radii';
+      
+      if (window.currentExoplanets && window.currentExoplanets.length > 0) {
+        const firstExoplanet = window.currentExoplanets[0];
+        if (firstExoplanet.starMass) {
+          starMass = `${firstExoplanet.starMass} solar masses`;
+        }
+        if (firstExoplanet.starRadius) {
+          starRadius = `${firstExoplanet.starRadius} solar radii`;
+        }
+      }
+      
+      return { 
+        type: 'kepler_star', 
+        name: keplerStarName, 
+        object: sun,
+        userData: {
+          name: keplerStarName,
+          type: 'kepler_star',
+          system: systemName,
+          mass: starMass,
+          radius: starRadius
+        }
+      };
     } else {
       // Dans le système solaire
       return { type: 'sun', name: 'sun', object: sun };
@@ -3488,13 +3571,8 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     
     if (userData) {
       objectInfo = {
-        radius: '696,340 km (similar to Sun)',
-        distance: '0 km (system center)',
-        orbit: 'N/A (central star)',
-        moons: '0',
-        temperature: userData.temperature || '5778 K',
-        classification: userData.classification || 'G-type Star',
-        system: userData.system || 'Kepler System',
+        mass: userData.mass || '0.921 solar masses',
+        radius: userData.radius || '1.046 solar radii',
         info: `${userData.name} is the central star of the ${userData.system || 'Kepler'} system. This solar-type star hosts several exoplanets detected by the Kepler space telescope.`
       };
       displayName = userData.name;
@@ -3503,10 +3581,8 @@ function showPlanetInfo(objectName, objectType = 'planet') {
     } else {
       console.warn("⚠️ Données étoile Kepler non trouvées pour:", objectName);
       objectInfo = {
-        radius: '696,340 km (estimated)',
-        distance: '0 km (system center)',
-        orbit: 'N/A (central star)',
-        moons: '0',
+        mass: '0.921 solar masses (estimated)',
+        radius: '1.046 solar radii (estimated)',
         info: `${objectName} is the central star of this Kepler system.`
       };
       displayName = objectName;
@@ -5575,18 +5651,22 @@ function formatExoplanetInfo(userData) {
     const radiusKm = (radius * 6371 / 6.37).toFixed(0); // Approximation du rayon en km
     const distanceKm = (parseFloat(distanceAU) * 149597870.7).toFixed(0); // Distance en km
     
-    return {
-        radius: `${radiusKm} km (estimated)`,
-        distance: `${distanceAU} UA (${distanceKm} km)`,
-        orbit: 'Orbital period unknown',
-        moons: '0 (data unavailable)',
-        info: `Exoplanet of type ${classification} (${type}) with ${confidence}% confidence. Estimated temperature: ${temperature}K. Classification based on radius, temperature and distance to star.`,
-        // Données supplémentaires pour l'affichage
-        classification: classification,
-        type: type,
-        temperature: temperature,
-        confidence: confidence
-    };
+  // Extract orbital period from backend (prioritize orbitalPeriod field)
+  const orbitalPeriod = userData.orbitalPeriod || userData.period || userData.orbitPeriod || null;
+  const orbitLabel = orbitalPeriod ? `${parseFloat(orbitalPeriod).toFixed(2)} days` : 'Orbital period unknown';
+
+  return {
+    radius: `${radiusKm} km (estimated)`,
+    distance: `${distanceAU} UA (${distanceKm} km)`,
+    // Show orbital period when available; do not display moons for exoplanets (data usually unavailable)
+    orbit: orbitLabel,
+    info: `Exoplanet of type ${classification} (${type}) with ${confidence}% confidence. Estimated temperature: ${temperature}K. Classification based on radius, temperature and distance to star.`,
+    // Données supplémentaires pour l'affichage
+    classification: classification,
+    type: type,
+    temperature: temperature,
+    confidence: confidence
+  };
 }
 
 // Fonction pour traiter et classifier les exoplanètes
