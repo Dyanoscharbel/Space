@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Système d'Éclairage et Ombres</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0f0;
+        }
+        
+        .test-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #0f0;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            z-index: 1000;
+        }
+        
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            color: #0ff;
+        }
+        
+        .test-item {
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0, 40, 0, 0.5);
+            border-left: 3px solid #0f0;
+        }
+        
+        .test-item.checking {
+            border-left-color: #ff0;
+            animation: pulse 1s infinite;
+        }
+        
+        .test-item.success {
+            border-left-color: #0f0;
+        }
+        
+        .test-item.error {
+            border-left-color: #f00;
+            color: #f00;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .details {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #888;
+        }
+        
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0ff;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #0f0;
+        }
+        
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-panel">
+        <h1>🔬 Test Système d'Éclairage</h1>
+        
+        <div id="tests">
+            <div class="test-item checking" id="test-renderer">
+                <span class="status">⏳</span>
+                <strong>Renderer Shadows</strong>
+                <div class="details" id="renderer-details">Vérification...</div>
+            </div>
+            
+            <div class="test-item checking" id="test-pointlight">
+                <span class="status">⏳</span>
+                <strong>PointLight Configuration</strong>
+                <div class="details" id="pointlight-details">Vérification...</div>
+            </div>
+            
+            <div class="test-item checking" id="test-ambient">
+                <span class="status">⏳</span>
+                <strong>Lumière Ambiante</strong>
+                <div class="details" id="ambient-details">Vérification...</div>
+            </div>
+            
+            <div class="test-item checking" id="test-shadows">
+                <span class="status">⏳</span>
+                <strong>Objets avec Ombres</strong>
+                <div class="details" id="shadows-details">Vérification...</div>
+            </div>
+            
+            <div class="test-item checking" id="test-materials">
+                <span class="status">⏳</span>
+                <strong>Matériaux</strong>
+                <div class="details" id="materials-details">Vérification...</div>
+            </div>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-line">
+                <span>Tests réussis:</span>
+                <span id="success-count">0</span>
+            </div>
+            <div class="stat-line">
+                <span>Tests échoués:</span>
+                <span id="error-count">0</span>
+            </div>
+            <div class="stat-line">
+                <span>Score:</span>
+                <span id="score">0%</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="runTests()">🔄 Relancer les tests</button>
+            <button onclick="logDetails()">📋 Détails console</button>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            success: 0,
+            error: 0,
+            total: 5
+        };
+
+        function updateTestUI(testId, status, message) {
+            const element = document.getElementById(testId);
+            const detailsElement = document.getElementById(testId + '-details');
+            
+            element.classList.remove('checking', 'success', 'error');
+            element.classList.add(status);
+            
+            const statusIcon = status === 'success' ? '✅' : '❌';
+            element.querySelector('.status').textContent = statusIcon;
+            detailsElement.textContent = message;
+            
+            if (status === 'success') testResults.success++;
+            if (status === 'error') testResults.error++;
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('success-count').textContent = testResults.success;
+            document.getElementById('error-count').textContent = testResults.error;
+            const score = Math.round((testResults.success / testResults.total) * 100);
+            document.getElementById('score').textContent = score + '%';
+        }
+
+        function runTests() {
+            console.clear();
+            console.log('🔬 === DÉBUT DES TESTS D\'ÉCLAIRAGE ===\n');
+            
+            testResults = { success: 0, error: 0, total: 5 };
+            
+            // Reset UI
+            document.querySelectorAll('.test-item').forEach(item => {
+                item.classList.remove('success', 'error');
+                item.classList.add('checking');
+                item.querySelector('.status').textContent = '⏳';
+            });
+            
+            // Attendre que la scène soit chargée
+            setTimeout(() => {
+                testRenderer();
+                testPointLight();
+                testAmbientLight();
+                testShadows();
+                testMaterials();
+            }, 1000);
+        }
+
+        function testRenderer() {
+            console.log('\n📊 Test 1: Configuration Renderer');
+            
+            if (typeof renderer === 'undefined') {
+                updateTestUI('test-renderer', 'error', 'Renderer non trouvé');
+                console.error('❌ Renderer non défini');
+                return;
+            }
+            
+            const shadowMapEnabled = renderer.shadowMap.enabled;
+            const shadowMapType = renderer.shadowMap.type;
+            
+            console.log('  - Shadow Map Enabled:', shadowMapEnabled);
+            console.log('  - Shadow Map Type:', shadowMapType === THREE.PCFSoftShadowMap ? 'PCFSoftShadowMap ✅' : 'Other ⚠️');
+            
+            if (shadowMapEnabled && shadowMapType === THREE.PCFSoftShadowMap) {
+                updateTestUI('test-renderer', 'success', 
+                    `Activé: ${shadowMapEnabled}, Type: PCFSoftShadowMap`);
+                console.log('✅ Test Renderer: RÉUSSI');
+            } else {
+                updateTestUI('test-renderer', 'error', 
+                    `Shadow map ${shadowMapEnabled ? 'activée' : 'désactivée'}`);
+                console.error('❌ Test Renderer: ÉCHOUÉ');
+            }
+        }
+
+        function testPointLight() {
+            console.log('\n💡 Test 2: Configuration PointLight');
+            
+            if (typeof pointLight === 'undefined') {
+                updateTestUI('test-pointlight', 'error', 'PointLight non trouvée');
+                console.error('❌ PointLight non définie');
+                return;
+            }
+            
+            const intensity = pointLight.intensity;
+            const decay = pointLight.decay;
+            const castShadow = pointLight.castShadow;
+            const shadowMapSize = pointLight.shadow.mapSize.width;
+            
+            console.log('  - Intensité:', intensity);
+            console.log('  - Decay:', decay);
+            console.log('  - Cast Shadow:', castShadow);
+            console.log('  - Shadow Map Size:', shadowMapSize);
+            
+            const isOptimal = intensity >= 3 && intensity <= 5 && 
+                            decay === 2 && 
+                            castShadow && 
+                            shadowMapSize >= 2048;
+            
+            if (isOptimal) {
+                updateTestUI('test-pointlight', 'success', 
+                    `Intensité: ${intensity}, Decay: ${decay}, Shadows: ${shadowMapSize}x${shadowMapSize}`);
+                console.log('✅ Test PointLight: RÉUSSI');
+            } else {
+                updateTestUI('test-pointlight', 'error', 
+                    `Configuration non optimale (intensité: ${intensity}, decay: ${decay})`);
+                console.error('❌ Test PointLight: ÉCHOUÉ');
+            }
+        }
+
+        function testAmbientLight() {
+            console.log('\n🌙 Test 3: Lumière Ambiante');
+            
+            if (typeof lightAmbient === 'undefined' && typeof scene === 'undefined') {
+                updateTestUI('test-ambient', 'error', 'Lumière ambiante non trouvée');
+                console.error('❌ Lumière ambiante non définie');
+                return;
+            }
+            
+            let ambientLight = lightAmbient;
+            if (!ambientLight && typeof scene !== 'undefined') {
+                scene.traverse((obj) => {
+                    if (obj.isAmbientLight) ambientLight = obj;
+                });
+            }
+            
+            if (ambientLight) {
+                const intensity = ambientLight.intensity;
+                console.log('  - Intensité:', intensity);
+                
+                if (intensity <= 0.1) {
+                    updateTestUI('test-ambient', 'success', 
+                        `Intensité optimale: ${intensity.toFixed(3)}`);
+                    console.log('✅ Test Lumière Ambiante: RÉUSSI');
+                } else {
+                    updateTestUI('test-ambient', 'error', 
+                        `Intensité trop élevée: ${intensity.toFixed(3)} (max recommandé: 0.1)`);
+                    console.error('❌ Test Lumière Ambiante: ÉCHOUÉ');
+                }
+            } else {
+                updateTestUI('test-ambient', 'error', 'Lumière ambiante non trouvée');
+                console.error('❌ Lumière ambiante non trouvée');
+            }
+        }
+
+        function testShadows() {
+            console.log('\n🌑 Test 4: Configuration des Ombres sur les Objets');
+            
+            if (typeof scene === 'undefined') {
+                updateTestUI('test-shadows', 'error', 'Scène non trouvée');
+                console.error('❌ Scène non définie');
+                return;
+            }
+            
+            let objectsWithShadows = 0;
+            let totalObjects = 0;
+            
+            scene.traverse((obj) => {
+                if (obj.isMesh && !obj.userData.type?.includes('sun')) {
+                    totalObjects++;
+                    if (obj.castShadow && obj.receiveShadow) {
+                        objectsWithShadows++;
+                    }
+                }
+            });
+            
+            console.log('  - Objets avec ombres:', objectsWithShadows);
+            console.log('  - Total objets:', totalObjects);
+            
+            const percentage = totalObjects > 0 ? (objectsWithShadows / totalObjects) * 100 : 0;
+            
+            if (percentage >= 80) {
+                updateTestUI('test-shadows', 'success', 
+                    `${objectsWithShadows}/${totalObjects} objets (${percentage.toFixed(0)}%)`);
+                console.log('✅ Test Ombres: RÉUSSI');
+            } else {
+                updateTestUI('test-shadows', 'error', 
+                    `Seulement ${objectsWithShadows}/${totalObjects} objets (${percentage.toFixed(0)}%)`);
+                console.error('❌ Test Ombres: ÉCHOUÉ');
+            }
+        }
+
+        function testMaterials() {
+            console.log('\n🎨 Test 5: Configuration des Matériaux');
+            
+            if (typeof scene === 'undefined') {
+                updateTestUI('test-materials', 'error', 'Scène non trouvée');
+                console.error('❌ Scène non définie');
+                return;
+            }
+            
+            let correctMaterials = 0;
+            let totalMaterials = 0;
+            let issues = [];
+            
+            scene.traverse((obj) => {
+                if (obj.isMesh && obj.material) {
+                    const material = obj.material;
+                    totalMaterials++;
+                    
+                    // Vérifier que ce n'est pas un MeshBasicMaterial (sauf pour certains cas spéciaux)
+                    const isBasic = material.type === 'MeshBasicMaterial';
+                    const isPhong = material.type === 'MeshPhongMaterial';
+                    const isStandard = material.type === 'MeshStandardMaterial';
+                    const isShader = material.type === 'ShaderMaterial';
+                    
+                    if (isPhong || isStandard || isShader) {
+                        correctMaterials++;
+                    } else if (isBasic && !obj.userData.type?.includes('line')) {
+                        issues.push(`${obj.userData.type || 'Objet'}: MeshBasicMaterial`);
+                    }
+                }
+            });
+            
+            console.log('  - Matériaux corrects:', correctMaterials);
+            console.log('  - Total matériaux:', totalMaterials);
+            if (issues.length > 0) {
+                console.log('  - Problèmes:', issues);
+            }
+            
+            const percentage = totalMaterials > 0 ? (correctMaterials / totalMaterials) * 100 : 0;
+            
+            if (percentage >= 90) {
+                updateTestUI('test-materials', 'success', 
+                    `${correctMaterials}/${totalMaterials} matériaux (${percentage.toFixed(0)}%)`);
+                console.log('✅ Test Matériaux: RÉUSSI');
+            } else {
+                updateTestUI('test-materials', 'error', 
+                    `${correctMaterials}/${totalMaterials} matériaux (${percentage.toFixed(0)}%) - ${issues.length} problèmes`);
+                console.error('❌ Test Matériaux: ÉCHOUÉ');
+            }
+        }
+
+        function logDetails() {
+            console.clear();
+            console.log('📋 === DÉTAILS COMPLETS DU SYSTÈME D\'ÉCLAIRAGE ===\n');
+            
+            if (typeof renderer !== 'undefined') {
+                console.log('🖥️ RENDERER');
+                console.log('  Shadow Map Enabled:', renderer.shadowMap.enabled);
+                console.log('  Shadow Map Type:', renderer.shadowMap.type);
+                console.log('  Tone Mapping:', renderer.toneMapping);
+                console.log('  Tone Mapping Exposure:', renderer.toneMappingExposure);
+                console.log('');
+            }
+            
+            if (typeof pointLight !== 'undefined') {
+                console.log('💡 POINT LIGHT (Soleil)');
+                console.log('  Position:', pointLight.position);
+                console.log('  Intensité:', pointLight.intensity);
+                console.log('  Decay:', pointLight.decay);
+                console.log('  Distance:', pointLight.distance);
+                console.log('  Cast Shadow:', pointLight.castShadow);
+                console.log('  Shadow Map Size:', pointLight.shadow.mapSize);
+                console.log('  Shadow Camera Near:', pointLight.shadow.camera.near);
+                console.log('  Shadow Camera Far:', pointLight.shadow.camera.far);
+                console.log('  Shadow Bias:', pointLight.shadow.bias);
+                console.log('');
+            }
+            
+            if (typeof scene !== 'undefined') {
+                console.log('🌍 OBJETS DE LA SCÈNE');
+                let count = { planets: 0, moons: 0, atmospheres: 0, rings: 0, other: 0 };
+                
+                scene.traverse((obj) => {
+                    if (obj.isMesh) {
+                        const type = obj.userData.type;
+                        if (type === 'planet') count.planets++;
+                        else if (type === 'moon') count.moons++;
+                        else if (type?.includes('atmosphere')) count.atmospheres++;
+                        else if (type?.includes('ring')) count.rings++;
+                        else count.other++;
+                    }
+                });
+                
+                console.log('  Planètes:', count.planets);
+                console.log('  Lunes:', count.moons);
+                console.log('  Atmosphères:', count.atmospheres);
+                console.log('  Anneaux:', count.rings);
+                console.log('  Autres:', count.other);
+                console.log('');
+                
+                console.log('🔍 DÉTAIL DES LUMIÈRES');
+                scene.traverse((obj) => {
+                    if (obj.isLight) {
+                        console.log(`  ${obj.type}:`, {
+                            intensity: obj.intensity,
+                            color: obj.color,
+                            castShadow: obj.castShadow
+                        });
+                    }
+                });
+            }
+            
+            console.log('\n✅ Détails affichés dans la console');
+        }
+
+        // Lancer les tests automatiquement au chargement
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 2000);
+        });
+    </script>
+</body>
+</html>
