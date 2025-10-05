@@ -372,7 +372,7 @@
                 inset 0 0 1px var(--accent-cyan);
             backdrop-filter: blur(20px);
             transition: left var(--transition-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            z-index: 1001;
+            z-index: 200000;
             font-family: var(--font-primary);
             
             /* Styles de contenu (anciennement .settings-body) */
@@ -429,7 +429,7 @@
         /* ===== SEARCH INPUT STYLES ===== */
         #astre-search-input-sidebar:focus {
             border-color: var(--accent-cyan) !important;
-            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+            /*box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;*/
         }
 
         #astre-search-input-sidebar:hover {
@@ -443,12 +443,12 @@
             transform: scale(1.1);
         }
 
-        /* ===== BUTTON HOVER EFFECTS ===== */
+        /* ===== BUTTON HOVER EFFECTS ===== 
         .kepler-follow-btn:hover,
         .koi-data-explorer-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px var(--glow-cyan) !important;
-        }
+            /*transform: translateY(-2px);
+            /*box-shadow: 0 0 20px var(--glow-cyan) !important;
+        }*/
 
         .setting-toggle-btn:hover {
             color: var(--accent-cyan) !important;

@@ -32,7 +32,7 @@ class KeplerSearchSystem {
         helpPopup.innerHTML = `
             <button class="close-btn" onclick="this.parentElement.remove()">×</button>
             <div class="help-title">
-                🚀 Quick Navigation
+                Quick Navigation
             </div>
             <div class="help-text">
                 Quickly search for a Kepler system
@@ -52,16 +52,15 @@ class KeplerSearchSystem {
                 max-width: 85vw;
                 margin: 20px auto 0;
                 background: linear-gradient(145deg, rgba(5, 15, 35, 0.98) 0%, rgba(10, 25, 50, 0.95) 50%, rgba(0, 20, 40, 0.92) 100%);
-                border: 2px solid rgba(0, 255, 255, 0.4);
+                border: 2px solid #215887;
                 border-radius: 16px;
-                backdrop-filter: blur(25px) saturate(1.2);
-                box-shadow: 0 8px 32px rgba(0, 255, 255, 0.15), 0 0 60px rgba(0, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                
                 overflow: hidden;
                 font-family: 'Rajdhani', sans-serif;
             ">
                 <!-- Header moderne avec gradient -->
                 <div class="search-header" style="
-                    background: linear-gradient(135deg, #00D4FF 0%, #0080FF 100%);
+                    background: #215887;
                     padding: 20px 24px;
                     color: white;
                     font-weight: 700;
@@ -69,18 +68,8 @@ class KeplerSearchSystem {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                 ">
-                    <div style="
-                        width: 40px;
-                        height: 40px;
-                        background: rgba(255, 255, 255, 0.2);
-                        border-radius: 10px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 20px;
-                    ">🔍</div>
+                   
                     <span>Kepler System Search</span>
                 </div>
                 
@@ -100,26 +89,18 @@ class KeplerSearchSystem {
                                 width: 100%;
                                 padding: 16px 20px 16px 50px;
                                 background: rgba(0, 20, 40, 0.6);
-                                border: 2px solid rgba(0, 255, 255, 0.3);
+                                border: 2px solid #215887;
                                 border-radius: 12px;
                                 color: #FFFFFF;
                                 font-family: 'Rajdhani', sans-serif;
                                 font-size: 16px;
                                 font-weight: 500;
                                 outline: none;
+                                box-shadow: none;
                                 transition: all 0.3s ease;
-                                box-sizing: border-box;
                             "
                         >
-                        <div class="search-icon" style="
-                            position: absolute;
-                            left: 16px;
-                            top: 50%;
-                            transform: translateY(-50%);
-                            color: #00D4FF;
-                            font-size: 18px;
-                            pointer-events: none;
-                        ">🔍</div>
+                        
                     </div>
                     
                     <!-- Suggestions avec style moderne -->
@@ -315,13 +296,13 @@ class KeplerSearchSystem {
                         align-items: center;
                         justify-content: center;
                         font-size: 20px;
-                        box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+                        
                     ">${icon}</div>
                     <div style="
                         color: #FFFFFF;
                         font-weight: 600;
                         font-size: 16px;
-                        text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+                        
                     ">${system}</div>
                 </div>
             `;
@@ -391,7 +372,7 @@ class KeplerSearchSystem {
                     
                 } else {
                     window.solarSystemScript.routeHandler.navigateToKeplerSystem(systemName);
-                    this.showNotification(`🚀 Loading ${systemName} - Updating...`, 'success');
+                    this.showNotification(`Loading ${systemName} - Updating...`, 'success');
                     
                     // Actualiser la page après un court délai
                     setTimeout(() => {
@@ -404,8 +385,6 @@ class KeplerSearchSystem {
                 this.showNotification(`❌ Error: ${systemName} not found`, 'error');
             }
         } else {
-            console.error('❌ RouteHandler non disponible');
-            this.showNotification('❌ Navigation system not available', 'error');
         }
     }
     
@@ -416,15 +395,15 @@ class KeplerSearchSystem {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: ${type === 'success' ? 'rgba(34, 197, 94, 0.9)' : 
-                        type === 'error' ? 'rgba(239, 68, 68, 0.9)' : 
-                        'rgba(59, 130, 246, 0.9)'};
+            background: ${type === 'success' ? '#007785' : 
+                        type === 'error' ? '#FF6B35' : 
+                        '#007785'};
             color: white;
             padding: 12px 20px;
             border-radius: 8px;
             font-family: 'Segoe UI', sans-serif;
             font-size: 14px;
-            z-index: 25000;
+            z-index: 250000;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             animation: slideInRight 0.3s ease-out;
             cursor: pointer;
@@ -459,5 +438,3 @@ if (document.readyState === 'loading') {
 
 // Exporter pour utilisation globale
 window.keplerSearch = keplerSearch;
-
-export default KeplerSearchSystem;

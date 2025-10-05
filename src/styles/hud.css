@@ -491,7 +491,7 @@ body {
 
 .hud-widget:hover {
   border-color: var(--hud-border-bright);
-  box-shadow: var(--hud-glow);
+  /*box-shadow: var(--hud-glow);*/
 }
 
 .widget-header {

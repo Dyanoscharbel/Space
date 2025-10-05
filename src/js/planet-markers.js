@@ -249,34 +249,34 @@ export class PlanetMarkerSystem {
         context.clearRect(0, 0, canvas.width, canvas.height);
         
         // Configuration du texte avec police plus moderne
-        context.font = `bold ${finalFontSize * 1.5}px 'Arial Black', Arial, sans-serif`;
+        context.font = `${finalFontSize * 1.5}px 'Arial Black', Arial, sans-serif`;
         context.fillStyle = this.config.labelColor;
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         
         // Ajouter un contour noir épais pour meilleure lisibilité
         context.strokeStyle = 'rgba(0, 0, 0, 1)';
-        context.lineWidth = 8;
+        context.lineWidth = 3;
         context.strokeText(text.toUpperCase(), canvas.width / 2, canvas.height / 2);
         
         // Ajouter une ombre plus prononcée
-        context.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        /*context.shadowColor = 'rgba(0, 0, 0, 0.9)';
         context.shadowBlur = 15;
         context.shadowOffsetX = 4;
-        context.shadowOffsetY = 4;
+        context.shadowOffsetY = 4;*/
         
         // Dessiner le texte principal
         context.fillText(text.toUpperCase(), canvas.width / 2, canvas.height / 2);
         
         // Ajouter un effet de glow avec la couleur de la planète
-        const colorHex = '#' + color.toString(16).padStart(6, '0');
+        /*const colorHex = '#' + color.toString(16).padStart(6, '0');
         context.shadowColor = colorHex;
         context.shadowBlur = 20;
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
         context.fillStyle = colorHex;
         context.globalCompositeOperation = 'screen';
-        context.fillText(text.toUpperCase(), canvas.width / 2, canvas.height / 2);
+        context.fillText(text.toUpperCase(), canvas.width / 2, canvas.height / 2);*/
         
         // Créer la texture et le sprite
         const texture = new THREE.CanvasTexture(canvas);

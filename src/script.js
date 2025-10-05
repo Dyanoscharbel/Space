@@ -99,47 +99,47 @@ function createKeplerSidebar() {
   // Ajouter la section du système actuel
   const currentSystemGroup = document.createElement('div');
   currentSystemGroup.className = 'setting-group';
+  currentSystemGroup.style.marginBottom = '20px';
   const currentSystemName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Système Kepler';
   currentSystemGroup.innerHTML = `
     <label class="setting-label" style="
-      color: var(--accent-cyan);
+      color: #ffffff;
       font-family: var(--font-primary);
       font-weight: 600;
       font-size: var(--font-size-sm);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 8px;
       display: block;
       border-bottom: 1px solid var(--border);
-      padding-bottom: var(--spacing-sm);
+      padding-bottom: 8px;
     ">CURRENT SYSTEM</label>
-    <div class="current-system-info" style="margin-top: var(--spacing-md);">
+    <div class="current-system-info" style="margin-top: 4px;">
       <button id="change-system-button" class="change-system-btn" style="
         width: 100%;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-        color: var(--accent-cyan);
-        border: var(--border-width) solid var(--accent-cyan);
-        border-radius: var(--border-radius);
+        padding: 10px 16px;
+        background: #002D38;
+        color: #ffffff;
+        border: 1px solid #002D38;
+        border-radius: 6px;
         cursor: pointer;
         font-family: var(--font-primary);
-        font-weight: 600;
-        font-size: var(--font-size-sm);
-        transition: all var(--transition-normal);
-        box-shadow: 0 0 10px var(--glow-cyan);
+        font-weight: 500;
+        font-size: 13px;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--spacing-sm);
+        gap: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       ">
         <span>🌟 ${currentSystemName}</span>
       </button>
       <div style="
-        margin-top: var(--spacing-sm);
-        font-size: var(--font-size-xs);
-        color: var(--text-secondary);
+        margin-top: 6px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.6);
         text-align: center;
         font-family: var(--font-primary);
       ">Click to change system (Ctrl+K)</div>
@@ -150,37 +150,37 @@ function createKeplerSidebar() {
   // Ajouter le bouton de retour au système solaire
   const navigationGroup = document.createElement('div');
   navigationGroup.className = 'setting-group';
+  navigationGroup.style.marginBottom = '20px';
   navigationGroup.innerHTML = `
     <label class="setting-label" style="
-      color: var(--accent-cyan);
+      color: #ffffff;
       font-family: var(--font-primary);
       font-weight: 600;
       font-size: var(--font-size-sm);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 8px;
       display: block;
       border-bottom: 1px solid var(--border);
-      padding-bottom: var(--spacing-sm);
+      padding-bottom: 8px;
     ">NAVIGATION</label>
-    <div class="kepler-controls" style="margin-top: var(--spacing-md);">
+    <div class="kepler-controls" style="margin-top: 4px;">
       <button id="kepler-follow-button" class="kepler-follow-btn" style="
         width: 100%;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-        color: var(--accent-orange);
-        border: var(--border-width) solid var(--accent-orange);
-        border-radius: var(--border-radius);
+        padding: 10px 16px;
+        background: #1E4978;
+        color: #ffffff;
+        border: 1px solid #1E4978;
+        border-radius: 6px;
         cursor: pointer;
         font-family: var(--font-primary);
         font-weight: 500;
-        font-size: var(--font-size-sm);
-        transition: all var(--transition-normal);
-        box-shadow: 0 0 10px var(--glow-orange);
+        font-size: 13px;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--spacing-sm);
+        gap: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       ">
@@ -193,41 +193,41 @@ function createKeplerSidebar() {
   // Ajouter KOI Data Explorer
   const koiGroup = document.createElement('div');
   koiGroup.className = 'setting-group';
+  koiGroup.style.marginBottom = '0';
   koiGroup.innerHTML = `
     <label class="setting-label" style="
-      color: var(--accent-cyan);
+      color: #ffffff;
       font-family: var(--font-primary);
       font-weight: 600;
       font-size: var(--font-size-sm);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 8px;
       display: block;
       border-bottom: 1px solid var(--border);
-      padding-bottom: var(--spacing-sm);
+      padding-bottom: 8px;
     ">DATA EXPLORATION</label>
-    <div class="koi-controls" style="margin-top: var(--spacing-md);">
+    <div class="koi-controls" style="margin-top: 4px;">
       <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
         width: 100%;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-        color: var(--text-primary);
-        border: var(--border-width) solid #9C27B0;
-        border-radius: var(--border-radius);
+        padding: 10px 16px;
+        background: #5C88B8;
+        color: #ffffff;
+        border: 1px solid #5C88B8;
+        border-radius: 6px;
         cursor: pointer;
         font-family: var(--font-primary);
         font-weight: 500;
-        font-size: var(--font-size-sm);
-        transition: all var(--transition-normal);
-        box-shadow: 0 0 10px rgba(156, 39, 176, 0.4);
+        font-size: 13px;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--spacing-sm);
+        gap: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       ">
-        <span style="font-size: 16px;"></span>
+        <span style="font-size: 16px;">🔬</span>
         <span>KOI Data Explorer</span>
       </button>
     </div>
@@ -247,41 +247,44 @@ function createSolarSystemSidebar() {
   
   // Vider la sidebar
   panel.innerHTML = '';
+
+  // Ajouter la section ASTRES avec recherche intégrée
+
   
   // Ajouter le bouton Kepler
   const keplerGroup = document.createElement('div');
   keplerGroup.className = 'setting-group';
+  keplerGroup.style.marginBottom = '20px';
   keplerGroup.innerHTML = `
     <label class="setting-label" style="
-      color: var(--accent-cyan);
+      color: #ffffff;
       font-family: var(--font-primary);
       font-weight: 600;
       font-size: var(--font-size-sm);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 8px;
       display: block;
       border-bottom: 1px solid var(--border);
-      padding-bottom: var(--spacing-sm);
+      padding-bottom: 8px;
     ">KEPLER SATELLITE</label>
-    <div class="kepler-controls" style="margin-top: var(--spacing-md);">
+    <div class="kepler-controls" style="margin-top: 4px;">
       <button id="kepler-follow-button" class="kepler-follow-btn" style="
         width: 100%;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-        color: var(--accent-cyan);
-        border: var(--border-width) solid var(--accent-cyan);
-        border-radius: var(--border-radius);
+        padding: 10px 16px;
+        background: #1E4978;
+        color: #ffffff;
+        border: 1px solid #1E4978;
+        border-radius: 6px;
         cursor: pointer;
         font-family: var(--font-primary);
         font-weight: 500;
-        font-size: var(--font-size-sm);
-        transition: all var(--transition-normal);
-        box-shadow: 0 0 10px var(--glow-cyan);
+        font-size: 13px;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--spacing-sm);
+        gap: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       ">
@@ -295,37 +298,37 @@ function createSolarSystemSidebar() {
   // Ajouter KOI Data Explorer
   const koiGroup = document.createElement('div');
   koiGroup.className = 'setting-group';
+  koiGroup.style.marginBottom = '20px';
   koiGroup.innerHTML = `
     <label class="setting-label" style="
-      color: var(--accent-cyan);
+      color: #ffffff;
       font-family: var(--font-primary);
       font-weight: 600;
       font-size: var(--font-size-sm);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 8px;
       display: block;
       border-bottom: 1px solid var(--border);
-      padding-bottom: var(--spacing-sm);
+      padding-bottom: 8px;
     ">DATA EXPLORATION</label>
-    <div class="koi-controls" style="margin-top: var(--spacing-md);">
+    <div class="koi-controls" style="margin-top: 4px;">
       <button id="koi-data-explorer-button" class="koi-data-explorer-btn" style="
         width: 100%;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-        color: var(--text-primary);
-        border: var(--border-width) solid #9C27B0;
-        border-radius: var(--border-radius);
+        padding: 10px 16px;
+        background: #5C88B8;
+        color: #ffffff;
+        border: 1px solid #5C88B8;
+        border-radius: 6px;
         cursor: pointer;
         font-family: var(--font-primary);
         font-weight: 500;
-        font-size: var(--font-size-sm);
-        transition: all var(--transition-normal);
-        box-shadow: 0 0 10px rgba(156, 39, 176, 0.4);
+        font-size: 13px;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--spacing-sm);
+        gap: 8px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       ">
@@ -336,28 +339,28 @@ function createSolarSystemSidebar() {
   `;
   panel.appendChild(koiGroup);
   
-  // Ajouter la section ASTRES avec recherche intégrée
   const astreGroup = document.createElement('div');
   astreGroup.className = 'setting-group';
+  astreGroup.style.marginBottom = '0';
   astreGroup.innerHTML = `
     <label class="setting-label" style="
-      color: var(--accent-cyan);
+      color: #ffffff;
       font-family: var(--font-primary);
       font-weight: 600;
       font-size: var(--font-size-sm);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: 8px;
       display: block;
       border-bottom: 1px solid var(--border);
-      padding-bottom: var(--spacing-sm);
+      padding-bottom: 8px;
     ">SOLAR SYSTEM OBJECTS</label>
     
     <!-- Zone de recherche SIMPLE -->
     <input 
       type="text" 
       id="astre-search-input-sidebar" 
-      placeholder="🔍 Search object..." 
+      placeholder="Search object..." 
     />
     <style>
       #astre-search-input-sidebar {
@@ -376,10 +379,7 @@ function createSolarSystemSidebar() {
         position: static !important;
         z-index: auto !important;
       }
-      #astre-search-input-sidebar:focus {
-        border-color: #00D4FF !important;
-        box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
-      }
+      
     </style>
     
     <!-- Liste des astres -->
@@ -582,9 +582,9 @@ function setupSidebarAstreSearch() {
     }
     astreList.innerHTML = list.map(it => `
       <div class="astre-result" data-key="${it.key}" data-type="${it.type}" data-name="${it.name}"
-           style="padding:10px 12px; margin-bottom:6px; background:rgba(0,255,255,0.05); border-left:2px solid rgba(0,255,255,0.3); border-radius:6px; cursor:pointer;">
+           style="padding:10px 12px; margin-bottom:6px; background:rgba(0,255,255,0.05); border-radius:6px; cursor:pointer;">
         <div style="font-weight:700; color:#00ffff; font-family:'Rajdhani',sans-serif;">${it.name}</div>
-        <div style="font-size:0.8rem; color:#0080ff; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">${it.type}</div>
+        <div style="font-size:0.8rem; color:rgba(255, 255, 255, 0.8); font-family:'Rajdhani',sans-serif; text-transform:uppercase;">${it.type}</div>
       </div>
     `).join('');
     astreList.querySelectorAll('.astre-result').forEach(el => {
@@ -1238,7 +1238,7 @@ function ensureAstreSearchControl() {
       }
       resultsEl.innerHTML = list.map(it => `
         <div class="astre-result" data-key="${it.key}" data-type="${it.type}" data-name="${it.name}"
-             style="padding:10px 12px; margin-bottom:6px; background:rgba(0,255,255,0.05); border-left:2px solid rgba(0,255,255,0.3); border-radius:6px; cursor:pointer;">
+             style="padding:10px 12px; margin-bottom:6px; background:rgba(0,255,255,0.05); border-radius:6px; cursor:pointer;">
           <div style="font-weight:700; color:#00ffff; font-family:'Rajdhani',sans-serif;">${it.name}</div>
           <div style="font-size:0.8rem; color:#0080ff; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">${it.type}</div>
         </div>
@@ -1506,10 +1506,10 @@ function ensureBottomRightInfoPanel() {
       right: '20px',
       width: '380px',
       background: 'linear-gradient(145deg, rgba(5, 15, 35, 0.98) 0%, rgba(10, 25, 50, 0.95) 50%, rgba(0, 20, 40, 0.92) 100%)',
-      border: '2px solid rgba(0, 255, 255, 0.4)',
+      //border: '2px solid rgba(0, 255, 255, 0.4)',
       borderRadius: '16px',
       backdropFilter: 'blur(25px) saturate(1.2)',
-      boxShadow: '0 8px 32px rgba(0, 255, 255, 0.15), 0 0 60px rgba(0, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+      //boxShadow: '0 8px 32px rgba(0, 255, 255, 0.15), 0 0 60px rgba(0, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       zIndex: '1000',
       fontFamily: 'Rajdhani, sans-serif',
       overflow: 'hidden'
@@ -1529,64 +1529,79 @@ function ensureBottomRightInfoPanel() {
     container.style.pointerEvents = 'auto';
 
     container.innerHTML = `
-      <!-- Elements simples sans barre -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <div id="br-name" style="display: none;">—</div>
-        <div id="br-type" style="
-          font-size: 14px; 
+      <!-- Header caché pour les éléments -->
+      <div style="display: none;">
+        <div id="br-name">—</div>
+        <button id="br-toggle-btn" type="button">▾</button>
+      </div>
+      
+      <!-- Type de l'objet aligné avec les données -->
+      <div id="br-type-container" style="
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        padding: 12px 16px;
+        background: #091E37;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        margin-bottom: 12px;
+        gap: 12px;
+      ">
+        <span style="
           color: #00D4FF; 
-          font-family: 'Rajdhani', sans-serif;
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 600; 
+          font-size: 13px;
           text-transform: uppercase;
-          letter-spacing: 1px;
-          font-weight: 600;
-        ">—</div>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <button id="br-toggle-btn" type="button" title="Collapse / Expand" style="
-            width: 24px; 
-            height: 24px; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            border: 1px solid rgba(0, 255, 255, 0.3); 
-            background: rgba(0, 255, 255, 0.1); 
-            color: #00FFFF; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            user-select: none;
-            transition: all 0.3s ease;
-            font-size: 12px;
-          ">▾</button>
-          <button id="br-uncenter-btn" class="uncenter-btn" style="
-            padding: 4px 8px; 
-            display: none; 
-            border: 1px solid rgba(255, 165, 0, 0.4); 
-            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15) 0%, rgba(255, 140, 0, 0.1) 100%); 
-            color: #FFB347; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 11px;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-          ">UNCENTER</button>
-        </div>
+          letter-spacing: 0.5px;
+          flex-shrink: 0;
+        ">TYPE :</span>
+        <span id="br-type" style="
+          color: #FFFFFF; 
+          font-family: 'Rajdhani', sans-serif; 
+          font-weight: 500; 
+          font-size: 16px;
+          text-align: right;
+        ">—</span>
       </div>
       
       <!-- Contenu des données -->
       <div id="br-content" class="tooltip-content" style="
-        padding: 0 20px;
-        margin-bottom: 16px;
+        padding: 0;
+        margin-bottom: 12px;
       "></div>
+      
+      <!-- Button Uncenter -->
+      <div id="br-uncenter-container" style="
+        display: none;
+        margin-bottom: 12px;
+      ">
+        <button id="br-uncenter-btn" class="uncenter-btn" style="
+          width: 100%;
+          padding: 10px 16px; 
+          border: 1px solid rgba(255, 165, 0, 0.4); 
+          background: linear-gradient(135deg, rgba(255, 165, 0, 0.15) 0%, rgba(255, 140, 0, 0.1) 100%); 
+          color: #FFB347; 
+          border-radius: 6px; 
+          cursor: pointer; 
+          font-size: 13px;
+          font-family: 'Rajdhani', sans-serif;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          transition: all 0.3s ease;
+        ">UNCENTER</button>
+      </div>
       
       <!-- Description -->
       <div id="br-description" class="tooltip-description" style="
-        padding: 0 20px 20px 20px;
+        padding: 12px 16px;
         color: rgba(255, 255, 255, 0.8);
         font-family: 'Rajdhani', sans-serif;
         font-size: 14px;
         line-height: 1.5;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 6px;
       "></div>
     `;
 
@@ -1598,18 +1613,17 @@ function ensureBottomRightInfoPanel() {
     const toggleBtn = container.querySelector('#br-toggle-btn');
     const contentEl = container.querySelector('#br-content');
     const descEl = container.querySelector('#br-description');
-    const stopBtn = container.querySelector('#br-stop-follow-btn');
+    const typeContainer = container.querySelector('#br-type-container');
+    const uncenterContainer = container.querySelector('#br-uncenter-container');
     const uncenterBtn = container.querySelector('#br-uncenter-btn');
     // Hide the internal arrow toggle in the bottom info panel
     if (toggleBtn) toggleBtn.style.display = 'none';
     const setCollapsed = (collapsed) => {
+      if (typeContainer) typeContainer.style.display = collapsed ? 'none' : '';
       contentEl.style.display = collapsed ? 'none' : '';
       descEl.style.display = collapsed ? 'none' : '';
-      if (stopBtn && stopBtn.style.display !== 'none') {
-        stopBtn.style.display = collapsed ? 'none' : 'inline-flex';
-      }
-      if (uncenterBtn && uncenterBtn.style.display !== 'none') {
-        uncenterBtn.style.display = collapsed ? 'none' : 'inline-flex';
+      if (uncenterContainer && uncenterContainer.style.display !== 'none') {
+        uncenterContainer.style.display = collapsed ? 'none' : '';
       }
       if (toggleBtn) toggleBtn.textContent = collapsed ? '▸' : '▾';
       container.dataset.collapsed = collapsed ? '1' : '0';
@@ -1649,9 +1663,8 @@ function ensureBottomRightInfoPanel() {
         // Arrêter le suivi si actif
         followedPlanet = null;
         
-        // Cacher le bouton "Décentrer" et "Libérer"
-        uncenterBtn.style.display = 'none';
-        if (stopBtn) stopBtn.style.display = 'none';
+        // Cacher le conteneur du bouton "Décentrer"
+        if (uncenterContainer) uncenterContainer.style.display = 'none';
         
         console.log('🎯 Caméra décentrée - retour au centre du système');
       };
@@ -1682,7 +1695,14 @@ function updateBottomRightInfo(name, type, info, objectType) {
   }
 
   nameEl.textContent = name || '—';
-  typeEl.textContent = type || '—';
+  
+  // Combiner le type général (objectType) et le type précis (type)
+  // Ex: "Planet (Barren)" ou "Exoplanet (Gaseuse)"
+  let displayType = objectType || '—';
+  if (type && type !== '—' && type !== objectType) {
+    displayType = `${objectType} (${type})`;
+  }
+  typeEl.textContent = displayType;
 
   contentEl.innerHTML = `
     <div style="display: grid; gap: 12px;">
@@ -1691,9 +1711,9 @@ function updateBottomRightInfo(name, type, info, objectType) {
         justify-content: space-between; 
         align-items: center;
         padding: 12px 16px;
-        background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
-        border: 1px solid rgba(0, 255, 255, 0.15);
-        border-radius: 10px;
+        background: #091E37;
+        /*border: 1px solid rgba(0, 255, 255, 0.15);*/
+        border-radius: 6px;
         transition: all 0.3s ease;
       ">
         <span style="
@@ -1707,9 +1727,9 @@ function updateBottomRightInfo(name, type, info, objectType) {
         <span style="
           color: #FFFFFF; 
           font-family: 'Rajdhani', sans-serif; 
-          font-weight: 700; 
+          font-weight: 500; 
           font-size: 16px;
-          text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+          /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
         ">${info.radius || '—'}</span>
       </div>
       
@@ -1718,9 +1738,9 @@ function updateBottomRightInfo(name, type, info, objectType) {
         justify-content: space-between; 
         align-items: center;
         padding: 12px 16px;
-        background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
-        border: 1px solid rgba(0, 255, 255, 0.15);
-        border-radius: 10px;
+        background: #091E37;
+        /*border: 1px solid rgba(0, 255, 255, 0.15);*/
+        border-radius: 6px;
         transition: all 0.3s ease;
       ">
         <span style="
@@ -1734,9 +1754,9 @@ function updateBottomRightInfo(name, type, info, objectType) {
         <span style="
           color: #FFFFFF; 
           font-family: 'Rajdhani', sans-serif; 
-          font-weight: 700; 
+          font-weight: 500; 
           font-size: 16px;
-          text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+          /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
         ">${info.distance || '—'}</span>
       </div>
       
@@ -1745,9 +1765,9 @@ function updateBottomRightInfo(name, type, info, objectType) {
         justify-content: space-between; 
         align-items: center;
         padding: 12px 16px;
-        background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
-        border: 1px solid rgba(0, 255, 255, 0.15);
-        border-radius: 10px;
+        background: #091E37;
+        /*border: 1px solid rgba(0, 255, 255, 0.15);*/
+        border-radius: 6px;
         transition: all 0.3s ease;
       ">
         <span style="
@@ -1761,9 +1781,9 @@ function updateBottomRightInfo(name, type, info, objectType) {
         <span style="
           color: #FFFFFF; 
           font-family: 'Rajdhani', sans-serif; 
-          font-weight: 700; 
+          font-weight: 500; 
           font-size: 16px;
-          text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+          /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
         ">${info.orbit || '—'}</span>
       </div>
       
@@ -1771,12 +1791,13 @@ function updateBottomRightInfo(name, type, info, objectType) {
         <div style="
           display: flex; 
           justify-content: space-between; 
-          align-items: center;
+          align-items: flex-start;
           padding: 12px 16px;
-          background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 128, 255, 0.03) 100%);
-          border: 1px solid rgba(0, 255, 255, 0.15);
-          border-radius: 10px;
+          background: #091E37;
+          /*border: 1px solid rgba(0, 255, 255, 0.15);*/
+          border-radius: 6px;
           transition: all 0.3s ease;
+          gap: 12px;
         ">
           <span style="
             color: #00D4FF; 
@@ -1785,13 +1806,18 @@ function updateBottomRightInfo(name, type, info, objectType) {
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            flex-shrink: 0;
           ">MOONS :</span>
           <span style="
             color: #FFFFFF; 
             font-family: 'Rajdhani', sans-serif; 
-            font-weight: 700; 
+            font-weight: 500; 
             font-size: 16px;
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+            text-align: right;
+            max-width: 250px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            /*text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);*/
           ">${info.moons || '—'}</span>
         </div>
       ` : ''}
@@ -1833,7 +1859,7 @@ function updateBottomRightInfo(name, type, info, objectType) {
       font-weight: 600;
       font-size: 14px;
       transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+      /*box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);*/
     `;
 
     dataButton.addEventListener('mouseenter', () => {
@@ -1860,15 +1886,16 @@ function updateBottomRightInfo(name, type, info, objectType) {
   if (container) {
     contentEl.style.display = '';
     descEl.style.display = '';
-    const stopBtn = document.getElementById('br-stop-follow-btn');
-    const uncenterBtn = document.getElementById('br-uncenter-btn');
+    const typeContainer = document.getElementById('br-type-container');
+    const uncenterContainer = document.getElementById('br-uncenter-container');
     
-    // Afficher le bouton "Décentrer" quand un objet est sélectionné
-    if (uncenterBtn) {
-      uncenterBtn.style.display = 'inline-flex';
+    if (typeContainer) typeContainer.style.display = '';
+    
+    // Afficher le conteneur du bouton "Décentrer" quand un objet est sélectionné
+    if (uncenterContainer) {
+      uncenterContainer.style.display = '';
     }
     
-    if (stopBtn && stopBtn.style.display !== 'none') stopBtn.style.display = 'inline-flex';
     container.dataset.collapsed = '0';
     if (toggleBtn) toggleBtn.textContent = '▾';
   }
@@ -1888,7 +1915,7 @@ function ensureDistanceHUD() {
     fontFamily: "Rajdhani, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
     fontWeight: '700',
     letterSpacing: '0.5px',
-    textShadow: '0 0 8px rgba(0,255,255,0.6)',
+    //textShadow: '0 0 8px rgba(0,255,255,0.6)',
     background: 'transparent',
     pointerEvents: 'none',
     padding: '6px 10px',
@@ -1904,7 +1931,9 @@ function updateDistanceHUD(text) {
     el.style.display = 'none';
   } else {
     el.style.display = 'block';
-    el.textContent = `Distance à l'objet: ${text}`;
+    el.style.fontWeight = '600';
+    el.style.color = 'white';
+    el.textContent = `Distance to object: ${text}`;
   }
 }
 
@@ -1936,9 +1965,9 @@ function setupScaleCardHeader() {
     title.className = 'scale-title';
     title.textContent = 'OBJECT';
     Object.assign(title.style, {
-      fontSize: '0.9rem',
+      fontSize: '1.05rem',
       fontWeight: '700',
-      color: '#00ffff',
+      color: '#FFFFFF',
       textTransform: 'uppercase',
       letterSpacing: '1px',
       fontFamily: 'Rajdhani, sans-serif'
@@ -3178,20 +3207,16 @@ function onDocumentMouseDown(event) {
           controls.target.set(0, 0, 0);
           controls.update();
           followedPlanet = null;
-          const uncenterBtn = document.getElementById('br-uncenter-btn');
-          const stopBtn = document.getElementById('br-stop-follow-btn');
-          if (uncenterBtn) uncenterBtn.style.display = 'none';
-          if (stopBtn) stopBtn.style.display = 'none';
+          const uncenterContainer = document.getElementById('br-uncenter-container');
+          if (uncenterContainer) uncenterContainer.style.display = 'none';
           console.log('☀️ Clic sur le soleil : caméra décentrée - retour au centre du système');
         } else if (selectedPlanet.type === 'kepler_star') {
           // Pour l'étoile Kepler, utiliser la logique UNCENTER
           controls.target.set(0, 0, 0);
           controls.update();
           followedPlanet = null;
-          const uncenterBtn = document.getElementById('br-uncenter-btn');
-          const stopBtn = document.getElementById('br-stop-follow-btn');
-          if (uncenterBtn) uncenterBtn.style.display = 'none';
-          if (stopBtn) stopBtn.style.display = 'none';
+          const uncenterContainer = document.getElementById('br-uncenter-container');
+          if (uncenterContainer) uncenterContainer.style.display = 'none';
           console.log('⭐ Clic direct sur étoile Kepler : caméra décentrée - retour au centre du système (comme UNCENTER)');
         } else {
           // Pour les autres objets, utiliser le centrage normal
@@ -3768,11 +3793,9 @@ function centerOnPlanet(objectName, objectType = 'planet') {
     controls.update();
     followedPlanet = null;
     
-    // Cacher les boutons de décentrage
-    const uncenterBtn = document.getElementById('br-uncenter-btn');
-    const stopBtn = document.getElementById('br-stop-follow-btn');
-    if (uncenterBtn) uncenterBtn.style.display = 'none';
-    if (stopBtn) stopBtn.style.display = 'none';
+    // Cacher le conteneur du bouton de décentrage
+    const uncenterContainer = document.getElementById('br-uncenter-container');
+    if (uncenterContainer) uncenterContainer.style.display = 'none';
     
     const starName = exoplanetSceneManager ? exoplanetSceneManager.getKeplerStarName() : 'Kepler Star';
     console.log(`⭐ Clic sur étoile Kepler ${starName} : caméra décentrée - retour au centre du système (comme UNCENTER)`);
@@ -3789,11 +3812,9 @@ function centerOnPlanet(objectName, objectType = 'planet') {
       controls.update();
       followedPlanet = null;
       
-      // Cacher les boutons de décentrage
-      const uncenterBtn = document.getElementById('br-uncenter-btn');
-      const stopBtn = document.getElementById('br-stop-follow-btn');
-      if (uncenterBtn) uncenterBtn.style.display = 'none';
-      if (stopBtn) stopBtn.style.display = 'none';
+      // Cacher le conteneur du bouton de décentrage
+      const uncenterContainer = document.getElementById('br-uncenter-container');
+      if (uncenterContainer) uncenterContainer.style.display = 'none';
       
       console.log('☀️ Clic sur Sun : caméra décentrée - retour au centre du système (comme UNCENTER)');
       
